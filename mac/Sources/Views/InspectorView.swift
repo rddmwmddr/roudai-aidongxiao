@@ -83,7 +83,7 @@ struct NumberField: View {
         TextField(title, text: $draft, prompt: Text(prompt ?? title))
             .monospacedDigit()
             .focused($focused)
-            .accessibilityLabel(title)
+            .named(title)
             .onAppear { draft = show(value) }
             .onChange(of: value) { v in
                 if !focused { draft = show(v) }
@@ -188,6 +188,26 @@ struct ShotForm: View {
     let previousDataTemplate: String?
     @ObservedObject var stage: StageController
     let onNotice: (String) -> Void
+    @State private var natural: Double?
+
+    private var naturalStamp: String {
+        var plain = shot
+        plain.duration = nil
+        return plain.json
+    }
+
+    private var rate: Binding<Double?> {
+        Binding(get: {
+            guard let natural, natural > 0, let dur = shot.duration, dur > 0 else { return nil }
+            return (natural / dur * 100).rounded() / 100
+        }, set: { value in
+            guard let value, value > 0, let natural, natural > 0 else {
+                shot.duration = nil
+                return
+            }
+            shot.duration = (natural / min(8, max(0.125, value)) * 100).rounded() / 100
+        })
+    }
 
     private var names: [String: String] {
         Dictionary(uniqueKeysWithValues: stage.templates.map { ($0.id, $0.name) })
@@ -220,6 +240,7 @@ struct ShotForm: View {
                 SectionCard(title: "属性", symbol: "slider.horizontal.3") {
                     properties
                 }
+                ColorRows(shot: $shot, stage: stage)
                 ExtraFields(shot: $shot)
             }
             .padding(.horizontal, 8)
@@ -227,6 +248,7 @@ struct ShotForm: View {
         }
         .scrollIndicators(.never)
         .textFieldStyle(.plain)
+        .task(id: naturalStamp) { natural = (await stage.naturals([shot]))[shot.id] }
     }
 
     private var noteRow: some View {
@@ -259,6 +281,10 @@ struct ShotForm: View {
             }
             PropertyRow("时长") {
                 NumberField(title: "这一镜的秒数", value: number("dur"), prompt: "自动")
+            }
+            // 速率和时长是一回事：2 是两倍快，时长变成一半。清空回到 1
+            PropertyRow("速率") {
+                NumberField(title: "动效速率", value: rate, prompt: "1")
             }
             PropertyRow("停留") {
                 NumberField(title: "念完后停留的秒数", value: number("hold"), prompt: "自动")
@@ -554,5 +580,82 @@ struct LinesEditor: View {
                 shot.lines = shot.lines + ["新的一句"]
             }
         }
+    }
+}
+
+// 这一镜能换的颜色：组件、CSS 动效、数据模板各自声明。改了写进 colors，右键恢复默认。
+// 取色盘拖动时一直在变，停下来再写进文档，撤销一次回到改之前
+private struct ColorRows: View {
+    @Binding var shot: Shot
+    @ObservedObject var stage: StageController
+    @State private var roles: [ColorRole] = []
+    @State private var pending: [String: String] = [:]
+
+    private var stamp: String {
+        "\(shot.template)|\(shot.fields["theme"]?.string ?? "")|\(shot.fields["colors"].map { "\($0)" } ?? "")"
+    }
+
+    var body: some View {
+        // 外层一直在：没有颜色时这里是空的，读颜色的任务也要能跑
+        VStack(alignment: .leading, spacing: 0) {
+            if !roles.isEmpty {
+                SectionCard(title: "颜色", symbol: "paintpalette") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(roles) { role in
+                            PropertyRow(role.name) {
+                                HStack {
+                                    ColorPicker(role.name, selection: binding(role), supportsOpacity: false)
+                                        .labelsHidden()
+                                        .named("颜色\(role.name)")
+                                    Spacer(minLength: 0)
+                                }
+                                // 色块没有文字基线，和左边的名字按中线对齐
+                                .alignmentGuide(.firstTextBaseline) { d in d[VerticalAlignment.center] + 5 }
+                                .contextMenu {
+                                    if role.custom { Button("恢复默认") { write(role.key, nil) } }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .task(id: stamp) { roles = await stage.colorRoles(shot) }
+        .task(id: pending) {
+            guard !pending.isEmpty else { return }
+            try? await Task.sleep(for: .milliseconds(350))
+            if Task.isCancelled { return }
+            let next = pending
+            pending = [:]
+            var colors = shot.fields["colors"]?.object ?? [:]
+            for (key, hex) in next { colors[key] = .string(hex) }
+            shot.fields["colors"] = .object(colors)
+        }
+    }
+
+    private func binding(_ role: ColorRole) -> Binding<Color> {
+        Binding(get: { Color(hexString: pending[role.key] ?? role.value) }, set: { pending[role.key] = $0.hexString })
+    }
+
+    private func write(_ key: String, _ hex: String?) {
+        var colors = shot.fields["colors"]?.object ?? [:]
+        colors[key] = hex.map(JSONValue.string)
+        shot.fields["colors"] = colors.isEmpty ? nil : .object(colors)
+    }
+}
+
+extension Color {
+    init(hexString: String) {
+        let digits = hexString.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        let v = UInt32(digits, radix: 16) ?? 0
+        self.init(.sRGB, red: Double((v >> 16) & 0xFF) / 255, green: Double((v >> 8) & 0xFF) / 255, blue: Double(v & 0xFF) / 255)
+    }
+
+    var hexString: String {
+        let c = NSColor(self).usingColorSpace(.sRGB) ?? .black
+        let r = Int((c.redComponent * 255).rounded())
+        let g = Int((c.greenComponent * 255).rounded())
+        let b = Int((c.blueComponent * 255).rounded())
+        return String(format: "#%02X%02X%02X", min(max(r, 0), 255), min(max(g, 0), 255), min(max(b, 0), 255))
     }
 }

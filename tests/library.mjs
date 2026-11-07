@@ -136,7 +136,7 @@ const result = await page.evaluate(async () => {
   tabs.draw(probe.getContext('2d'), 1);
   CanvasRenderingContext2D.prototype.fillText = realFill;
   out.widget.stockWords = painted.filter((t) => ['图片', '视频', '文件'].includes(t));
-  // 手动时长：拉长是多停一会儿，缩短是整段加快，两头画出来的都是结尾那一帧
+  // 手动时长就是速率：拉长整段放慢，缩短整段加快。两头都是结尾那一帧，中间那一帧对得上原来的同一个进度
   const timedRow = {line: '这是一句测试用的口播。', lines: ['这是一句测试用的口播'], tpl: 'statement', template: 'statement'};
   const natural = D.createScene(timedRow, 320);
   const paint = (scene, t) => {
@@ -155,6 +155,9 @@ const result = await page.evaluate(async () => {
     long: longer.duration === natural.duration + 9,
     shortEnd: differ(end, paint(shorter, shorter.duration - 0.005)) < 200,
     longEnd: differ(end, paint(longer, longer.duration - 0.01)) < 200,
+    longMid: differ(paint(natural, natural.duration * 0.4), paint(longer, longer.duration * 0.4)) < 200,
+    shortMid: differ(paint(natural, natural.duration * 0.4), paint(shorter, shorter.duration * 0.4)) < 200,
+    rate: Math.abs(longer.rate() - natural.duration / (natural.duration + 9)) < 1e-6 && Math.abs(shorter.rate() - 2) < 1e-6,
     // 文件里写着已经删掉的动效：照样能画
     gone: !!D.createScene({line: '旧文件里的一句话。', tpl: 'aroll', template: 'aroll'}, 320),
   };
@@ -198,6 +201,23 @@ const result = await page.evaluate(async () => {
   out.adoptBack = withNote.note.includes('原来的备注') && !back.sampleData && !back.points && back.note === '原来的备注';
   const kept = D.adopt({line: '抖音有3亿', tpl: 'statement', series: [{label: 'a', value: 1}, {label: 'b', value: 2}, {label: 'c', value: 3}]}, 'chBars');
   out.adoptKeepsData = kept.series[0].label === 'a' && !kept.sampleData;
+  // 换颜色：组件、CSS 动效、数据模板都能换，画面里出现换上的颜色
+  out.colors = ['arc_bar_chart', 'kxs_ring', 'cob14', 'comb'].map((id) => {
+    const raw = Object.assign({line: ''}, D.sampleOf(id), {template: id, tpl: id});
+    const roles = D.colorRoles(raw);
+    const key = roles.find((r) => ['a', 'primary'].includes(r.key));
+    if (!key) return `${id}: 没有主色`;
+    const tinted = Object.assign({}, raw, {colors: {[key.key]: '#00FF7F'}});
+    const s = D.createScene(tinted, W);
+    s.draw(g, D.thumbTime(id, s));
+    s.draw(g, D.thumbTime(id, s));
+    const px = g.getImageData(0, 0, W, Math.round(W * 9 / 16)).data;
+    let hit = 0;
+    for (let i = 0; i < px.length; i += 4) // 细竖条缩小后会被底色冲淡，看偏绿就算
+      if (px[i + 1] > 90 && px[i + 1] - px[i] > 50 && px[i + 1] - px[i + 2] > 15) hit++;
+    const back = D.colorRoles(tinted).find((r) => r.key === key.key);
+    return hit > 20 && back.custom && back.value === '#00FF7F' ? '' : `${id}: 换色后画面里没有这个颜色（${hit}）`;
+  }).filter(Boolean);
   out.adoptText = D.adopt({line: '这个系统彻底崩溃了。后面的话', tpl: 'statement'}, 'mp006').lines;
   out.rankPlain = rankTop({line: '这个系统彻底崩溃了', tpl: 'statement', lines: ['这个系统彻底崩溃了']});
   return out;
@@ -253,6 +273,6 @@ if (errs.length) console.log('页面错误', errs);
 const widget = result.widget;
 const timedBad = Object.values(result.timed).filter((v) => !v).length + result.pagedAllChars.length;
 const widgetBad = timedBad + (widget.short === null ? 1 : 0) + (widget.long === null ? 0 : 1) + (widget.noNumber ? 1 : 0) + (widget.percent ? 0 : 1) + (widget.notPercent ? 1 : 0) + (widget.adopted ? 0 : 1) + widget.stockWords.length + (result.filmInherit === 'rgb(0, 0, 0)' ? 0 : 1);
-const bad = widgetBad + result.lfEnglish.length + result.lfNoData.length + (result.adopt.sample && result.adopt.canDraw ? 0 : 1) + (result.adoptKeepsData ? 0 : 1) + (result.adoptBack ? 0 : 1) + result.noCategory.length + result.failed.length + result.impure.length + result.blank.length + result.noKeywords.length + result.textFailed.length + errs.length;
+const bad = result.colors.length + widgetBad + result.lfEnglish.length + result.lfNoData.length + (result.adopt.sample && result.adopt.canDraw ? 0 : 1) + (result.adoptKeepsData ? 0 : 1) + (result.adoptBack ? 0 : 1) + result.noCategory.length + result.failed.length + result.impure.length + result.blank.length + result.noKeywords.length + result.textFailed.length + errs.length;
 console.log(bad ? `有 ${bad} 处问题` : '全部通过');
 process.exit(bad ? 1 : 0);

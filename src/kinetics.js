@@ -2525,6 +2525,7 @@
     });
     return out2;
   };
+  const WIDGET_COLORS = [{key: 'bg', name: '底色'}, {key: 'a', name: '主色'}, {key: 'b', name: '辅色'}, {key: 'ink', name: '文字'}, {key: 'card', name: '卡片'}, {key: 'ok', name: '完成色'}];
   const registerItem = (item) => {
     const id = `${item.cat}_${item.key}`;
     if (item.needs) NEEDS[id] = item.needs;
@@ -2532,12 +2533,13 @@
     const sampleNumber = NEEDS[id] === 'percent' ? `${item.num}%` : NEEDS[id] === 'two' ? `${Math.round(item.num * 0.6)} ${item.num}` : NEEDS[id] ? `${item.num}` : '';
     D.register(id, {
       name: item.name, family: item.family || FAMILY[item.cat], cat: item.category || item.cat, custom: true, library: true, colors: {},
+      colorRoles: WIDGET_COLORS, colorDefaults: (row) => PAL[row.theme === 'paper' ? 'paper' : 'black'],
       desc: item.desc, en: item.en, keywords: item.keywords, takesText: true,
       source: item.source || '自写，效果清单参考 Kinetics（Colorion）',
       sample: {lines: sampleNumber ? [`${sampleWords[0] || ''} ${sampleNumber}`.trim()].concat(sampleWords.slice(1)) : sampleWords.length ? sampleWords : ['示例']},
       accepts: (row) => hasNumbers(id, row) && !!(textOfRow(row).trim() || !item.words.some(Boolean)),
       create(row) {
-        const p = PAL[row.theme === 'paper' ? 'paper' : 'black'];
+        const p = Object.assign({}, PAL[row.theme === 'paper' ? 'paper' : 'black'], D.pickColors(row, WIDGET_COLORS.map((r) => r.key)));
         const raw = phrases(row);
         const needs = NEEDS[id];
         const got = needs ? raw.map(stripNumber).filter(Boolean) : raw;

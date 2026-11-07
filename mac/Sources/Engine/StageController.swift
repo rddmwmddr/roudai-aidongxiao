@@ -22,6 +22,14 @@ nonisolated struct TemplateInfo: Identifiable, Hashable, Sendable, Decodable {
     let custom: Bool
 }
 
+nonisolated struct ColorRole: Identifiable, Hashable, Sendable, Decodable {
+    let key: String
+    let name: String
+    let value: String
+    let custom: Bool
+    var id: String { key }
+}
+
 nonisolated struct RankedTemplate: Identifiable, Hashable, Sendable, Decodable {
     let id: String
     let name: String
@@ -105,6 +113,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
     private var thumbnails: [String: NSImage] = [:]
     private var previews: [String: MotionPreviewClip] = [:]
     private var secondsByContent: [String: Double] = [:]
+    private var naturalByContent: [String: Double] = [:]
     private var frames: [String: [NSImage]] = [:]
 
     override init() {
@@ -212,6 +221,12 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         return try await web.callAsyncJavaScript(body, arguments: arguments, contentWorld: .page)
     }
 
+    /// 这一镜能换的颜色和现在的值
+    func colorRoles(_ shot: Shot) async -> [ColorRole] {
+        guard let json = try? await callString("return DMBridge.colorRoles(row)", arguments: ["row": shot.json]) else { return [] }
+        return (try? JSONDecoder().decode([ColorRole].self, from: Data(json.utf8))) ?? []
+    }
+
     /// 这段话重新配动效。编号和手动时长不变
     func rematched(_ shot: Shot) async -> Shot {
         let json = try? await callString("return DMBridge.rematch(line, chapter)", arguments: ["line": shot.line, "chapter": shot.chapter])
@@ -292,6 +307,30 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
     }
 
     // 每一镜的真实秒数。内容没变就不再算
+    /// 不算手动时长时，每一镜动效本身有多长。速率 = 本身时长 ÷ 时长
+    func naturals(_ rows: [Shot]) async -> [Shot.ID: Double] {
+        let missing = rows.filter { naturalByContent[naturalKey($0)] == nil }
+        if !missing.isEmpty,
+           let data = try? JSONEncoder().encode(missing),
+           let json = try? await callString("return DMBridge.naturals(rows)", arguments: ["rows": String(decoding: data, as: UTF8.self)]),
+           let found = try? JSONDecoder().decode([String: Double].self, from: Data(json.utf8)) {
+            for shot in missing {
+                if let value = found[String(shot.id)] { naturalByContent[naturalKey(shot)] = value }
+            }
+        }
+        var out: [Shot.ID: Double] = [:]
+        for shot in rows {
+            out[shot.id] = naturalByContent[naturalKey(shot)]
+        }
+        return out
+    }
+
+    private func naturalKey(_ shot: Shot) -> String {
+        var plain = shot
+        plain.duration = nil
+        return plain.json
+    }
+
     func durations(_ rows: [Shot]) async -> [Shot.ID: Double] {
         let missing = rows.filter { secondsByContent[$0.json] == nil }
         if !missing.isEmpty,

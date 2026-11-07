@@ -149,7 +149,9 @@
   const normalize = (raw) => {
     const template = TEMPLATES[raw.template] ? raw.template : raw.style && TEMPLATES[raw.style] ? raw.style : 'comb';
     const d = TEMPLATES[template];
-    const colors = raw.colors || (raw.theme ? themeColors(template, raw.theme) : {});
+    const themed = raw.theme ? themeColors(template, raw.theme) : {};
+    const own = raw.colors || {};
+    const colors = {bg: HEX.test(own.bg || '') ? own.bg : themed.bg, primary: HEX.test(own.primary || '') ? own.primary : themed.primary, secondary: HEX.test(own.secondary || '') ? own.secondary : themed.secondary};
     const groups = [];
     (raw.groups || []).forEach((g) => {
       const metrics = (g.metrics || []).map((m) => ({
@@ -177,6 +179,33 @@
       colors: {bg: colors.bg || d.colors.bg, primary: colors.primary || d.colors.primary, secondary: colors.secondary || d.colors.secondary},
       groups,
     };
+  };
+
+  // 能换的颜色：模板自己声明（组件、CSS 动效），没有声明的数据模板用底色、主色、辅色。
+  // 文件里存 row.colors = {键: '#RRGGBB'}，没存的用模板默认
+  const HEX = /^#[0-9a-f]{6}$/i;
+  const pickColors = (row, keys) => {
+    const out = {};
+    const given = (row && row.colors) || {};
+    keys.forEach((k) => {
+      if (HEX.test(given[k] || '')) out[k] = given[k];
+    });
+    return out;
+  };
+  const colorRoles = (row) => {
+    const t = TEMPLATES[row.tpl || row.template];
+    if (!t) return [];
+    if (t.colorRoles) {
+      const base = t.colorDefaults(row);
+      const set = pickColors(row, t.colorRoles.map((r) => r.key));
+      return t.colorRoles.map((r) => ({key: r.key, name: r.name, value: set[r.key] || base[r.key], custom: !!set[r.key]}));
+    }
+    if (t.colors && t.colors.bg) {
+      const spec = normalize(Object.assign({}, row, {template: t.id}));
+      const set = pickColors(row, ['bg', 'primary', 'secondary']);
+      return [['bg', '底色'], ['primary', '主色'], ['secondary', '辅色']].map(([key, name]) => ({key, name, value: set[key] || spec.colors[key], custom: !!set[key]}));
+    }
+    return [];
   };
 
   const validate = (raw) => {
@@ -596,16 +625,19 @@
     const stage = new root.DMStage.Stage(S, layersOf(raw, template));
     const inner = scene.draw;
     const base = scene.duration;
-    // 时间线上拖出来的秒数。比动效本身长就多停一会儿，比它短就整段加快，内容不会被切掉
+    // 时间线上拖出来的秒数，也就是速率：拉长整段放慢，缩短整段加快，动画跟着总时长走，内容不会被切掉
     const want = +raw.dur > 0 ? +raw.dur : 0;
     const natural = () => fitDuration(base, stage.layers);
     const timed = (t) => {
       const n = natural();
-      return want && want < n ? (t * n) / want : t;
+      return want ? (t * n) / want : t;
     };
     const out = Object.assign(scene, {
       stage,
       baseDuration: base,
+      // 动效本身的时长和现在的速率：2 是两倍快
+      naturalDuration: () => natural(),
+      rate: () => (want ? natural() / want : 1),
       edited: !!stage.layers,
       duration: want || natural(),
       draw(ctx, t) {
@@ -658,7 +690,7 @@
 
   root.DM = Object.assign(root.DM || {}, {
     clamp, lerp, progress, smooth, outExpo, outCubic, outQuint, wobble, springTo, hash, noise1, bezier, runCurve, hex, mix, css, luma,
-    FONT_CN, FONT_NUM, FONT_TICK, FONT_TITLE, numFont, setFont, ensureGlyphs, charEm, textEm, loadFonts, TEMPLATES, register, normalize, validate, buildTimeline,
+    colorRoles, pickColors, FONT_CN, FONT_NUM, FONT_TICK, FONT_TITLE, numFont, setFont, ensureGlyphs, charEm, textEm, loadFonts, TEMPLATES, register, normalize, validate, buildTimeline,
     frontOf, posOf, speedOf, colLit, colFrac, landPulse, focusOf, reveal, leave, wrapText, revealLines, linesH, fitSize,
     numEm, makeReadout, makeGrain, makeSoftBlur, drawGrain, createScene, flatMetrics, themeColors, timeGroups, TEXT: root.DMStage.TEXT,
   });

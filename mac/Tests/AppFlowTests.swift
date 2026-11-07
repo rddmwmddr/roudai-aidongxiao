@@ -1101,6 +1101,11 @@ struct AppFlowTests {
         #expect(await d.menu("显示或隐藏这一镜"))
         await d.wait(0.6)
         await d.snap("剪辑台_右栏")
+        // 右栏有速率；一百根能换底色、主色、辅色
+        #expect(await d.until("速率", timeout: 3) { d.hasControl("动效速率") })
+        await d.goToShot("026")
+        #expect(await d.until("颜色", timeout: 5) { d.hasControl("颜色主色") && d.hasControl("颜色底色") })
+        await d.snap("剪辑台_右栏颜色")
         #expect(await d.menu("显示或隐藏这一镜"))
         await d.wait(0.4)
 

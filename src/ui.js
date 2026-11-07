@@ -612,6 +612,14 @@
   };
 
   const REL = {single: '单个', nested: '包含', opposing: '相反两拨', parallel: '并列', chain: '这其中（基数变了）'};
+  // 这一镜动效本身多长：不算手动时长。速率 = 本身时长 ÷ 时长
+  const naturalOf = (row) => {
+    try {
+      return D.createScene(Object.assign({}, rawOf(row), {dur: null}), 64).duration;
+    } catch (e) {
+      return secondsOf(Object.assign({}, row, {dur: null}));
+    }
+  };
   const renderShot = () => {
     const row = rows[S.sel];
     const metricsHtml = (row.groups || []).map((g, gi) => `
@@ -637,6 +645,7 @@
     });
     const hasAdv = Object.keys(adv).length > 0;
     const tpl = D.TEMPLATES[row.tpl];
+    const roles = D.colorRoles ? D.colorRoles(row) : [];
     $('shot').innerHTML = `
       <div class="block">
         <h3>镜 ${esc(row.no)} · ${esc(row.ch)} · ${esc(row.cat)}</h3>
@@ -649,7 +658,10 @@
       ${hasAdv ? `<details class="block"><summary style="cursor:pointer;color:var(--mute)">其他参数</summary><textarea id="advBox" rows="8" style="margin-top:8px;font-family:Menlo,monospace;font-size:12px">${esc(JSON.stringify(adv, null, 1))}</textarea><div id="advErr" class="warn" style="font-size:12px"></div></details>` : ''}
       <div class="block">
         <h3>节奏与颜色</h3>
-        <div class="field"><label>这一镜的秒数（空着是自动）</label><input id="dur" type="number" min="0.5" step="0.1" value="${row.dur != null ? row.dur : ''}" placeholder="${secondsOf(row).toFixed(1)}"></div>
+        <div class="two">
+          <div class="field"><label>这一镜的秒数（空着是自动）</label><input id="dur" type="number" min="0.5" step="0.1" value="${row.dur != null ? row.dur : ''}" placeholder="${secondsOf(row).toFixed(1)}"></div>
+          <div class="field"><label>速率</label><input id="rate" type="number" min="0.125" max="8" step="0.05" value="${row.dur > 0 ? +(naturalOf(row) / row.dur).toFixed(2) : ''}" placeholder="1"></div>
+        </div>
         <div class="two">
           <div class="field"><label>口播速度 ${(row.speed || 1).toFixed(2)} 倍</label><input id="speed" type="range" min="0.6" max="1.6" step="0.05" value="${row.speed || 1}"></div>
           <div class="field"><label>念完后停留 ${(row.hold != null ? +row.hold : 3).toFixed(1)} 秒</label><input id="hold" type="range" min="0.5" max="6" step="0.1" value="${row.hold != null ? row.hold : 3}"></div>
@@ -658,6 +670,7 @@
           <button data-theme="">模板默认色</button><button data-theme="black">黑底</button><button data-theme="paper">奶白底</button>
           <button id="resetRow" style="margin-left:auto">恢复这一镜</button>
         </div>
+        ${roles.length ? `<div class="colors">${roles.map((r) => `<label class="swatch${r.custom ? ' on' : ''}"><input type="color" data-color="${esc(r.key)}" value="${esc(r.value)}" aria-label="${esc(r.name)}"><span>${esc(r.name)}</span></label>`).join('')}</div>` : ''}
       </div>
       <div class="block">
         <h3>输出视频</h3>
@@ -680,6 +693,23 @@
     refreshClip(S.sel);
   };
   const bindShot = (row) => {
+    // 颜色：选好写进这一镜；右键恢复默认
+    document.querySelectorAll('#shot [data-color]').forEach((el) => {
+      el.onchange = () => {
+        row.colors = Object.assign({}, row.colors, {[el.dataset.color]: el.value});
+        rebuild(row, false);
+        renderShot();
+      };
+      el.parentElement.oncontextmenu = (e) => {
+        e.preventDefault();
+        if (!row.colors || !row.colors[el.dataset.color]) return;
+        const next = Object.assign({}, row.colors);
+        delete next[el.dataset.color];
+        row.colors = Object.keys(next).length ? next : undefined;
+        rebuild(row, false);
+        renderShot();
+      };
+    });
     document.querySelectorAll('#shot [data-g]').forEach((el) => {
       el.onchange = () => {
         const g = row.groups[+el.dataset.g];
@@ -750,6 +780,11 @@
       else delete row.theme;
       rebuild(row, false);
     }));
+    $('rate').onchange = (e) => {
+      const r = parseFloat(e.target.value);
+      setDuration(S.sel, r > 0 ? Math.round((naturalOf(row) / Math.min(8, Math.max(0.125, r))) * 100) / 100 : null);
+      renderShot();
+    };
     $('dur').onchange = (e) => {
       const v = parseFloat(e.target.value);
       setDuration(S.sel, v > 0 ? Math.max(0.5, v) : null);

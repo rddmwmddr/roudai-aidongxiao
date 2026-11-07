@@ -162,6 +162,7 @@ struct ShotTimeline: View {
     let onDelete: (Shot.ID) -> Void
     let onTrim: (Shot.ID, Double?) -> Void
     @State private var seconds: [Shot.ID: Double] = [:]
+    @State private var naturals: [Shot.ID: Double] = [:]
     @State private var pendingSeek: Double?
     @State private var trimming: Trim?
     @State private var revealJob: Task<Void, Never>?
@@ -235,6 +236,7 @@ struct ShotTimeline: View {
                             width: width(shot),
                             startTime: map.start[shot.id] ?? 0,
                             seconds: duration(shot),
+                            natural: naturals[shot.id],
                             chapterStart: isChapterStart(shot),
                             motionName: names[shot.template] ?? "重音字幕",
                             selected: selection == shot.id,
@@ -280,6 +282,7 @@ struct ShotTimeline: View {
         .frame(height: 172)
         .task(id: rows) {
             seconds = await stage.durations(rows)
+            naturals = await stage.naturals(rows)
         }
         .onChange(of: stage.duration) { d in
             if let f = pendingSeek, d > 0 {
@@ -328,6 +331,7 @@ private struct ClipColumn: View {
     let width: Double
     let startTime: Double
     let seconds: Double
+    let natural: Double?
     let chapterStart: Bool
     let motionName: String
     let selected: Bool
@@ -352,6 +356,16 @@ private struct ClipColumn: View {
 
     private var frameCount: Int { max(1, Int((width / 103).rounded(.up))) }
 
+    /// 拖动时的气泡：秒数和速率。速率 2 是两倍快
+    static func label(seconds: Double, natural: Double?) -> String {
+        guard let natural, natural > 0, seconds > 0 else { return String(format: "%.1f 秒", seconds) }
+        let rate = natural / seconds
+        var text = String(format: "%.2f", rate)
+        while text.hasSuffix("0") { text.removeLast() }
+        if text.hasSuffix(".") { text.removeLast() }
+        return String(format: "%.1f 秒 · ", seconds) + text + "×"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             ruler
@@ -361,7 +375,8 @@ private struct ClipColumn: View {
         }
         .frame(width: width)
         .overlay(alignment: .topLeading) {
-            if selected { Playhead(clock: stage.clock, duration: stage.duration, startTime: startTime, seconds: seconds, width: width) }
+            // 拖时长时播放头让开，秒数和速率的气泡不被竖线挡住
+            if selected && !trimming { Playhead(clock: stage.clock, duration: stage.duration, startTime: startTime, seconds: seconds, width: width) }
         }
         .task(id: "\(frameCount)|\(shot.json)") { strip = await stage.frames(of: shot, count: frameCount) }
     }
@@ -487,7 +502,7 @@ private struct ClipColumn: View {
         }
         .overlay(alignment: .topTrailing) {
             if trimming {
-                Text(String(format: "%.1f 秒", seconds))
+                Text(ClipColumn.label(seconds: seconds, natural: natural))
                     .font(.system(size: 10, weight: .medium).monospacedDigit())
                     .foregroundStyle(Color.black)
                     .padding(.horizontal, 7)

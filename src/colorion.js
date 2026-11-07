@@ -13,7 +13,8 @@
     black: {bg: '#0A0A0B', ink: '#F4F1EA', a: '#FF6A1F', b: '#4CC9F0', on: '#0A0A0B'},
     paper: {bg: '#F0EFEB', ink: '#141416', a: '#E8501A', b: '#1B7FA8', on: '#F0EFEB'},
   };
-  const paletteOf = (row) => PALETTE[row.theme === 'paper' ? 'paper' : 'black'];
+  const CO_COLORS = [{key: 'bg', name: '底色'}, {key: 'a', name: '主色'}, {key: 'b', name: '辅色'}, {key: 'ink', name: '文字'}];
+  const paletteOf = (row) => Object.assign({}, PALETTE[row.theme === 'paper' ? 'paper' : 'black'], D.pickColors(row, CO_COLORS.map((r) => r.key)));
 
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 
@@ -166,7 +167,7 @@
   };
 
   const register = (id, def) => {
-    D.register(id, Object.assign({custom: true, library: true, colors: {}, accepts: () => true}, def));
+    D.register(id, Object.assign({custom: true, library: true, colors: {}, accepts: () => true, colorRoles: CO_COLORS, colorDefaults: (row) => PALETTE[row.theme === 'paper' ? 'paper' : 'black']}, def));
   };
 
   // ---------- 文字特效 ----------

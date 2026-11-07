@@ -255,6 +255,10 @@
       }
       return true;
     },
+    // ---------- 颜色：这一镜能换哪些颜色，现在是什么 ----------
+    colorRoles(rowJSON) {
+      return JSON.stringify(D.colorRoles(JSON.parse(rowJSON)));
+    },
     // ---------- 模板 ----------
     templates() {
       return JSON.stringify(Object.values(D.TEMPLATES).map((t) => ({id: t.id, name: t.name, family: t.family, desc: t.desc, custom: !!t.custom})));
@@ -282,6 +286,18 @@
       }
     },
     // 时间线的长度：每一镜真实的秒数，拖边缘改时长要从它开始算。建不出来的（缺数据）按念多久估
+    // 不算手动时长时，这一镜动效本身有多长。速率 = 本身时长 ÷ 时长
+    naturals(rowsJSON) {
+      const out = {};
+      JSON.parse(rowsJSON).forEach((row) => {
+        try {
+          out[row.id] = D.createScene(Object.assign({}, row, {template: row.tpl, dur: null}), 64).duration;
+        } catch (e) {
+          out[row.id] = 0;
+        }
+      });
+      return JSON.stringify(out);
+    },
     durations(rowsJSON) {
       const out = {};
       JSON.parse(rowsJSON).forEach((row) => {
