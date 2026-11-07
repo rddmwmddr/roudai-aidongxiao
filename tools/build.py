@@ -15,7 +15,7 @@ _team = root / "私有" / "AI主题视频.dmboard"
 TEAM_BOARD = _team.read_text(encoding="utf-8") if _team.exists() else PUBLIC_BOARD
 b64 = lambda p: base64.b64encode((root / p).read_bytes()).decode()
 js = lambda p: (root / p).read_text(encoding="utf-8")
-order = ["src/parser.js", "src/stage.js", "src/core.js", "src/tpl_comb.js", "src/tpl_dots.js", "src/tpl_flat.js", "src/tpl_text.js", "src/tpl_lab.js", "src/tpl_screen.js", "src/tpl_gl.js", "src/match.js", "src/mp_packs.js", "src/library.js", "src/tpl_charts.js", "src/lf_charts.js", "src/lieflat.js", "src/css_film.js", "src/co_packs.js", "src/colorion.js", "src/kinetics.js", "src/samples.js", "src/stage_editor.js", "src/fontlib.js", "src/ui.js"]
+order = ["src/parser.js", "src/stage.js", "src/core.js", "src/tpl_comb.js", "src/tpl_dots.js", "src/tpl_flat.js", "src/tpl_text.js", "src/tpl_lab.js", "src/tpl_screen.js", "src/tpl_gl.js", "src/match.js", "src/mp_packs.js", "src/library.js", "src/tpl_charts.js", "src/lf_charts.js", "src/lieflat.js", "src/css_film.js", "src/co_packs.js", "src/colorion.js", "src/kinetics.js", "src/arc.js", "src/samples.js", "src/stage_editor.js", "src/fontlib.js", "src/ui.js"]
 
 
 def page(head_script, board):
@@ -45,7 +45,7 @@ for hi in range(0xB0, 0xD8):
             common.add(bytes([hi, lo]).decode("gb2312"))
         except UnicodeDecodeError:
             pass
-common |= {c for c in js("src/kinetics.js") if ord(c) > 0x2E7F} | {c for c in js("vendor/colorion/zh.json") if ord(c) > 0x2E7F} | {c for c in js("src/colorion.js") if ord(c) > 0x2E7F} | {c for c in js("src/lf_charts.js") if ord(c) > 0x2E7F} | {c for c in js("src/lieflat.js") if ord(c) > 0x2E7F} | {c for c in js("src/mp_packs.js") if ord(c) > 0x2E7F} | {c for c in js("src/library.js") if ord(c) > 0x2E7F} | {c for c in js("src/tpl_charts.js") if ord(c) > 0x2E7F} | {c for c in TEAM_BOARD + PUBLIC_BOARD if ord(c) > 0x2E7F} | {c for c in js("src/ui.js") if ord(c) > 0x2E7F} | {c for c in js("src/index.html") if ord(c) > 0x2E7F}
+common |= {c for c in js("src/kinetics.js") if ord(c) > 0x2E7F} | {c for c in js("src/arc.js") if ord(c) > 0x2E7F} | {c for c in js("vendor/colorion/zh.json") if ord(c) > 0x2E7F} | {c for c in js("src/colorion.js") if ord(c) > 0x2E7F} | {c for c in js("src/lf_charts.js") if ord(c) > 0x2E7F} | {c for c in js("src/lieflat.js") if ord(c) > 0x2E7F} | {c for c in js("src/mp_packs.js") if ord(c) > 0x2E7F} | {c for c in js("src/library.js") if ord(c) > 0x2E7F} | {c for c in js("src/tpl_charts.js") if ord(c) > 0x2E7F} | {c for c in TEAM_BOARD + PUBLIC_BOARD if ord(c) > 0x2E7F} | {c for c in js("src/ui.js") if ord(c) > 0x2E7F} | {c for c in js("src/index.html") if ord(c) > 0x2E7F}
 chars = "".join(sorted(common))
 key = hashlib.sha1(chars.encode()).hexdigest()[:10]
 cached = root / "fonts" / f".common-{key}.woff2"
@@ -73,7 +73,7 @@ print(hosted / "index.html", round((hosted / "index.html").stat().st_size / 1e3)
 # macOS App：渲染页（单文件）、示例分镜表
 app = root / "mac" / "Resources"
 app.mkdir(parents=True, exist_ok=True)
-engine = ["src/parser.js", "src/stage.js", "src/core.js", "src/tpl_comb.js", "src/tpl_dots.js", "src/tpl_flat.js", "src/tpl_text.js", "src/tpl_lab.js", "src/tpl_screen.js", "src/tpl_gl.js", "src/match.js", "src/mp_packs.js", "src/library.js", "src/tpl_charts.js", "src/lf_charts.js", "src/lieflat.js", "src/css_film.js", "src/co_packs.js", "src/colorion.js", "src/kinetics.js", "src/samples.js", "src/stage_editor.js", "src/autoboard.js", "src/app_bridge.js"]
+engine = ["src/parser.js", "src/stage.js", "src/core.js", "src/tpl_comb.js", "src/tpl_dots.js", "src/tpl_flat.js", "src/tpl_text.js", "src/tpl_lab.js", "src/tpl_screen.js", "src/tpl_gl.js", "src/match.js", "src/mp_packs.js", "src/library.js", "src/tpl_charts.js", "src/lf_charts.js", "src/lieflat.js", "src/css_film.js", "src/co_packs.js", "src/colorion.js", "src/kinetics.js", "src/arc.js", "src/samples.js", "src/stage_editor.js", "src/autoboard.js", "src/app_bridge.js"]
 scripts = [f"<script>{single}</script>", f"<script>{js('vendor/mp4-muxer.js')}</script>"] + [f"<script>{js(p)}</script>" for p in engine]
 stage = js("src/app_stage.html").replace("<!--SCRIPTS-->", "\n".join(scripts))
 (app / "stage.html").write_text(stage, encoding="utf-8")

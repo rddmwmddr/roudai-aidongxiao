@@ -16,6 +16,7 @@ struct AboutView: View {
         Credit(name: "Lieflat Charts", author: "躺在废墟里", use: "编辑部风格图表", license: "PolyForm Noncommercial", url: "https://github.com/larashero3-dotcom/lieflat-charts"),
         Credit(name: "Colorion", author: "Csaba Kissi", use: "417 个 CSS 动效", license: "MIT", url: "https://colorion.co/"),
         Credit(name: "Kinetics", author: "Csaba Kissi", use: "162 个界面组件的清单", license: "参考，代码没有用", url: "https://kinetics.colorion.co/"),
+        Credit(name: "uiarc / arc-library", author: "Elia Kuratli", use: "30 个组件：文字、数字、图表、交互", license: "MIT，代码自写", url: "https://github.com/kuratlielia/arc-library"),
         Credit(name: "Verse Text", author: "Rajat Sethi", use: "错位印刷文字效果", license: "参考，代码没有用", url: "https://verse.rajatsethii.in/"),
         Credit(name: "video-shotcraft", author: "Vincentwei1021", use: "文字和数据动效的手法", license: "见原仓库", url: "https://github.com/Vincentwei1021/video-shotcraft"),
         Credit(name: "garden-skills", author: "ConardLi", use: "动效手法", license: "见原仓库", url: "https://github.com/ConardLi/garden-skills"),

@@ -2513,14 +2513,27 @@
 
   const FAMILY = {kxi: '交互', kxs: '状态', kxm: '质感'};
   const zooms = new Map();
-  LIST.forEach((item) => {
+  // 把文稿读成一串数：抖音 3、微信 12。图表组件用
+  const seriesOf = (row, W) => {
+    const text = textOfRow(row);
+    const parsed = D.parseSeries ? D.parseSeries(text) : null;
+    if (parsed && parsed.series && parsed.series.length >= 2) return parsed.series.map((s) => ({label: s.label, value: +s.value}));
+    const out2 = [];
+    phrases(row).forEach((ph) => {
+      const n = numbersOf(ph);
+      if (n.length) out2.push({label: stripNumber(ph) || String(out2.length + 1), value: n[0]});
+    });
+    return out2;
+  };
+  const registerItem = (item) => {
     const id = `${item.cat}_${item.key}`;
+    if (item.needs) NEEDS[id] = item.needs;
     const sampleWords = item.words.filter(Boolean);
     const sampleNumber = NEEDS[id] === 'percent' ? `${item.num}%` : NEEDS[id] === 'two' ? `${Math.round(item.num * 0.6)} ${item.num}` : NEEDS[id] ? `${item.num}` : '';
     D.register(id, {
-      name: item.name, family: FAMILY[item.cat], cat: item.cat, custom: true, library: true, colors: {},
+      name: item.name, family: item.family || FAMILY[item.cat], cat: item.category || item.cat, custom: true, library: true, colors: {},
       desc: item.desc, en: item.en, keywords: item.keywords, takesText: true,
-      source: '自写，效果清单参考 Kinetics（Colorion）',
+      source: item.source || '自写，效果清单参考 Kinetics（Colorion）',
       sample: {lines: sampleNumber ? [`${sampleWords[0] || ''} ${sampleNumber}`.trim()].concat(sampleWords.slice(1)) : sampleWords.length ? sampleWords : ['示例']},
       accepts: (row) => hasNumbers(id, row) && !!(textOfRow(row).trim() || !item.words.some(Boolean)),
       create(row) {
@@ -2539,7 +2552,8 @@
         const sp = D.speechOf(row);
         const T = Math.max(item.base, sp.dur + 0.4);
         const duration = T + (row.hold != null ? +row.hold : 0.6);
-        const x = {p, W, N, N2, nums: nums.length ? nums : [N], T, lineFull: clean((row.lines && row.lines.join(' ')) || row.line || W[0])};
+        const x = {p, W, N, N2, nums: nums.length ? nums : [N], T, lineFull: clean((row.lines && row.lines.join(' ')) || row.line || W[0]), series: seriesOf(row, W), pct: pct};
+        if (x.series.length < 2 && item.sampleSeries) x.series = item.sampleSeries.slice();
         const key = `${id}|${p.bg}|${x.lineFull}|${W.join('/')}|${N}`;
         if (!zooms.has(key)) zooms.set(key, zoomOf(item, x));
         const zoom = zooms.get(key);
@@ -2562,8 +2576,18 @@
         };
       },
     });
-  });
+  };
+  LIST.forEach(registerItem);
   // 错位印刷是文字效果，放在文字特效这一类，来源单独写
   Object.assign(D.TEMPLATES.kxm_misprint, {cat: 'texfx', family: '文字特效', source: '自写，效果参考 Verse Text（Rajat Sethi）'});
   D.kineticsCount = LIST.length;
+  // 别的组件包按同一套方式注册：文稿取字和数字、样例只给缩略图、放大到看得清
+  D.widgets = {
+    add(o, draw) {
+      registerItem({cat: o.prefix || 'arc', key: o.key, name: o.name, en: o.en, desc: o.desc, keywords: o.keywords || [], words: o.words || [], num: o.num || 0, base: o.base || 3.6,
+        needs: o.needs, category: o.category, family: o.family, source: o.source, sampleSeries: o.series, draw});
+    },
+    tools: {clamp, lerp, seg, out, io, spring, rnd, rr, dot, ln, arc, tx, widthOf, fit, glow, alpha, at, check, cursor, path, clip, head, wordsOf, numbersOf, stripNumber, CX, CY, MP,
+      measuring: () => measuring},
+  };
 })(window);

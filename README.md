@@ -16,7 +16,7 @@
 
 ### 动效库
 
-703 个动效，11 个分类：百分比 11、图表 47、细读图表 39、文字 26、文字特效 124、状态 54、交互 54、质感 54、加载 99、按钮 99、开关提示 96。
+733 个动效，11 个分类：百分比 11、图表 55、细读图表 39、文字 26、文字特效 130、状态 64、交互 58、质感 54、加载 99、按钮 101、开关提示 96。
 
 **特点**
 
@@ -104,7 +104,8 @@ SIGN_ID="Developer ID Application: 名字 (TEAMID)" TEAM=TEAMID NOTARY_PROFILE=�
 | [寒蝉德黑体 / ChillDIN](https://github.com/Warren2060/ChillDIN-ChillDINGothic) | 字体 | OFL |
 | [Kinetics](https://kinetics.colorion.co/) | 162 个界面组件的效果清单。代码自写 | 参考 |
 | [Verse Text](https://verse.rajatsethii.in/) | 错位印刷的效果。代码自写 | 参考 |
+| [uiarc / arc-library](https://github.com/kuratlielia/arc-library) | 30 个组件的效果和动效参数。代码自写 | MIT |
 
-Lieflat Charts 的条款限定非商业用途。商用视频：选其余 664 种动效，或购买作者的授权。
+Lieflat Charts 的条款限定非商业用途。商用视频：选其余 694 种动效，或购买作者的授权。
 
 授权原文：`vendor/`、`fonts/`、`mac/Resources/licenses/`。App 的「关于」页列出全部来源。
