@@ -1,0 +1,13 @@
+Colorion 系列，作者 Csaba Kissi。
+
+有 LICENSE 文件（MIT），一起放在这个目录：
+  CSS Button Library   https://github.com/ckissi/colorion-animated-buttons
+  CSS Tooltip Library  https://github.com/ckissi/colorion-css-tooltips
+
+README 或网站写明 MIT，但仓库里没有 LICENSE 文件：
+  CSS Text Effects     https://github.com/ckissi/colorion-text-effects
+  CSS Loader Library   https://github.com/ckissi/colorion-css-loaders
+  CSS Toggle Library   https://github.com/ckissi/colorion-toggles
+
+Kinetics（https://github.com/ckissi/kinetics）仓库没有开源授权，网站有付费计划。
+本工具没有使用它的代码。162 个界面组件参考它的效果清单，由本工具自行实现（src/kinetics.js）。

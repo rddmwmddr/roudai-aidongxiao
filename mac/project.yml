@@ -1,0 +1,81 @@
+name: DataMotion
+options:
+  bundleIdPrefix: com.ahuamiao
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "13.0"
+  developmentLanguage: zh-Hans
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    ENABLE_HARDENED_RUNTIME: YES
+    DEAD_CODE_STRIPPING: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+  configs:
+    Release:
+      ONLY_ACTIVE_ARCH: NO
+      ARCHS: "arm64 x86_64"
+targets:
+  DataMotion:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+      - path: Resources
+        buildPhase: resources
+      - path: PrivacyInfo.xcprivacy
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: 肉呆爱动效
+        PRODUCT_MODULE_NAME: DataMotion
+        INFOPLIST_FILE: Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: DataMotion.entitlements
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+        COMBINE_HIDPI_IMAGES: YES
+      # 调试版和发布版的沙盒容器必须分开：系统不允许不同签名的程序共用一个容器，混用会让发布版卡在启动
+      configs:
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: com.ahuamiao.datamotion.debug
+        Release:
+          PRODUCT_BUNDLE_IDENTIFIER: com.ahuamiao.datamotion.app
+  DataMotionTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Tests
+    dependencies:
+      - target: DataMotion
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/肉呆爱动效.app/Contents/MacOS/肉呆爱动效"
+        PRODUCT_BUNDLE_IDENTIFIER: com.ahuamiao.datamotion.tests
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+schemes:
+  DataMotion:
+    build:
+      targets:
+        DataMotion: all
+        DataMotionTests: [test]
+    test:
+      targets:
+        - DataMotionTests
+    run:
+      config: Debug
+    archive:
+      config: Release

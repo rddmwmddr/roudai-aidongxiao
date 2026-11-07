@@ -1,0 +1,24 @@
+.DS_Store
+xcuserdata/
+
+# 私有：文稿、部署、账号
+/私有/
+/部署/
+/CLAUDE.md
+/mac/README.md
+
+# 过程产物
+/dist/
+/成片/
+/质检/
+/适配案例/
+/微博配图/
+/图标/肉呆大管家图标-原图.png
+/qa_*
+mac/成品/
+mac/DataMotion.xcodeproj/
+scripts/node_modules/
+
+# 打包生成，tools/build.py 会写
+mac/Resources/stage.html
+fonts/.common-*

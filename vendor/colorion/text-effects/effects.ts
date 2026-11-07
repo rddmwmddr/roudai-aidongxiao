@@ -1,0 +1,343 @@
+export type EffectType =
+  | 'aurora'
+  | 'glitch'
+  | 'typewriter'
+  | 'neon'
+  | 'liquid'
+  | 'chrome'
+  | 'focus'
+  | 'wave'
+  | 'sliced'
+  | 'decoder'
+  | 'scanner'
+  | 'ember'
+  | 'echo'
+  | 'extrude'
+  | 'contour'
+  | 'spectrum'
+  | 'jitter'
+  | 'anaglyph'
+  | 'flap'
+  | 'crt'
+  | 'pop'
+  | 'spotlight'
+  | 'elastic'
+  | 'mirror'
+  | 'ransom'
+  | 'melt'
+  | 'heartbeat'
+  | 'marker'
+  | 'sundial'
+  | 'negative'
+  | 'hologram'
+  | 'foil'
+  | 'pixel'
+  | 'starlight'
+  | 'blueprint'
+  | 'vapor'
+  | 'kinetic'
+  | 'blackout'
+  | 'magnetic'
+  | 'mesh'
+  | 'iridescent'
+  | 'glass'
+  | 'datastream'
+  | 'orbit'
+  | 'prismcut'
+  | 'softblur'
+  | 'laser'
+  | 'microchip'
+  | 'heatmap'
+  | 'parallax'
+  | 'inktrap'
+  | 'topographic'
+  | 'signal'
+  | 'portal'
+  | 'tiltshift'
+  | 'duotone'
+  | 'glyphrain'
+  | 'zoetrope'
+  | 'dotmatrix'
+  | 'pendulum'
+  | 'smoke'
+  | 'eclipse'
+  | 'barcode'
+  | 'frost'
+  | 'moire'
+  | 'stamp'
+  | 'led'
+  | 'lightleak'
+  | 'voltage'
+  | 'marble'
+  | 'ripple'
+  | 'shatter'
+  | 'grain'
+  | 'caustic'
+  | 'fold'
+  | 'domino'
+  | 'zipper'
+  | 'equalizer'
+  | 'gooey'
+  | 'sonar'
+  | 'warp'
+  | 'shimmer'
+  | 'ticker'
+  | 'kaboom'
+  | 'karaoke'
+  | 'lenticular'
+  | 'balloon'
+  | 'lens'
+  | 'smear'
+  | 'keycap'
+  | 'groovy'
+  | 'grunge'
+  | 'pewpew'
+  | 'invisible'
+  | 'loud'
+  | 'gentle'
+  | 'rotator'
+  | 'loader'
+  | 'fade'
+  | 'halftone'
+  | 'risograph'
+  | 'sticker'
+  | 'papercut'
+  | 'letterpress'
+  | 'embroidery'
+  | 'stretch'
+  | 'candystripe'
+  | 'disco'
+  | 'waxseal'
+  | 'ticket'
+  | 'carbon'
+  | 'typehammer'
+  | 'labelmaker'
+  | 'inkroller'
+  | 'ribbon'
+  | 'lava'
+  | 'chalk'
+  | 'synthwave'
+  | 'gradientframe'
+  | 'textpath'
+  | 'aura'
+  | 'curtain'
+  | 'annotate';
+
+export interface Effect {
+  index: string;
+  name: string;
+  type: EffectType;
+  /** the word the effect renders in its stage */
+  text: string;
+}
+
+export const effects: Effect[] = [
+  { index: '01', name: 'Borealis', type: 'aurora', text: 'AURORA' },
+  { index: '02', name: 'Glitchcore', type: 'glitch', text: 'GLITCH' },
+  { index: '03', name: 'Teletype', type: 'typewriter', text: 'TYPEWRITER' },
+  { index: '04', name: 'Neon-Haus', type: 'neon', text: 'NEON' },
+  { index: '05', name: 'Aqua-Fill', type: 'liquid', text: 'LIQUID' },
+  { index: '06', name: 'Chromia', type: 'chrome', text: 'CHROME' },
+  { index: '07', name: 'Lens-Drift', type: 'focus', text: 'FOCUS' },
+  { index: '08', name: 'Tidal-Type', type: 'wave', text: 'WAVE' },
+  { index: '09', name: 'Bisect', type: 'sliced', text: 'SLICED' },
+  { index: '10', name: 'Cipher', type: 'decoder', text: 'DECODER' },
+  { index: '11', name: 'Redactor', type: 'scanner', text: 'SCANNER' },
+  { index: '12', name: 'Emberglow', type: 'ember', text: 'EMBER' },
+  { index: '13', name: 'Echo-Verse', type: 'echo', text: 'ECHO' },
+  { index: '14', name: 'Deep-Type', type: 'extrude', text: 'DEPTH' },
+  { index: '15', name: 'Wireframe', type: 'contour', text: 'OUTLINE' },
+  { index: '16', name: 'Prisma', type: 'spectrum', text: 'SPECTRUM' },
+  { index: '17', name: 'Jitterbug', type: 'jitter', text: 'JITTER' },
+  { index: '18', name: 'Anaglyph-3D', type: 'anaglyph', text: 'DEPTH-3D' },
+  { index: '19', name: 'Split-Flap', type: 'flap', text: 'DEPART' },
+  { index: '20', name: 'Phosphor', type: 'crt', text: 'CRT_MODE' },
+  { index: '21', name: 'Pop-Riot', type: 'pop', text: 'POP!' },
+  { index: '22', name: 'Limelight', type: 'spotlight', text: 'SPOTLIGHT' },
+  { index: '23', name: 'Rubber-Band', type: 'elastic', text: 'BOING' },
+  { index: '24', name: 'Still-Water', type: 'mirror', text: 'MIRROR' },
+  { index: '25', name: 'Ransom-Note', type: 'ransom', text: 'RANSOM' },
+  { index: '26', name: 'Meltdown', type: 'melt', text: 'MELT' },
+  { index: '27', name: 'Cardio', type: 'heartbeat', text: 'PULSE' },
+  { index: '28', name: 'Hi-Liter', type: 'marker', text: 'MARKED' },
+  { index: '29', name: 'Sundial', type: 'sundial', text: 'SHADOW' },
+  { index: '30', name: 'Negativ', type: 'negative', text: 'INVERTED' },
+  { index: '31', name: 'Holograph', type: 'hologram', text: 'HOLOGRAM' },
+  { index: '32', name: 'Gold-Foil', type: 'foil', text: 'LUXE' },
+  { index: '33', name: 'Pixel-Sort', type: 'pixel', text: 'PIXELS' },
+  { index: '34', name: 'Starlight', type: 'starlight', text: 'STARDUST' },
+  { index: '35', name: 'Blueprint', type: 'blueprint', text: 'DRAFT' },
+  { index: '36', name: 'Vapor-Trail', type: 'vapor', text: 'VAPOR' },
+  { index: '37', name: 'Kinetic-Type', type: 'kinetic', text: 'KINETIC' },
+  { index: '38', name: 'Blackout', type: 'blackout', text: 'CLASSIFIED' },
+  { index: '39', name: 'Magnetic', type: 'magnetic', text: 'MAGNET' },
+  { index: '40', name: 'Luma-Mesh', type: 'mesh', text: 'MESH' },
+  { index: '41', name: 'Iridescent', type: 'iridescent', text: 'IRIS' },
+  { index: '42', name: 'Glass-Type', type: 'glass', text: 'GLASS' },
+  { index: '43', name: 'Datastream', type: 'datastream', text: 'STREAM' },
+  { index: '44', name: 'Orbitals', type: 'orbit', text: 'ORBIT' },
+  { index: '45', name: 'Prism-Cut', type: 'prismcut', text: 'PRISM' },
+  { index: '46', name: 'Soft-Blur', type: 'softblur', text: 'FOCUS' },
+  { index: '47', name: 'Laser-Cut', type: 'laser', text: 'LASER' },
+  { index: '48', name: 'Microchip', type: 'microchip', text: 'CIRCUIT' },
+  { index: '49', name: 'Heatmap', type: 'heatmap', text: 'THERMAL' },
+  { index: '50', name: 'Parallax', type: 'parallax', text: 'LAYERS' },
+  { index: '51', name: 'Ink-Trap', type: 'inktrap', text: 'INK' },
+  { index: '52', name: 'Topographic', type: 'topographic', text: 'TERRAIN' },
+  { index: '53', name: 'Signal-Noise', type: 'signal', text: 'SIGNAL' },
+  { index: '54', name: 'Portal', type: 'portal', text: 'PORTAL' },
+  { index: '55', name: 'Tilt-Shift', type: 'tiltshift', text: 'SHIFT' },
+  { index: '56', name: 'Duotone', type: 'duotone', text: 'DUO' },
+  { index: '57', name: 'Glyph-Rain', type: 'glyphrain', text: 'GLYPHS' },
+  { index: '58', name: 'Zoetrope', type: 'zoetrope', text: 'ROTATE' },
+  { index: '59', name: 'Dot-Matrix', type: 'dotmatrix', text: 'PRINTOUT' },
+  { index: '60', name: 'Pendulum', type: 'pendulum', text: 'SWING' },
+  { index: '61', name: 'Smoke-Signal', type: 'smoke', text: 'SMOKE' },
+  { index: '62', name: 'Eclipse', type: 'eclipse', text: 'ECLIPSE' },
+  { index: '63', name: 'Barcode', type: 'barcode', text: 'BARCODE' },
+  { index: '64', name: 'Frostbite', type: 'frost', text: 'FROZEN' },
+  { index: '65', name: 'Moiré', type: 'moire', text: 'MOIRÉ' },
+  { index: '66', name: 'Rubber-Stamp', type: 'stamp', text: 'APPROVED' },
+  { index: '67', name: 'LED-Board', type: 'led', text: 'LIVE' },
+  { index: '68', name: 'Light-Leak', type: 'lightleak', text: 'EXPOSE' },
+  { index: '69', name: 'Kilovolt', type: 'voltage', text: 'CHARGE' },
+  { index: '70', name: 'Carrara', type: 'marble', text: 'MARBLE' },
+  { index: '71', name: 'Ripple', type: 'ripple', text: 'RIPPLE' },
+  { index: '72', name: 'Shatter', type: 'shatter', text: 'BREAK' },
+  { index: '73', name: 'Film-Grain', type: 'grain', text: 'NOIR' },
+  { index: '74', name: 'Caustics', type: 'caustic', text: 'POOL' },
+  { index: '75', name: 'Origami', type: 'fold', text: 'FOLD' },
+  { index: '76', name: 'Domino', type: 'domino', text: 'TOPPLE' },
+  { index: '77', name: 'Zip-Merge', type: 'zipper', text: 'ZIPPER' },
+  { index: '78', name: 'Equalizer', type: 'equalizer', text: 'LEVELS' },
+  { index: '79', name: 'Mercury', type: 'gooey', text: 'MERCURY' },
+  { index: '80', name: 'Sonar', type: 'sonar', text: 'SONAR' },
+  { index: '81', name: 'Hyperspace', type: 'warp', text: 'WARP' },
+  { index: '82', name: 'Ghostwrite', type: 'shimmer', text: 'THINKING' },
+  {
+    index: '83',
+    name: 'Tickertape',
+    type: 'ticker',
+    text: 'MARQUEE\u00a0\u2726\u00a0MARQUEE\u00a0\u2726\u00a0MARQUEE\u00a0\u2726\u00a0MARQUEE\u00a0\u2726\u00a0MARQUEE\u00a0\u2726\u00a0',
+  },
+  { index: '84', name: 'Kaboom', type: 'kaboom', text: 'SLAM!' },
+  { index: '85', name: 'Lyric-Fill', type: 'karaoke', text: 'CHORUS' },
+  { index: '86', name: 'Lenti-Card', type: 'lenticular', text: 'SHINY' },
+  { index: '87', name: 'Helium', type: 'balloon', text: 'PUFFY' },
+  { index: '88', name: 'Liquid-Lens', type: 'lens', text: 'REFRACT' },
+  { index: '89', name: 'Whiplash', type: 'smear', text: 'WHOOSH' },
+  { index: '90', name: 'Keycap', type: 'keycap', text: 'PRESS' },
+  { index: '91', name: 'Groovy', type: 'groovy', text: 'GROOVY' },
+  { index: '92', name: 'Grunge', type: 'grunge', text: 'GRUNGE' },
+  { index: '93', name: 'Pew-Pew', type: 'pewpew', text: 'PEW\u00a0PEW' },
+  { index: '94', name: 'Invisible-Ink', type: 'invisible', text: 'SECRET' },
+  { index: '95', name: 'Loud', type: 'loud', text: 'HEY!' },
+  { index: '96', name: 'Whisper', type: 'gentle', text: 'psst…' },
+  { index: '97', name: 'Rotator', type: 'rotator', text: 'BOLD' },
+  { index: '98', name: 'Loader', type: 'loader', text: 'LOADING' },
+  { index: '99', name: 'Dissolve', type: 'fade', text: 'FADE\u00a0AWAY' },
+  { index: '100', name: 'Ben-Day', type: 'halftone', text: 'HALFTONE' },
+  { index: '101', name: 'Riso-Press', type: 'risograph', text: 'OVERPRINT' },
+  { index: '102', name: 'Peel-Off', type: 'sticker', text: 'STICKER' },
+  { index: '103', name: 'Paper-Stack', type: 'papercut', text: 'PAPER' },
+  { index: '104', name: 'Impression', type: 'letterpress', text: 'PRESS' },
+  { index: '105', name: 'Satin-Stitch', type: 'embroidery', text: 'STITCH' },
+  { index: '106', name: 'Stretch-Club', type: 'stretch', text: 'STRETCH' },
+  { index: '107', name: 'Candy-Stripe', type: 'candystripe', text: 'CANDY' },
+  { index: '108', name: 'Mirrorball', type: 'disco', text: 'DISCO' },
+  { index: '109', name: 'Wax-Seal', type: 'waxseal', text: 'SEALED' },
+  { index: '110', name: 'Ticket-Punch', type: 'ticket', text: 'ADMIT ONE' },
+  { index: '111', name: 'Carbon-Copy', type: 'carbon', text: 'ORIGINAL' },
+  { index: '112', name: 'Type-Hammer', type: 'typehammer', text: 'STRIKE' },
+  { index: '113', name: 'Label-Maker', type: 'labelmaker', text: 'ARCHIVE' },
+  { index: '114', name: 'Ink-Roller', type: 'inkroller', text: 'PRINT' },
+  { index: '115', name: 'Ribbon-Banner', type: 'ribbon', text: 'SALE' },
+  { index: '116', name: 'Lava-Lamp', type: 'lava', text: 'LAVA' },
+  { index: '117', name: 'Chalk-Board', type: 'chalk', text: 'CHALK' },
+  { index: '118', name: 'Synth-Sunset', type: 'synthwave', text: 'SYNTH' },
+  { index: '119', name: 'Gradient-Frame', type: 'gradientframe', text: 'FRAME' },
+  { index: '120', name: 'Path-Ride', type: 'textpath', text: 'RIDE' },
+  { index: '121', name: 'Aura', type: 'aura', text: 'AURA' },
+  { index: '122', name: 'Curtain-Call', type: 'curtain', text: 'REVEAL' },
+  { index: '123', name: 'Margin-Note', type: 'annotate', text: 'IDEA' },
+];
+
+/** effects whose letters are wrapped in indexed <b> spans for per-letter animation */
+export const perLetter = new Set<EffectType>([
+  'textpath',
+  'focus',
+  'wave',
+  'spectrum',
+  'flap',
+  'pop',
+  'ransom',
+  'melt',
+  'kinetic',
+  'magnetic',
+  'orbit',
+  'parallax',
+  'glyphrain',
+  'zoetrope',
+  'pendulum',
+  'smoke',
+  'voltage',
+  'shatter',
+  'fold',
+  'domino',
+  'zipper',
+  'equalizer',
+  'gooey',
+  'warp',
+  'karaoke',
+  'balloon',
+  'smear',
+  'keycap',
+  'groovy',
+  'pewpew',
+  'loader',
+  'fade',
+  'sticker',
+  'papercut',
+  'stretch',
+  'typehammer',
+  'labelmaker',
+  'curtain',
+]);
+
+/** effects that duplicate their text into pseudo-elements via data-text */
+export const usesDataText = new Set<EffectType>([
+  'glitch',
+  'sliced',
+  'echo',
+  'hologram',
+  'pixel',
+  'vapor',
+  'blackout',
+  'glass',
+  'prismcut',
+  'laser',
+  'inktrap',
+  'signal',
+  'portal',
+  'tiltshift',
+  'duotone',
+  'led',
+  'lightleak',
+  'ripple',
+  'grain',
+  'sonar',
+  'lenticular',
+  'lens',
+  'grunge',
+  'invisible',
+  'halftone',
+  'risograph',
+  'letterpress',
+  'embroidery',
+  'disco',
+  'carbon',
+  'inkroller',
+  'lava',
+  'chalk',
+  'aura',
+]);
