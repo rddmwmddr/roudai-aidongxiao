@@ -3,13 +3,8 @@ import UniformTypeIdentifiers
 
 struct SettingsView: View {
     var body: some View {
-        TabView {
-            AISettingsView()
-                .tabItem { Label("AI", systemImage: "sparkles") }
-            FontSettingsView()
-                .tabItem { Label("字体", systemImage: "character.book.closed") }
-        }
-        .frame(width: 640, height: 400)
+        AISettingsView()
+            .frame(width: 640, height: 400)
     }
 }
 
@@ -228,68 +223,6 @@ struct ProfileForm: View {
             } catch {
                 problem = error.localizedDescription
                 testResult = .failure("连不上")
-            }
-        }
-    }
-}
-
-// ---------- 字体 ----------
-struct FontSettingsView: View {
-    @ObservedObject private var library = FontLibrary.shared
-    @State private var showImporter = false
-    @State private var errorText: String?
-    @State private var askingFont: UUID?
-
-    private let fontTypes: [UTType] = [.font, UTType(filenameExtension: "woff") ?? .data, UTType(filenameExtension: "woff2") ?? .data]
-
-    var body: some View {
-        Form {
-            ForEach(FontLibrary.Slot.allCases) { slot in
-                Picker(slot.label, selection: Binding(get: { library.assignment[slot.rawValue] }, set: { library.assign(slot, to: $0) })) {
-                    Text("默认").tag(UUID?.none)
-                    ForEach(library.entries) { e in
-                        Text(e.name).tag(UUID?.some(e.id))
-                    }
-                }
-            }
-            Divider().padding(.vertical, 4)
-            ForEach(library.entries) { e in
-                HStack {
-                    Text(e.name).lineLimit(1)
-                    Spacer()
-                    // 字体文件从库里删掉后要重新导入，所以这里要确认
-                    ConfirmDeleteButton(symbol: "trash", label: "删除\(e.name)", confirmTitle: "删除字体", asking: Binding(get: { askingFont == e.id }, set: { askingFont = $0 ? e.id : nil })) {
-                        library.remove(e)
-                    }
-                }
-                .followsMorph(askingFont)
-            }
-            HStack {
-                Button("导入字体…") { showImporter = true }
-                    .buttonStyle(.pill(size: .small))
-            }
-            if let errorText {
-                Label(errorText, systemImage: "exclamationmark.circle")
-                    .foregroundStyle(.red)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .formStyle(.columns)
-        .padding(20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .fileImporter(isPresented: $showImporter, allowedContentTypes: fontTypes, allowsMultipleSelection: true) { r in
-            switch r {
-            case .success(let urls):
-                errorText = nil
-                for url in urls {
-                    do {
-                        _ = try library.add(url)
-                    } catch {
-                        errorText = error.localizedDescription
-                    }
-                }
-            case .failure(let e):
-                errorText = e.localizedDescription
             }
         }
     }

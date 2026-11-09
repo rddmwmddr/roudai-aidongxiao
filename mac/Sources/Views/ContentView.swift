@@ -44,6 +44,7 @@ struct ContentView: View {
     @State private var query = ""
     @State private var script: String
     @State private var exporting = false
+    @State private var replacingFonts = false
     @State private var importing = false
     @State private var importTypes = ScriptImporter.contentTypes
     @State private var errorText: String?
@@ -207,6 +208,17 @@ struct ContentView: View {
                 .labelsHidden()
                 .tint(.coral)
                 .named("页面")
+            }
+        }
+        ToolbarItem(placement: .primaryAction) {
+            Button { replacingFonts = true } label: {
+                Label("替换字体", systemImage: "character.book.closed")
+                    .labelStyle(.titleAndIcon)
+            }
+            .named("替换字体")
+            .help("替换全部镜头的字体")
+            .popover(isPresented: $replacingFonts, arrowEdge: .bottom) {
+                FontReplacementView()
             }
         }
         if !board.rows.isEmpty {
