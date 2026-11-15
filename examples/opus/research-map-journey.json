@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "templateId": "research-map-journey",
+  "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+  "data": {
+    "cities": [
+      {
+        "id": "sh",
+        "name": "上海",
+        "lon": 121.4737,
+        "lat": 31.2304,
+        "sample": 300,
+        "value": 82,
+        "label": "满意度"
+      },
+      {
+        "id": "bj",
+        "name": "北京",
+        "lon": 116.4074,
+        "lat": 39.9042,
+        "sample": 260,
+        "value": 78,
+        "label": "满意度"
+      },
+      {
+        "id": "gz",
+        "name": "广州",
+        "lon": 113.2644,
+        "lat": 23.1291,
+        "sample": 240,
+        "value": 85,
+        "label": "满意度"
+      }
+    ],
+    "links": []
+  },
+  "style": {
+    "title": "样本分布 · 城市研究之旅",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "background": "#F7F1E8",
+    "ink": "#243449",
+    "accent": "#227F77",
+    "beforeColor": "#9AA7B7",
+    "afterColor": "#227F77",
+    "goodColor": "#227F77",
+    "badColor": "#C65064",
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "titleSize": 58,
+    "numberSize": 220,
+    "unit": "分",
+    "prefix": "",
+    "decimals": 0,
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ]
+  },
+  "camera": {
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "zoom": 2,
+    "route": "smooth"
+  },
+  "sequence": [],
+  "fieldMappings": {},
+  "metadata": {
+    "source": "演示研究，非真实结论",
+    "sampleSize": 800,
+    "researchTime": "2026年10月",
+    "showSource": true,
+    "showSampleSize": true,
+    "showResearchTime": true,
+    "showTitle": true,
+    "showSubtitle": true
+  },
+  "options": {
+    "holdSeconds": 1.5,
+    "moveSeconds": 0.8,
+    "zoom": 2.4,
+    "pointStyle": "dot",
+    "mapColor": "#DDDCCF",
+    "highlightColor": "#227F77",
+    "order": [
+      "sh",
+      "bj",
+      "gz"
+    ]
+  },
+  "timeline": {
+    "duration": 12,
+    "entrance": 0.3,
+    "hold": 1,
+    "inPoint": 0,
+    "outPoint": 1,
+    "currentTime": 0
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "demo": true
+}

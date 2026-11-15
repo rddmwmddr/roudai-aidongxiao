@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "templateId": "heatmap-calendar",
+  "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+  "data": {
+    "records": [
+      {
+        "date": "2026-10-01",
+        "value": 0
+      },
+      {
+        "date": "2026-10-02",
+        "value": 5
+      },
+      {
+        "date": "2026-10-03",
+        "value": 8
+      },
+      {
+        "date": "2026-10-05",
+        "value": 3
+      },
+      {
+        "date": "2026-10-08",
+        "value": 12
+      },
+      {
+        "date": "2026-10-12",
+        "value": 7
+      },
+      {
+        "date": "2026-10-16",
+        "value": 9
+      },
+      {
+        "date": "2026-10-20",
+        "value": 2
+      },
+      {
+        "date": "2026-10-25",
+        "value": 6
+      }
+    ]
+  },
+  "style": {
+    "title": "功能使用 · 日历追踪",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "background": "#F7F1E8",
+    "ink": "#243449",
+    "accent": "#227F77",
+    "beforeColor": "#9AA7B7",
+    "afterColor": "#227F77",
+    "goodColor": "#227F77",
+    "badColor": "#C65064",
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "titleSize": 58,
+    "numberSize": 220,
+    "unit": "",
+    "prefix": "",
+    "decimals": 0,
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ]
+  },
+  "camera": {},
+  "sequence": [],
+  "fieldMappings": {},
+  "metadata": {
+    "source": "演示研究，非真实结论",
+    "sampleSize": 200,
+    "researchTime": "2026年10月",
+    "showSource": true,
+    "showSampleSize": true,
+    "showResearchTime": true,
+    "showTitle": true,
+    "showSubtitle": true
+  },
+  "options": {
+    "startDate": "2026-10-01",
+    "endDate": "2026-10-31",
+    "levels": 5,
+    "maxValue": 12,
+    "highlight": "2026-10-08",
+    "showLegend": true
+  },
+  "timeline": {
+    "duration": 6,
+    "entrance": 0.3,
+    "hold": 1,
+    "inPoint": 0,
+    "outPoint": 1,
+    "currentTime": 0
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "demo": true
+}

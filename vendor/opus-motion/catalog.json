@@ -1,0 +1,2458 @@
+[
+  {
+    "id": "bar-race",
+    "title": "Bar chart race",
+    "category": "data",
+    "description": "Ranked horizontal bars that grow, then re-order smoothly over time as the data steps through keyframes: bars overtake each other, values roll, the leader changes, and a big faded period label (year, quarter) changes behind them.",
+    "useFor": "Rankings over time: market share by year, top products by quarter, followers by month, league tables, \"who is winning\" stories. Give the names once and one values row per period in `frames`.",
+    "source": [
+      "original round-3 chart motion"
+    ],
+    "durationInFrames": 240,
+    "tags": [
+      "bar chart race",
+      "ranking",
+      "leaderboard",
+      "chart",
+      "data",
+      "overtake",
+      "timeline",
+      "infographic",
+      "count-up",
+      "statistics",
+      "overlay"
+    ],
+    "file": "src/motions/data/bar-race.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "background": "transparent"
+    },
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": true,
+    "textProps": [
+      "title",
+      "subtitle",
+      "prefix"
+    ],
+    "colorProps": [
+      "colors",
+      "background",
+      "ink"
+    ],
+    "loopable": false,
+    "bestLength": 240,
+    "mood": [
+      "hud"
+    ],
+    "roles": [
+      "accent",
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "names": {
+        "default": [
+          "Aurora",
+          "Beacon",
+          "Cobalt",
+          "Delta",
+          "Ember",
+          "Fjord",
+          "Garnet",
+          "Harbor"
+        ],
+        "doc": "one name per bar; colours follow the name index so a bar keeps its colour while it moves"
+      },
+      "frames": {
+        "default": [
+          {
+            "label": "2019",
+            "values": [
+              12,
+              18,
+              9,
+              30,
+              6,
+              14,
+              4,
+              20
+            ]
+          },
+          {
+            "label": "2020",
+            "values": [
+              20,
+              22,
+              16,
+              34,
+              12,
+              18,
+              10,
+              24
+            ]
+          },
+          {
+            "label": "2021",
+            "values": [
+              34,
+              27,
+              31,
+              36,
+              22,
+              21,
+              19,
+              27
+            ]
+          },
+          {
+            "label": "2022",
+            "values": [
+              52,
+              31,
+              49,
+              38,
+              41,
+              25,
+              33,
+              30
+            ]
+          },
+          {
+            "label": "2023",
+            "values": [
+              71,
+              38,
+              66,
+              41,
+              62,
+              31,
+              52,
+              33
+            ]
+          },
+          {
+            "label": "2024",
+            "values": [
+              96,
+              47,
+              82,
+              45,
+              90,
+              36,
+              71,
+              37
+            ]
+          }
+        ],
+        "doc": "keyframes [{label, values[]}] — one values row per period, same order as names"
+      },
+      "topN": {
+        "default": 6,
+        "doc": "how many bars are visible at a time (others slide off the bottom)"
+      },
+      "title": {
+        "default": "Who is growing fastest",
+        "doc": "headline (empty = none)"
+      },
+      "subtitle": {
+        "default": "Index of weekly active users",
+        "doc": "small line under the headline (empty = none)"
+      },
+      "prefix": {
+        "default": "",
+        "doc": "text before every value"
+      },
+      "suffix": {
+        "default": "",
+        "doc": "text after every value, e.g. \"%\", \"M\""
+      },
+      "decimals": {
+        "default": 0,
+        "doc": "decimal places on values"
+      },
+      "stepFrames": {
+        "default": 34,
+        "doc": "frames per keyframe step at speed 1"
+      },
+      "scale": {
+        "default": "dynamic",
+        "doc": "\"dynamic\" rescales to the current leader, \"fixed\" keeps one scale for the whole race"
+      },
+      "showRank": {
+        "default": false,
+        "doc": "print the live rank number at the left"
+      },
+      "showPeriod": {
+        "default": true,
+        "doc": "big faded period label behind the bars"
+      },
+      "colors": {
+        "default": [
+          "#2F6FED",
+          "#FF7A45",
+          "#16B39A",
+          "#F2B134",
+          "#8E5CF0",
+          "#E5487F",
+          "#5BC0EB",
+          "#7A8794"
+        ],
+        "doc": "bar palette by name index"
+      },
+      "background": {
+        "default": "#0F1722",
+        "doc": "page colour, or \"transparent\""
+      },
+      "ink": {
+        "default": "#EEF2F7",
+        "doc": "text colour"
+      },
+      "fontFamily": {
+        "default": "",
+        "doc": "CSS font family (empty = Space Grotesk)"
+      },
+      "startAt": {
+        "default": 8,
+        "doc": "frame the bars start to grow"
+      },
+      "speed": {
+        "default": 1,
+        "doc": "animation speed multiplier"
+      }
+    }
+  },
+  {
+    "id": "bubble-scatter-grow",
+    "title": "Bubble scatter grow",
+    "category": "data",
+    "description": "A bubble chart: axes and grid fade in, then bubbles grow in from left to right at their x / y position with area proportional to size, coloured per group, with collision-aware labels and an optional highlighted bubble with a ring.",
+    "useFor": "Three-variable comparisons: markets by size, growth and margin, countries, products, campaigns, startups. Pass points as [{label, x, y, size, group?, color?}], axis titles and number formats; works on a transparent background.",
+    "source": [
+      "original round-3 chart motion"
+    ],
+    "durationInFrames": 180,
+    "tags": [
+      "bubble",
+      "scatter",
+      "chart",
+      "axes",
+      "grow",
+      "comparison",
+      "infographic",
+      "data",
+      "overlay",
+      "statistics",
+      "market",
+      "plot"
+    ],
+    "file": "src/motions/data/bubble-scatter-grow.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "background": "transparent"
+    },
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": true,
+    "textProps": [
+      "title",
+      "subtitle",
+      "xLabel",
+      "yLabel"
+    ],
+    "colorProps": [
+      "colors",
+      "background",
+      "ink"
+    ],
+    "loopable": false,
+    "bestLength": 180,
+    "mood": [
+      "hud"
+    ],
+    "roles": [
+      "accent",
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "points": {
+        "default": [
+          {
+            "label": "Alpha",
+            "x": 12,
+            "y": 78,
+            "size": 40,
+            "group": "North"
+          },
+          {
+            "label": "Bravo",
+            "x": 28,
+            "y": 52,
+            "size": 120,
+            "group": "North"
+          },
+          {
+            "label": "Cedar",
+            "x": 35,
+            "y": 88,
+            "size": 70,
+            "group": "South"
+          },
+          {
+            "label": "Delta",
+            "x": 47,
+            "y": 35,
+            "size": 200,
+            "group": "South"
+          },
+          {
+            "label": "Ember",
+            "x": 58,
+            "y": 66,
+            "size": 90,
+            "group": "East"
+          },
+          {
+            "label": "Fjord",
+            "x": 66,
+            "y": 22,
+            "size": 55,
+            "group": "East"
+          },
+          {
+            "label": "Grove",
+            "x": 74,
+            "y": 80,
+            "size": 150,
+            "group": "North"
+          },
+          {
+            "label": "Harbor",
+            "x": 86,
+            "y": 48,
+            "size": 240,
+            "group": "West"
+          },
+          {
+            "label": "Indigo",
+            "x": 92,
+            "y": 90,
+            "size": 35,
+            "group": "West"
+          },
+          {
+            "label": "Juniper",
+            "x": 20,
+            "y": 24,
+            "size": 25,
+            "group": "South"
+          }
+        ],
+        "doc": "bubbles [{label, x, y, size, group?, color?}]; group sets the colour and builds the legend"
+      },
+      "title": {
+        "default": "Reach vs engagement",
+        "doc": "headline (empty = none)"
+      },
+      "subtitle": {
+        "default": "Bubble area shows audience size",
+        "doc": "small line under the headline (empty = none)"
+      },
+      "xLabel": {
+        "default": "Reach (thousands)",
+        "doc": "x-axis title (empty = none)"
+      },
+      "yLabel": {
+        "default": "Engagement",
+        "doc": "y-axis title (empty = none)"
+      },
+      "sizeLabel": {
+        "default": "Bubble size = audience",
+        "doc": "small note about what the bubble size means (empty = none)"
+      },
+      "xPrefix": {
+        "default": "",
+        "doc": "text before x-axis numbers"
+      },
+      "xSuffix": {
+        "default": "",
+        "doc": "text after x-axis numbers"
+      },
+      "yPrefix": {
+        "default": "",
+        "doc": "text before y-axis numbers"
+      },
+      "ySuffix": {
+        "default": "%",
+        "doc": "text after y-axis numbers, e.g. \"%\""
+      },
+      "xDecimals": {
+        "default": 0,
+        "doc": "decimals on x-axis numbers"
+      },
+      "yDecimals": {
+        "default": 0,
+        "doc": "decimals on y-axis numbers"
+      },
+      "zeroBased": {
+        "default": true,
+        "doc": "start both axes at zero (false zooms to the data range)"
+      },
+      "showLabels": {
+        "default": true,
+        "doc": "print bubble labels (inside when they fit, else beside, skipping collisions)"
+      },
+      "labelTop": {
+        "default": 0,
+        "doc": "only label the N largest bubbles (0 = all that fit)"
+      },
+      "maxRadius": {
+        "default": 96,
+        "doc": "radius of the largest bubble in u (capped to the plot size)"
+      },
+      "bubbleOpacity": {
+        "default": 0.72,
+        "doc": "fill opacity of bubbles 0-1"
+      },
+      "highlight": {
+        "default": "",
+        "doc": "label of a bubble to ring and spotlight at the end (empty = none)"
+      },
+      "colors": {
+        "default": [
+          "#2F6FED",
+          "#FF7A45",
+          "#16B39A",
+          "#F2B134",
+          "#8E5CF0",
+          "#E5487F",
+          "#5BC0EB",
+          "#7A8794"
+        ],
+        "doc": "palette for groups / bubbles without their own colour"
+      },
+      "background": {
+        "default": "#F5F3EE",
+        "doc": "page colour, or \"transparent\" to sit over other content"
+      },
+      "ink": {
+        "default": "#18212B",
+        "doc": "text and grid colour"
+      },
+      "fontFamily": {
+        "default": "",
+        "doc": "CSS font family (empty = Space Grotesk)"
+      },
+      "startAt": {
+        "default": 10,
+        "doc": "frame the axes start to appear"
+      },
+      "speed": {
+        "default": 1,
+        "doc": "animation speed multiplier"
+      }
+    }
+  },
+  {
+    "id": "comparison-dumbbell",
+    "title": "Comparison dumbbell",
+    "category": "data",
+    "description": "A dumbbell (before / after) chart: for each category a \"before\" dot appears on a shared axis, then the \"after\" dot slides away from it, stretching a connector coloured green for improvement and red for decline, with value labels and a change pill at the right.",
+    "useFor": "Change between two states per item: before vs after, last year vs this year, plan vs actual, men vs women, A vs B, scores pre- and post-launch. Pass data as [{label, before, after}], set the two series names, colours, prefix / suffix and which direction is good.",
+    "source": [
+      "original round-3 chart motion"
+    ],
+    "durationInFrames": 180,
+    "tags": [
+      "dumbbell",
+      "before after",
+      "comparison",
+      "change",
+      "chart",
+      "dot plot",
+      "slope",
+      "delta",
+      "infographic",
+      "data",
+      "overlay",
+      "statistics",
+      "progress"
+    ],
+    "file": "src/motions/data/comparison-dumbbell.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "background": "transparent"
+    },
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": true,
+    "textProps": [
+      "title",
+      "subtitle",
+      "prefix"
+    ],
+    "colorProps": [
+      "beforeColor",
+      "afterColor",
+      "goodColor",
+      "badColor",
+      "background",
+      "ink"
+    ],
+    "loopable": false,
+    "bestLength": 180,
+    "mood": [
+      "hud"
+    ],
+    "roles": [
+      "accent",
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "data": {
+        "default": [
+          {
+            "label": "Onboarding",
+            "before": 42,
+            "after": 78
+          },
+          {
+            "label": "Checkout",
+            "before": 55,
+            "after": 71
+          },
+          {
+            "label": "Search",
+            "before": 38,
+            "after": 64
+          },
+          {
+            "label": "Support",
+            "before": 61,
+            "after": 66
+          },
+          {
+            "label": "Mobile app",
+            "before": 47,
+            "after": 52
+          },
+          {
+            "label": "Reporting",
+            "before": 70,
+            "after": 58
+          }
+        ],
+        "doc": "rows [{label, before, after}]; any count"
+      },
+      "title": {
+        "default": "Satisfaction by area",
+        "doc": "headline (empty = none)"
+      },
+      "subtitle": {
+        "default": "Score out of 100, before and after the redesign",
+        "doc": "small line under the headline (empty = none)"
+      },
+      "beforeLabel": {
+        "default": "Before",
+        "doc": "legend name of the first dot"
+      },
+      "afterLabel": {
+        "default": "After",
+        "doc": "legend name of the second dot"
+      },
+      "prefix": {
+        "default": "",
+        "doc": "text before every number, e.g. \"$\""
+      },
+      "suffix": {
+        "default": "",
+        "doc": "text after every number, e.g. \"%\", \" pts\""
+      },
+      "decimals": {
+        "default": 0,
+        "doc": "decimal places on the numbers"
+      },
+      "sort": {
+        "default": "none",
+        "doc": "\"none\", \"delta\" (biggest change first), \"after\" or \"before\" (largest first)"
+      },
+      "showValues": {
+        "default": true,
+        "doc": "print the before and after values beside the dots"
+      },
+      "showDelta": {
+        "default": true,
+        "doc": "show the change pill at the right"
+      },
+      "deltaMode": {
+        "default": "absolute",
+        "doc": "\"absolute\" (after minus before) or \"percent\""
+      },
+      "goodDirection": {
+        "default": "up",
+        "doc": "\"up\" (increase is green) or \"down\" (decrease is green, e.g. cost, time)"
+      },
+      "zeroBased": {
+        "default": false,
+        "doc": "start the axis at zero (otherwise it zooms to the data range)"
+      },
+      "beforeColor": {
+        "default": "#9AA3AD",
+        "doc": "colour of the before dot"
+      },
+      "afterColor": {
+        "default": "#2F6FED",
+        "doc": "colour of the after dot"
+      },
+      "goodColor": {
+        "default": "#12A150",
+        "doc": "connector and pill colour for a good change"
+      },
+      "badColor": {
+        "default": "#E5484D",
+        "doc": "connector and pill colour for a bad change"
+      },
+      "background": {
+        "default": "#F5F3EE",
+        "doc": "page colour, or \"transparent\" to sit over other content"
+      },
+      "ink": {
+        "default": "#18212B",
+        "doc": "text and grid colour"
+      },
+      "fontFamily": {
+        "default": "",
+        "doc": "CSS font family (empty = Space Grotesk)"
+      },
+      "startAt": {
+        "default": 10,
+        "doc": "frame the first row starts"
+      },
+      "speed": {
+        "default": 1,
+        "doc": "animation speed multiplier"
+      }
+    }
+  },
+  {
+    "id": "dot-tally",
+    "title": "Dot tally (people as dots)",
+    "category": "data",
+    "description": "One dot per person in labelled groups; selected dots turn one by one from filled cream discs into open red rings while a huge counter runs; the total and a two-symbol legend land at the end.",
+    "useFor": "Casualties, survey answers (\"37 of 100 said…\"), seats won, users affected, failure rates — a restrained alternative to a bar chart an agent can generate from two numbers.",
+    "source": [
+      "lemo-opuscar styles/visual-investigation demo sPeople() (MIT, LemoLab) — idea, own SVG build"
+    ],
+    "durationInFrames": 240,
+    "tags": [
+      "dots",
+      "tally",
+      "survey",
+      "statistic",
+      "people",
+      "count",
+      "casualties",
+      "ring",
+      "chart",
+      "pictogram",
+      "proportion"
+    ],
+    "file": "src/motions/data/dot-tally.tsx",
+    "overlay": false,
+    "overlayProps": null,
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": false,
+    "textProps": [],
+    "colorProps": [
+      "background",
+      "ink",
+      "accent"
+    ],
+    "loopable": false,
+    "bestLength": 240,
+    "mood": [
+      "hud"
+    ],
+    "roles": [
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "groups": {
+        "default": [
+          {
+            "label": "Customers",
+            "count": 72,
+            "marked": 26
+          },
+          {
+            "label": "Partners",
+            "count": 36,
+            "marked": 15
+          }
+        ],
+        "doc": "[{label, count, marked}] one grid per group; `marked` dots turn"
+      },
+      "cols": {
+        "default": 18,
+        "doc": "dots per row"
+      },
+      "background": {
+        "default": "#0F1012",
+        "doc": "background colour"
+      },
+      "ink": {
+        "default": "#ECEAE4",
+        "doc": "colour of the filled dots and text"
+      },
+      "accent": {
+        "default": "#FF4A2E",
+        "doc": "colour of marked dots and the big number"
+      },
+      "markStyle": {
+        "default": "ring",
+        "doc": "'ring' | 'fill' | 'cross'"
+      },
+      "markStart": {
+        "default": 50,
+        "doc": "frame the first dot turns"
+      },
+      "stagger": {
+        "default": 0.9,
+        "doc": "frames between marked dots"
+      },
+      "groupGap": {
+        "default": 14,
+        "doc": "frames pause between groups"
+      },
+      "shuffle": {
+        "default": true,
+        "doc": "mark in seeded random order (false = row order)"
+      },
+      "total": {
+        "default": "",
+        "doc": "text for the final big figure (default: number of marked dots)"
+      },
+      "totalLabel": {
+        "default": "",
+        "doc": "line under the figure (default \"of N\")"
+      },
+      "legend": {
+        "default": [
+          "unaffected",
+          "affected"
+        ],
+        "doc": "[unmarked label, marked label]"
+      },
+      "seed": {
+        "default": 5,
+        "doc": "shuffle seed"
+      }
+    }
+  },
+  {
+    "id": "funnel-conversion",
+    "title": "Funnel conversion",
+    "category": "data",
+    "description": "A conversion funnel: stage bars narrow in proportion to their value and grow in one after another from the top, labels with colour keys on the left, count-up values on the right, step-to-step \"↓ 40%\" conversion pills between stages and an overall conversion figure at the bottom.",
+    "useFor": "Sales and signup funnels, hiring pipelines, checkout drop-off, content-to-lead stories, any \"how many survive each step\" breakdown. Replace stages, colours, prefix / suffix.",
+    "source": [
+      "original round-3 chart motion"
+    ],
+    "durationInFrames": 180,
+    "tags": [
+      "funnel",
+      "conversion",
+      "pipeline",
+      "sales",
+      "chart",
+      "data",
+      "drop-off",
+      "stages",
+      "infographic",
+      "count-up",
+      "marketing",
+      "overlay"
+    ],
+    "file": "src/motions/data/funnel-conversion.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "background": "transparent"
+    },
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": true,
+    "textProps": [
+      "stages",
+      "title",
+      "subtitle",
+      "prefix"
+    ],
+    "colorProps": [
+      "colors",
+      "background",
+      "ink"
+    ],
+    "loopable": false,
+    "bestLength": 180,
+    "mood": [
+      "hud",
+      "playful"
+    ],
+    "roles": [
+      "accent",
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "stages": {
+        "default": [
+          {
+            "label": "Visitors",
+            "value": 48000
+          },
+          {
+            "label": "Sign-ups",
+            "value": 19200
+          },
+          {
+            "label": "Trials",
+            "value": 8600
+          },
+          {
+            "label": "Paying",
+            "value": 3100
+          },
+          {
+            "label": "Renewed",
+            "value": 1900
+          }
+        ],
+        "doc": "stages top to bottom [{label, value, color?}]; widths are proportional to value"
+      },
+      "title": {
+        "default": "From visit to renewal",
+        "doc": "headline (empty = none)"
+      },
+      "subtitle": {
+        "default": "Users at each stage of the journey",
+        "doc": "small line under the headline (empty = none)"
+      },
+      "prefix": {
+        "default": "",
+        "doc": "text before values"
+      },
+      "suffix": {
+        "default": "",
+        "doc": "text after values, e.g. \"K\""
+      },
+      "decimals": {
+        "default": 0,
+        "doc": "decimals on stage values"
+      },
+      "conversionDecimals": {
+        "default": 0,
+        "doc": "decimals on the conversion percentages"
+      },
+      "showConversion": {
+        "default": true,
+        "doc": "show the \"↓ n%\" pill between stages"
+      },
+      "showPercentInside": {
+        "default": true,
+        "doc": "print each stage share of the top inside its bar when wide enough"
+      },
+      "summaryLabel": {
+        "default": "Overall conversion",
+        "doc": "label of the final overall-conversion line (empty = hide it)"
+      },
+      "colors": {
+        "default": [
+          "#2F6FED",
+          "#3D83F0",
+          "#3F9AE6",
+          "#2DB3C6",
+          "#16B39A",
+          "#3CC48A"
+        ],
+        "doc": "palette for stages without their own colour"
+      },
+      "background": {
+        "default": "#F5F3EE",
+        "doc": "page colour, or \"transparent\""
+      },
+      "ink": {
+        "default": "#18212B",
+        "doc": "text colour"
+      },
+      "fontFamily": {
+        "default": "",
+        "doc": "CSS font family (empty = Space Grotesk)"
+      },
+      "startAt": {
+        "default": 10,
+        "doc": "frame the first stage appears"
+      },
+      "speed": {
+        "default": 1,
+        "doc": "animation speed multiplier"
+      }
+    }
+  },
+  {
+    "id": "heatmap-calendar",
+    "title": "Heatmap calendar",
+    "category": "data",
+    "description": "A GitHub-style contribution calendar: one rounded square per day, shaded in levels of the accent colour, popping in left to right with month and weekday labels, count-up stats and a less / more legend; the best day gets a pulsing ring. Reflows to a grid of mini-month calendars in square and vertical frames.",
+    "useFor": "Activity over a year: commits, workouts, streaks, sales days, habits, support tickets, website traffic by day. Pass values (one number per day) and startDate, set the accent colour and unit; leave values empty to preview with seeded sample data.",
+    "source": [
+      "original round-3 chart motion"
+    ],
+    "durationInFrames": 210,
+    "tags": [
+      "heatmap",
+      "calendar",
+      "github",
+      "contribution",
+      "activity",
+      "streak",
+      "habit",
+      "chart",
+      "infographic",
+      "data",
+      "overlay",
+      "statistics",
+      "year"
+    ],
+    "file": "src/motions/data/heatmap-calendar.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "background": "transparent"
+    },
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": true,
+    "textProps": [
+      "title",
+      "subtitle",
+      "prefix"
+    ],
+    "colorProps": [
+      "accent",
+      "background",
+      "ink"
+    ],
+    "loopable": false,
+    "bestLength": 210,
+    "mood": [
+      "hud"
+    ],
+    "roles": [
+      "accent",
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "values": {
+        "default": [],
+        "doc": "one number per day, up to 371 (empty = seeded sample year)"
+      },
+      "sampleSeed": {
+        "default": 7,
+        "doc": "seed for the sample data used when values is empty"
+      },
+      "startDate": {
+        "default": "2025-01-01",
+        "doc": "date of the first value, \"YYYY-MM-DD\" (drives month labels and weekday alignment)"
+      },
+      "weekStart": {
+        "default": "sun",
+        "doc": "\"sun\" or \"mon\": which weekday is the top row"
+      },
+      "layout": {
+        "default": "auto",
+        "doc": "\"auto\" (strip in 16:9, mini months in 1:1 / 9:16), \"strip\" or \"months\""
+      },
+      "levels": {
+        "default": 5,
+        "doc": "number of shades including empty (3-8)"
+      },
+      "title": {
+        "default": "A year of activity",
+        "doc": "headline (empty = none)"
+      },
+      "subtitle": {
+        "default": "Each square is one day, darker means more",
+        "doc": "small line under the headline (empty = none)"
+      },
+      "prefix": {
+        "default": "",
+        "doc": "text before total and best-day numbers"
+      },
+      "suffix": {
+        "default": "",
+        "doc": "text after total and best-day numbers, e.g. \" commits\""
+      },
+      "totalLabel": {
+        "default": "Total contributions",
+        "doc": "caption under the total"
+      },
+      "bestLabel": {
+        "default": "Best day",
+        "doc": "caption under the best-day value"
+      },
+      "activeLabel": {
+        "default": "Active days",
+        "doc": "caption under the active-days count"
+      },
+      "lessLabel": {
+        "default": "Less",
+        "doc": "legend text at the light end"
+      },
+      "moreLabel": {
+        "default": "More",
+        "doc": "legend text at the dark end"
+      },
+      "showStats": {
+        "default": true,
+        "doc": "show the three count-up stats"
+      },
+      "showLegend": {
+        "default": true,
+        "doc": "show the less / more legend"
+      },
+      "showWeekdays": {
+        "default": true,
+        "doc": "show Mon / Wed / Fri labels (strip layout)"
+      },
+      "accent": {
+        "default": "#16A34A",
+        "doc": "colour of the busiest days"
+      },
+      "emptyOpacity": {
+        "default": 0.09,
+        "doc": "opacity of days with a zero value"
+      },
+      "background": {
+        "default": "#F5F3EE",
+        "doc": "page colour, or \"transparent\" to sit over other content"
+      },
+      "ink": {
+        "default": "#18212B",
+        "doc": "text and empty-day colour"
+      },
+      "fontFamily": {
+        "default": "",
+        "doc": "CSS font family (empty = Space Grotesk)"
+      },
+      "startAt": {
+        "default": 8,
+        "doc": "frame the first square appears"
+      },
+      "speed": {
+        "default": 1,
+        "doc": "animation speed multiplier"
+      }
+    }
+  },
+  {
+    "id": "sankey-flow",
+    "title": "Sankey flow",
+    "category": "data",
+    "description": "A Sankey diagram built from a list of weighted links: node bars grow column by column and curved ribbons, sized by value and coloured source-to-target, sweep across between them with labels and values; an optional highlighted node dims everything not connected to it.",
+    "useFor": "Where things go: traffic to conversions, budget to departments, energy or cash flows, funnels with leaks, user journeys. Pass links as [{from, to, value}], set prefix / suffix and brand colours; works on a transparent background over footage.",
+    "source": [
+      "original round-3 chart motion"
+    ],
+    "durationInFrames": 210,
+    "tags": [
+      "sankey",
+      "flow",
+      "links",
+      "diagram",
+      "chart",
+      "funnel",
+      "budget",
+      "journey",
+      "conversion",
+      "allocation",
+      "infographic",
+      "data",
+      "overlay",
+      "statistics"
+    ],
+    "file": "src/motions/data/sankey-flow.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "background": "transparent"
+    },
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": true,
+    "textProps": [
+      "title",
+      "subtitle",
+      "prefix"
+    ],
+    "colorProps": [
+      "colors",
+      "background",
+      "ink"
+    ],
+    "loopable": false,
+    "bestLength": 210,
+    "mood": [
+      "hud"
+    ],
+    "roles": [
+      "accent",
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "links": {
+        "default": [
+          {
+            "from": "Organic",
+            "to": "Visitors",
+            "value": 420
+          },
+          {
+            "from": "Paid",
+            "to": "Visitors",
+            "value": 260
+          },
+          {
+            "from": "Referral",
+            "to": "Visitors",
+            "value": 180
+          },
+          {
+            "from": "Visitors",
+            "to": "Sign-ups",
+            "value": 380
+          },
+          {
+            "from": "Visitors",
+            "to": "Bounced",
+            "value": 480
+          },
+          {
+            "from": "Sign-ups",
+            "to": "Trial",
+            "value": 300
+          },
+          {
+            "from": "Sign-ups",
+            "to": "Inactive",
+            "value": 80
+          },
+          {
+            "from": "Trial",
+            "to": "Paying",
+            "value": 170
+          },
+          {
+            "from": "Trial",
+            "to": "Churned",
+            "value": 130
+          }
+        ],
+        "doc": "weighted links [{from, to, value, color?}]; nodes are created from the names, columns follow the flow direction"
+      },
+      "nodeColors": {
+        "default": {
+          "Visitors": "#8E5CF0",
+          "Bounced": "#9AA3AD",
+          "Inactive": "#B8BEC5",
+          "Paying": "#12A150",
+          "Churned": "#E5484D"
+        },
+        "doc": "optional node name -> colour overrides, e.g. {\"Paid\":\"#E5487F\"}"
+      },
+      "title": {
+        "default": "Where visitors go",
+        "doc": "headline (empty = none)"
+      },
+      "subtitle": {
+        "default": "Monthly sessions from first touch to paying customer",
+        "doc": "small line under the headline (empty = none)"
+      },
+      "prefix": {
+        "default": "",
+        "doc": "text before every number, e.g. \"$\""
+      },
+      "suffix": {
+        "default": "",
+        "doc": "text after every number, e.g. \"K\", \" users\""
+      },
+      "decimals": {
+        "default": 0,
+        "doc": "decimal places on the numbers"
+      },
+      "showValues": {
+        "default": true,
+        "doc": "print each node total (tall nodes: under the name, short nodes: next to it)"
+      },
+      "linkMode": {
+        "default": "gradient",
+        "doc": "ribbon colour: \"gradient\" (source to target), \"source\" or \"target\""
+      },
+      "linkOpacity": {
+        "default": 0.5,
+        "doc": "ribbon opacity 0-1"
+      },
+      "nodeWidth": {
+        "default": 26,
+        "doc": "node bar width in u"
+      },
+      "nodePad": {
+        "default": 22,
+        "doc": "vertical gap between nodes of a column in u"
+      },
+      "align": {
+        "default": "left",
+        "doc": "\"justify\" pushes end nodes to the last column, \"left\" keeps them where they land"
+      },
+      "highlight": {
+        "default": "",
+        "doc": "node name to spotlight at the end (empty = none); unrelated nodes and links dim"
+      },
+      "colors": {
+        "default": [
+          "#2F6FED",
+          "#FF7A45",
+          "#16B39A",
+          "#F2B134",
+          "#8E5CF0",
+          "#E5487F",
+          "#5BC0EB",
+          "#7A8794"
+        ],
+        "doc": "palette used for nodes without an override"
+      },
+      "background": {
+        "default": "#F5F3EE",
+        "doc": "page colour, or \"transparent\" to sit over other content"
+      },
+      "ink": {
+        "default": "#18212B",
+        "doc": "text colour"
+      },
+      "fontFamily": {
+        "default": "",
+        "doc": "CSS font family (empty = Space Grotesk)"
+      },
+      "startAt": {
+        "default": 8,
+        "doc": "frame the first column appears"
+      },
+      "speed": {
+        "default": 1,
+        "doc": "animation speed multiplier"
+      }
+    }
+  },
+  {
+    "id": "stacked-area-flow",
+    "title": "Stacked area flow",
+    "category": "data",
+    "description": "A smooth stacked area chart (or centred streamgraph) revealed left to right by a wipe: layers swell over the timeline, a dashed scrubber follows the reveal edge with a running total, the legend values count with it, and the axis and gridlines sit quietly behind.",
+    "useFor": "Composition over time: revenue by product line, traffic by source, energy mix, users by plan, time spent by activity. Replace xLabels and series; set baseline \"center\" for a streamgraph look.",
+    "source": [
+      "original round-3 chart motion"
+    ],
+    "durationInFrames": 210,
+    "tags": [
+      "stacked area",
+      "streamgraph",
+      "area chart",
+      "chart",
+      "data",
+      "composition",
+      "timeline",
+      "trend",
+      "infographic",
+      "count-up",
+      "legend",
+      "overlay"
+    ],
+    "file": "src/motions/data/stacked-area-flow.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "background": "transparent"
+    },
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": true,
+    "textProps": [
+      "title",
+      "subtitle",
+      "prefix"
+    ],
+    "colorProps": [
+      "colors",
+      "background",
+      "ink"
+    ],
+    "loopable": false,
+    "bestLength": 210,
+    "mood": [
+      "hud"
+    ],
+    "roles": [
+      "accent",
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "xLabels": {
+        "default": [
+          "2019",
+          "2020",
+          "2021",
+          "2022",
+          "2023",
+          "2024"
+        ],
+        "doc": "labels along the x axis (years, months, ...)"
+      },
+      "series": {
+        "default": [
+          {
+            "name": "Subscriptions",
+            "values": [
+              40,
+              52,
+              66,
+              80,
+              96,
+              118
+            ]
+          },
+          {
+            "name": "Services",
+            "values": [
+              24,
+              26,
+              34,
+              38,
+              46,
+              52
+            ]
+          },
+          {
+            "name": "Hardware",
+            "values": [
+              30,
+              34,
+              30,
+              36,
+              32,
+              40
+            ]
+          },
+          {
+            "name": "Licensing",
+            "values": [
+              10,
+              14,
+              20,
+              26,
+              36,
+              44
+            ]
+          }
+        ],
+        "doc": "layers bottom to top [{name, values[] (one per x label), color?}]"
+      },
+      "baseline": {
+        "default": "zero",
+        "doc": "\"zero\" = stacked area from the axis, \"center\" = streamgraph centred on the middle"
+      },
+      "title": {
+        "default": "Where growth comes from",
+        "doc": "headline (empty = none)"
+      },
+      "subtitle": {
+        "default": "Revenue by line, millions",
+        "doc": "small line under the headline (empty = none)"
+      },
+      "prefix": {
+        "default": "$",
+        "doc": "text before numbers, e.g. \"$\""
+      },
+      "suffix": {
+        "default": "M",
+        "doc": "text after numbers, e.g. \"M\""
+      },
+      "decimals": {
+        "default": 0,
+        "doc": "decimal places on the readouts"
+      },
+      "showGrid": {
+        "default": true,
+        "doc": "horizontal gridlines with value labels (zero baseline only)"
+      },
+      "showLegend": {
+        "default": true,
+        "doc": "legend with live values, beside (16:9) or below (1:1, 9:16)"
+      },
+      "showScrubber": {
+        "default": true,
+        "doc": "dashed line and running total that follow the reveal edge"
+      },
+      "totalLabel": {
+        "default": "Total",
+        "doc": "word before the running total (empty = number only)"
+      },
+      "colors": {
+        "default": [
+          "#2F6FED",
+          "#16B39A",
+          "#F2B134",
+          "#FF7A45",
+          "#8E5CF0",
+          "#E5487F"
+        ],
+        "doc": "palette for series without their own colour"
+      },
+      "background": {
+        "default": "#0F1722",
+        "doc": "page colour, or \"transparent\""
+      },
+      "ink": {
+        "default": "#EEF2F7",
+        "doc": "text and grid colour"
+      },
+      "fontFamily": {
+        "default": "",
+        "doc": "CSS font family (empty = Space Grotesk)"
+      },
+      "startAt": {
+        "default": 10,
+        "doc": "frame the reveal starts"
+      },
+      "speed": {
+        "default": 1,
+        "doc": "animation speed multiplier"
+      }
+    }
+  },
+  {
+    "id": "timeline-ruler",
+    "title": "Timeline ruler with event cards",
+    "category": "data",
+    "description": "A ruler of years glides under a fixed playhead dot; every event pins a card (date, image or gradient, title, one line) with a spring pop while the camera pans between events and the big odometer year counter rolls through the years in between. Horizontal on 16:9/1:1, vertical on 9:16.",
+    "useFor": "Company history, product roadmaps, \"history of X\" videos and about-us sections: pass `events` (date, title, body, optional image).",
+    "source": [
+      "prompt-corpus: timeline-ruler (44 cases)",
+      "awesome-opus5-5-videos prompts (MIT) — technique only"
+    ],
+    "durationInFrames": 524,
+    "tags": [
+      "timeline",
+      "history",
+      "roadmap",
+      "ruler",
+      "years",
+      "milestones",
+      "events",
+      "cards",
+      "odometer",
+      "counter",
+      "company",
+      "about",
+      "data",
+      "chronology"
+    ],
+    "file": "src/motions/data/timeline-ruler.tsx",
+    "overlay": false,
+    "overlayProps": null,
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": false,
+    "textProps": [],
+    "colorProps": [
+      "background",
+      "ink",
+      "accent"
+    ],
+    "loopable": false,
+    "bestLength": 524,
+    "mood": [
+      "photo",
+      "hud",
+      "ui"
+    ],
+    "roles": [
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "events": {
+        "default": [
+          {
+            "date": "1998",
+            "title": "The first sketch",
+            "body": "Two people, one whiteboard, a very large idea.",
+            "icon": "spark"
+          },
+          {
+            "date": "2004",
+            "title": "First product ships",
+            "body": "The beta goes out to a hundred early users.",
+            "icon": "bolt"
+          },
+          {
+            "date": "2009",
+            "title": "Going global",
+            "body": "Offices open on three continents.",
+            "icon": "globe"
+          },
+          {
+            "date": "2015",
+            "title": "A million customers",
+            "body": "Growth that nobody planned for.",
+            "icon": "chart"
+          },
+          {
+            "date": "2020",
+            "title": "Rebuilt from scratch",
+            "body": "A new platform for the next decade.",
+            "icon": "cog"
+          },
+          {
+            "date": "2025",
+            "title": "Today",
+            "body": "Still sketching on the same whiteboard.",
+            "icon": "star"
+          }
+        ],
+        "doc": "[{date: \"1998\" (a 4-digit year is parsed), title, body?, image?: public path, icon?: name}]"
+      },
+      "orientation": {
+        "default": "auto",
+        "doc": "'auto' (vertical on portrait) | 'horizontal' | 'vertical'"
+      },
+      "scale": {
+        "default": "linear",
+        "doc": "'linear' = gaps proportional to years (clamped) · 'even' = equal gaps"
+      },
+      "cardStyle": {
+        "default": "light",
+        "doc": "'light' | 'dark'"
+      },
+      "panFrames": {
+        "default": 26,
+        "doc": "camera pan between events (20-30)"
+      },
+      "holdFrames": {
+        "default": 58,
+        "doc": "hold on each event (45-75)"
+      },
+      "showCounter": {
+        "default": true,
+        "doc": "show the odometer year counter"
+      },
+      "background": {
+        "default": "#F1ECE2",
+        "doc": "background colour"
+      },
+      "ink": {
+        "default": "#1A1A1F",
+        "doc": "ruler / counter colour"
+      },
+      "accent": {
+        "default": "#E4572E",
+        "doc": "playhead, markers and dates"
+      }
+    }
+  },
+  {
+    "id": "number-counter",
+    "title": "Number counter",
+    "category": "text",
+    "description": "Huge thin-mono counter that ticks or odometer-rolls through dwell keyframes, with unit, label and derived readouts (pressure, light, temperature, percent).",
+    "useFor": "Depth/altitude/speed meters, growing stats, countdowns, progress percentages and scoreboards.",
+    "source": [
+      "video23 0:03-1:20",
+      "video19 0:13.6-0:14.3",
+      "video17 0:03.0-0:04.4"
+    ],
+    "durationInFrames": 180,
+    "tags": [
+      "counter",
+      "number",
+      "hud",
+      "odometer",
+      "stats",
+      "scramble",
+      "lock",
+      "digit lock",
+      "split flap",
+      "departure board",
+      "clock",
+      "time-lapse",
+      "hook",
+      "kpi",
+      "glyph"
+    ],
+    "file": "src/motions/text/number-counter.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "backdrop": "none"
+    },
+    "takesImage": true,
+    "imageProps": [
+      "src"
+    ],
+    "takesText": true,
+    "textProps": [
+      "keyframes",
+      "label",
+      "unit",
+      "prefix",
+      "readoutLabels",
+      "kicker"
+    ],
+    "colorProps": [
+      "labelColor",
+      "numberColor",
+      "accent",
+      "tileColor",
+      "blockColor"
+    ],
+    "loopable": false,
+    "bestLength": 180,
+    "mood": [
+      "dark",
+      "hud"
+    ],
+    "roles": [
+      "type"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [
+      "star-glint",
+      "flow-lines",
+      "confetti-burst",
+      "iso-bar-chart"
+    ],
+    "avoid": "Set label, unit ('' to hide 'm'), readouts [] and keyframes — defaults are the DEPTH dive sample.",
+    "props": {
+      "keyframes": {
+        "default": [
+          [
+            0,
+            0
+          ],
+          [
+            14,
+            0
+          ],
+          [
+            62,
+            760
+          ],
+          [
+            96,
+            868
+          ],
+          [
+            168,
+            10935
+          ],
+          [
+            180,
+            10935
+          ]
+        ],
+        "doc": "[[frame, value], …] monotone-cubic; put two close keys to dwell (slow down) near a landmark"
+      },
+      "mode": {
+        "default": "roll",
+        "doc": "roll (odometer digit strips with motion blur) | tick (re-typeset each frame) | lock (digits spin, lock one by one) | scramble (glyph noise + trail + drop) | flap (split-flap tiles) | clock (time-lapse clock)"
+      },
+      "label": {
+        "default": "DEPTH",
+        "doc": "small tracked label above the number"
+      },
+      "unit": {
+        "default": "m",
+        "doc": "unit after the number (\"\" = none)"
+      },
+      "prefix": {
+        "default": "",
+        "doc": "text before the number (e.g. \"$\", \"×\")"
+      },
+      "decimals": {
+        "default": 0,
+        "doc": "decimal places (tick mode; roll mode uses integers)"
+      },
+      "separator": {
+        "default": " ",
+        "doc": "thousands separator (\" \" thin space, \",\", \"\")"
+      },
+      "readouts": {
+        "default": [
+          "pressure",
+          "light",
+          "temp"
+        ],
+        "doc": "derived stats under the number: pressure | light | temp | percent | rate"
+      },
+      "readoutLabels": {
+        "default": [],
+        "doc": "override the readout labels (same order)"
+      },
+      "layout": {
+        "default": "center",
+        "doc": "center (big, standalone) | hud (top-left overlay block like video23)"
+      },
+      "gauge": {
+        "default": false,
+        "doc": "semicircle gauge above the number (video17 anticipation meter); centre layout only"
+      },
+      "size": {
+        "default": 300,
+        "doc": "number size in px at 1080p (auto-shrinks to fit)"
+      },
+      "labelSize": {
+        "default": 28,
+        "doc": "label size in px at 1080p (centre layout)"
+      },
+      "labelColor": {
+        "default": "#6c95ac",
+        "doc": ""
+      },
+      "numberColor": {
+        "default": "#a9d8ee",
+        "doc": ""
+      },
+      "accent": {
+        "default": "#ED3821",
+        "doc": ""
+      },
+      "backdrop": {
+        "default": "ocean",
+        "doc": "ocean | ink | dunes | … scene behind"
+      },
+      "linkBackdrop": {
+        "default": true,
+        "doc": "ocean backdrop darkens with the value (log scale) like a dive"
+      },
+      "src": {
+        "default": "",
+        "doc": "optional public/ image behind"
+      },
+      "lockStart": {
+        "default": 14,
+        "doc": "lock / scramble / flap modes: frame the first character locks (or flips)"
+      },
+      "lockStep": {
+        "default": 5,
+        "doc": "lock mode: frames between one character locking and the next (a sixteenth note at your tempo)"
+      },
+      "lockOrder": {
+        "default": "ltr",
+        "doc": "lock / scramble: ltr | rtl character lock order"
+      },
+      "glyphs": {
+        "default": "",
+        "doc": "scramble: glyph set the unlocked digits flicker through (empty = digits)"
+      },
+      "accentOnLock": {
+        "default": false,
+        "doc": "locked characters flash in the accent colour for 6 frames"
+      },
+      "flashFrame": {
+        "default": false,
+        "doc": "one-frame brightness flash when a character locks"
+      },
+      "progressBar": {
+        "default": false,
+        "doc": "thin accent progress bar under the number while it locks"
+      },
+      "flapFrom": {
+        "default": null,
+        "doc": "flap mode: starting value (default = first keyframe value); ends on the max keyframe"
+      },
+      "flapStagger": {
+        "default": 3,
+        "doc": "flap mode: frames between tiles starting to flip"
+      },
+      "flipFrames": {
+        "default": 8,
+        "doc": "flap mode: frames one tile flip takes (0.26 s = 8)"
+      },
+      "tileColor": {
+        "default": "#2B3038",
+        "doc": "flap mode: tile colour"
+      },
+      "callout": {
+        "default": "",
+        "doc": "flap mode: text that pops under the number after the last flip (e.g. \"×2\")"
+      },
+      "clockStart": {
+        "default": 25200,
+        "doc": "clock mode: start time in seconds since midnight (25200 = 07:00)"
+      },
+      "clockRate": {
+        "default": [
+          [
+            0,
+            24
+          ],
+          [
+            90,
+            24
+          ],
+          [
+            120,
+            1
+          ]
+        ],
+        "doc": "clock mode: [[frame, rate]] time-lapse speed; the clock integrates it"
+      },
+      "speedTag": {
+        "default": true,
+        "doc": "clock mode: show ×N TIME-LAPSE / ×1 REAL TIME tag"
+      },
+      "block": {
+        "default": "",
+        "doc": "block background colour behind the number (hook look, e.g. #FFD60A); \"\" = none"
+      },
+      "blockColor": {
+        "default": "#111111",
+        "doc": "number colour on the block"
+      },
+      "kicker": {
+        "default": "",
+        "doc": "hook line slamming in above the number"
+      },
+      "rollDuration": {
+        "default": 0.45,
+        "doc": "block hook: seconds of the scale slam"
+      }
+    }
+  },
+  {
+    "id": "card-stack-cascade",
+    "title": "Card stack cascade (bento + focus)",
+    "category": "ui",
+    "description": "Feature cards scale in from 30 % with a fade, staggered 4 f apart, into a bento grid (or a row, or a fanned deck) with a gentle idle float; then one card flies to the centre and grows to ~60 % of the frame while the rest dim to 40 % and defocus, and everything settles back.",
+    "useFor": "Feature overviews in launch videos, website sections, pricing / plan reveals: pass `cards` (title, body, icon, span \"2x1\"), choose `layout`, set `focusIndex`.",
+    "source": [
+      "prompt-corpus: card-stack-cascade (35 cases)",
+      "awesome-opus5-5-videos prompts (MIT) — technique only"
+    ],
+    "durationInFrames": 210,
+    "tags": [
+      "cards",
+      "bento",
+      "grid",
+      "features",
+      "feature overview",
+      "cascade",
+      "stack",
+      "deck",
+      "focus",
+      "pricing",
+      "plans",
+      "website section",
+      "launch",
+      "ui",
+      "saas",
+      "product"
+    ],
+    "file": "src/motions/ui/card-stack-cascade.tsx",
+    "overlay": false,
+    "overlayProps": null,
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": true,
+    "textProps": [
+      "cards"
+    ],
+    "colorProps": [
+      "accent"
+    ],
+    "loopable": false,
+    "bestLength": 210,
+    "mood": [
+      "ui"
+    ],
+    "roles": [
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "cards": {
+        "default": [
+          {
+            "title": "Realtime sync",
+            "body": "Every change lands on every device in under a second.",
+            "icon": "bolt",
+            "span": "2x2"
+          },
+          {
+            "title": "Private by default",
+            "body": "End-to-end encrypted.",
+            "icon": "shield"
+          },
+          {
+            "title": "Insights",
+            "body": "Dashboards that explain themselves.",
+            "icon": "chart"
+          },
+          {
+            "title": "Team chat",
+            "body": "Talk where the work is.",
+            "icon": "chat"
+          },
+          {
+            "title": "Global scale",
+            "body": "Edge regions worldwide.",
+            "icon": "globe"
+          },
+          {
+            "title": "Automations",
+            "body": "Hand the boring parts to a workflow that never sleeps.",
+            "icon": "spark",
+            "span": "2x1"
+          }
+        ],
+        "doc": "[{title, body?, icon?: bolt|shield|chart|chat|globe|spark|lock|cog|user|db|cloud|star, image?: public path, span?: \"2x1\" | number of columns}]"
+      },
+      "layout": {
+        "default": "bento",
+        "doc": "'bento' grid | 'row' | 'stack' (fanned deck)"
+      },
+      "focusAt": {
+        "default": 104,
+        "doc": "frame when the focused card flies to the centre"
+      },
+      "focusIndex": {
+        "default": 1,
+        "doc": "which card is focused (0-based)"
+      },
+      "unfocusAt": {
+        "default": 176,
+        "doc": "frame when everything settles back (0 = never)"
+      },
+      "stagger": {
+        "default": 4,
+        "doc": "frames between card entrances (3-5)"
+      },
+      "dimTo": {
+        "default": 0.4,
+        "doc": "opacity of the other cards during focus"
+      },
+      "dark": {
+        "default": false,
+        "doc": "dark theme"
+      },
+      "accent": {
+        "default": "#5B5FEF",
+        "doc": "focused card accent"
+      },
+      "background": {
+        "default": "",
+        "doc": "background colour (empty = theme default)"
+      }
+    }
+  },
+  {
+    "id": "poll-results-bars",
+    "title": "Poll results bars",
+    "category": "ui",
+    "description": "A poll card: the question types in, option bars fill one after another to their share with counting percentages, then the winner locks in with a glow and a tag while the rest dim; a vote total ticks up.",
+    "useFor": "Poll and survey results, \"you voted\" reveals, audience-choice moments, A/B vote summaries, quiz answers and social engagement posts.",
+    "source": [
+      "original (round 3, social & marketing)"
+    ],
+    "durationInFrames": 240,
+    "tags": [
+      "social",
+      "poll",
+      "survey",
+      "vote",
+      "results",
+      "bars",
+      "percent",
+      "data",
+      "quiz",
+      "engagement",
+      "overlay"
+    ],
+    "file": "src/motions/ui/poll-results-bars.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "background": "transparent"
+    },
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": false,
+    "textProps": [],
+    "colorProps": [
+      "background",
+      "ink",
+      "accent"
+    ],
+    "loopable": false,
+    "bestLength": 240,
+    "mood": [
+      "hud"
+    ],
+    "roles": [
+      "accent",
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "question": {
+        "default": "What should we make next?",
+        "doc": "the poll question"
+      },
+      "options": {
+        "default": [
+          "Quick tips",
+          "Deep dives",
+          "Behind the scenes",
+          "Q&A"
+        ],
+        "doc": "option labels (up to 8)"
+      },
+      "values": {
+        "default": [
+          41,
+          28,
+          21,
+          10
+        ],
+        "doc": "one number per option — percentages or raw votes (normalised to a share of the sum)"
+      },
+      "winnerLabel": {
+        "default": "Winner",
+        "doc": "text on the winner tag"
+      },
+      "votesLabel": {
+        "default": "votes",
+        "doc": "word after the vote total"
+      },
+      "totalVotes": {
+        "default": 3842,
+        "doc": "vote total shown at the bottom (counts up)"
+      },
+      "background": {
+        "default": "#E9EEF8",
+        "doc": "frame colour, or \"transparent\" to overlay content"
+      },
+      "ink": {
+        "default": "#1B2233",
+        "doc": "text / default bar colour"
+      },
+      "accent": {
+        "default": "#3A6BFF",
+        "doc": "winner bar + tag colour"
+      },
+      "barColor": {
+        "default": "auto",
+        "doc": "colour of the non-winner bars, or \"auto\" (ink, softened)"
+      },
+      "cardColor": {
+        "default": "auto",
+        "doc": "card fill, or \"auto\" (a lighter tone of the background)"
+      },
+      "stagger": {
+        "default": 12,
+        "doc": "frames between bars starting"
+      },
+      "startAt": {
+        "default": 0,
+        "doc": "frame the sequence begins"
+      }
+    }
+  },
+  {
+    "id": "split-compare",
+    "title": "Split-screen compare",
+    "category": "ui",
+    "description": "Presentation layout: headline, two perfectly synced panels (line-art vs colour by default) with colour-coded labels, stat lines and a footnote.",
+    "useFor": "Before/after, A vs B, two tools / two styles / two renderers of the same thing.",
+    "source": [
+      "video3 0:00-0:23 split-screen-compare"
+    ],
+    "durationInFrames": 240,
+    "tags": [
+      "compare",
+      "split-screen",
+      "before-after",
+      "layout",
+      "presentation",
+      "ledger",
+      "counter",
+      "versus",
+      "stamp",
+      "claim vs reality"
+    ],
+    "file": "src/motions/ui/split-compare.tsx",
+    "overlay": false,
+    "overlayProps": null,
+    "takesImage": true,
+    "imageProps": [
+      "image"
+    ],
+    "takesText": true,
+    "textProps": [
+      "headline",
+      "subheadline",
+      "footnote",
+      "left",
+      "right"
+    ],
+    "colorProps": [
+      "background",
+      "headlineColor",
+      "textColor",
+      "dividerColor",
+      "stampColor",
+      "badTint"
+    ],
+    "loopable": false,
+    "bestLength": 240,
+    "mood": [
+      "dark",
+      "photo",
+      "editorial"
+    ],
+    "roles": [
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [
+      "mask-rise-title",
+      "film-look",
+      "callout-labels"
+    ],
+    "props": {
+      "background": {
+        "default": "#0b0907",
+        "doc": ""
+      },
+      "headline": {
+        "default": "Same blueprint, two ways to draw it",
+        "doc": "headline above the panels"
+      },
+      "subheadline": {
+        "default": "Same scene, same camera, same timing. Only the renderer changes.",
+        "doc": "one-line subheading"
+      },
+      "footnote": {
+        "default": "※ Export time = time to turn the finished 8-second animation into an MP4.",
+        "doc": "small grey footnote at the bottom"
+      },
+      "left": {
+        "default": {
+          "label": "Line pass",
+          "color": "#e8af78",
+          "desc": "Every edge traced, nothing shaded",
+          "stat": "Export ≈ 45 s",
+          "src": "",
+          "style": "lines"
+        },
+        "doc": "{label, color, desc, stat, src, style} for the left (top in portrait) panel; style lines|color|mono|sepia|warm"
+      },
+      "right": {
+        "default": {
+          "label": "Full render",
+          "color": "#76c8fb",
+          "desc": "Light, colour and atmosphere",
+          "stat": "Export ≈ 12 min",
+          "src": "",
+          "style": "color"
+        },
+        "doc": "same for the right (bottom) panel"
+      },
+      "image": {
+        "default": "demo/lighthouse.jpg",
+        "doc": "public/ image shown in both panels when a side has no own src (empty = procedural plate)"
+      },
+      "seed": {
+        "default": 4,
+        "doc": "procedural plate seed"
+      },
+      "layout": {
+        "default": "panels",
+        "doc": "'panels' = two side-by-side (stacked in portrait) panels, 'wipe' = one frame with a moving divider, 'ledger' = full-bleed halves: divider drops, the bad half desaturates with a red tint, two counters race, a stamp lands on the divider"
+      },
+      "introWipe": {
+        "default": true,
+        "doc": "divider draws on and the panels open outward from it"
+      },
+      "push": {
+        "default": 0.14,
+        "doc": "shared camera push amount over the whole motion (0.14 = +14 %)"
+      },
+      "fadeOut": {
+        "default": false,
+        "doc": "panels fade to black over the last 0.5 s (chrome stays)"
+      },
+      "build": {
+        "default": true,
+        "doc": "both panels are revealed in sync by a rising scan line after the intro"
+      },
+      "headlineColor": {
+        "default": "#f8e2c0",
+        "doc": ""
+      },
+      "textColor": {
+        "default": "#e8e4df",
+        "doc": ""
+      },
+      "dividerColor": {
+        "default": "#35342d",
+        "doc": ""
+      },
+      "counters": {
+        "default": [
+          {
+            "label": "Before",
+            "value": 1240,
+            "unit": "ms",
+            "bad": true
+          },
+          {
+            "label": "After",
+            "value": 86,
+            "unit": "ms"
+          }
+        ],
+        "doc": "ledger: [{label, value, unit?, prefix?, bad?, decimals?}] for the two halves; bad = desaturated + red tint"
+      },
+      "stamp": {
+        "default": "FIXED",
+        "doc": "ledger: stamp text on the divider after both counters settle"
+      },
+      "dividerDrop": {
+        "default": 10,
+        "doc": "ledger: frames the divider takes to drop in"
+      },
+      "stampColor": {
+        "default": "#E5484D",
+        "doc": "ledger: stamp colour"
+      },
+      "badTint": {
+        "default": "#B8281E",
+        "doc": "ledger: red tint multiplied over the bad half"
+      }
+    }
+  },
+  {
+    "id": "testimonial-card-carousel",
+    "title": "Testimonial card carousel",
+    "category": "ui",
+    "description": "Customer quote cards with a big quote mark, star rating, avatar, name and role rotate through a centre stage; neighbouring cards peek in scaled and dimmed, pager dots follow.",
+    "useFor": "Social proof sections, customer-love videos, case-study teasers, landing-page testimonial strips, review roundups and app-store style praise.",
+    "source": [
+      "original (round 3, social & marketing)"
+    ],
+    "durationInFrames": 330,
+    "tags": [
+      "social",
+      "testimonial",
+      "reviews",
+      "quotes",
+      "carousel",
+      "cards",
+      "stars",
+      "customers",
+      "proof",
+      "marketing",
+      "overlay"
+    ],
+    "file": "src/motions/ui/testimonial-card-carousel.tsx",
+    "overlay": true,
+    "overlayProps": {
+      "background": "transparent"
+    },
+    "takesImage": false,
+    "imageProps": [],
+    "takesText": false,
+    "textProps": [],
+    "colorProps": [
+      "background",
+      "ink",
+      "accent",
+      "starColor"
+    ],
+    "loopable": false,
+    "bestLength": 330,
+    "mood": [
+      "ui",
+      "night"
+    ],
+    "roles": [
+      "accent",
+      "subject"
+    ],
+    "weight": "light",
+    "formats": [
+      "landscape",
+      "square",
+      "portrait"
+    ],
+    "pairsWith": [],
+    "props": {
+      "testimonials": {
+        "default": [
+          {
+            "quote": "We cut our weekly reporting from a full day to twenty minutes. It simply works.",
+            "name": "Maya Rivers",
+            "role": "Operations lead",
+            "rating": 5
+          },
+          {
+            "quote": "Setup took one afternoon and the whole team was using it by Friday.",
+            "name": "Dev Patel",
+            "role": "Founder, small studio",
+            "rating": 5
+          },
+          {
+            "quote": "Support answered in minutes and actually fixed the problem. Rare these days.",
+            "name": "Lena Ortiz",
+            "role": "Customer success",
+            "rating": 4
+          },
+          {
+            "quote": "The best purchase we made this year. Our customers noticed the difference.",
+            "name": "Sam Okafor",
+            "role": "Shop owner",
+            "rating": 5
+          }
+        ],
+        "doc": "array of {quote, name, role?, rating?(0-5)} — up to 10"
+      },
+      "holdFrames": {
+        "default": 66,
+        "doc": "frames each card is held in the centre"
+      },
+      "moveFrames": {
+        "default": 16,
+        "doc": "frames of the glide to the next card"
+      },
+      "heading": {
+        "default": "What people say",
+        "doc": "small caption above the cards (empty to hide)"
+      },
+      "background": {
+        "default": "#ECEFF6",
+        "doc": "frame colour, or \"transparent\" to overlay content"
+      },
+      "cardColor": {
+        "default": "auto",
+        "doc": "card fill, or \"auto\" (lighter than the background)"
+      },
+      "ink": {
+        "default": "#1D2233",
+        "doc": "text colour"
+      },
+      "accent": {
+        "default": "#4C6FE0",
+        "doc": "quote mark + active dot colour"
+      },
+      "starColor": {
+        "default": "#F2B134",
+        "doc": "filled star colour"
+      },
+      "quoteFont": {
+        "default": "sans",
+        "doc": "\"sans\" or \"serif\" for the quote text"
+      },
+      "startAt": {
+        "default": 0,
+        "doc": "frame the sequence begins"
+      }
+    }
+  }
+]

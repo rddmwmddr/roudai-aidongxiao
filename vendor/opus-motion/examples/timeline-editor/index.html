@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Timeline editor - Opus Motion in a video-editor page</title>
+    <!--
+      A tiny multi-track editor in plain JS: drop motions on a timeline, edit their props in an auto-built panel
+      (from the library's JSON Schema), scrub / play the live preview, and render the same layers to mp4 with the
+      HTTP API (`node cli/mgl.mjs serve`).
+
+      Run:  npm run build:lib && node examples/serve.mjs          -> http://localhost:5055/examples/timeline-editor/
+            node cli/mgl.mjs serve                               (optional, for the Render button; http://127.0.0.1:4321)
+      Over a CDN instead of /dist: <script src="https://cdn.jsdelivr.net/npm/opus-motion-library/dist/opus-motion.element.js">
+    -->
+    <script src="/dist/opus-motion.element.js" defer></script>
+    <style>
+      :root { --bg: #0e1116; --panel: #161b22; --line: #2a313c; --ink: #e6edf3; --dim: #8b98a6; --accent: #6fe3d6; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.4 system-ui, sans-serif; display: grid; grid-template-rows: 1fr auto; height: 100vh; }
+      .top { display: grid; grid-template-columns: 1fr 300px; gap: 12px; padding: 12px; min-height: 0; }
+      .stage { background: #000; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 0; }
+      .stage opus-motion { width: 100%; max-height: 100%; aspect-ratio: 16/9; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow: auto; }
+      .panel h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
+      .field { display: grid; grid-template-columns: 96px 1fr; gap: 8px; align-items: center; margin: 5px 0; font-size: 12px; }
+      .field label { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      input, select, button { font: inherit; color: var(--ink); background: #0d1117; border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; min-width: 0; }
+      input[type=color] { padding: 0; height: 26px; }
+      input[type=checkbox] { justify-self: start; }
+      button { cursor: pointer; } button:hover { border-color: var(--accent); }
+      .bar { background: var(--panel); border-top: 1px solid var(--line); padding: 10px 12px 14px; }
+      .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+      .controls .time { font-variant-numeric: tabular-nums; color: var(--dim); min-width: 120px; }
+      .tl { position: relative; background: #0d1117; border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
+      .row { position: relative; height: 30px; border-bottom: 1px solid var(--line); }
+      .clip { position: absolute; top: 3px; height: 24px; border-radius: 5px; background: #2b6f69; border: 1px solid var(--accent); padding: 0 6px; line-height: 22px; font-size: 12px; white-space: nowrap; overflow: hidden; cursor: grab; user-select: none; }
+      .clip.sel { background: #3f9c93; outline: 2px solid #fff4; }
+      .playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: #ff5d73; pointer-events: none; }
+      #msg { color: var(--dim); font-size: 12px; }
+      a { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <div class="stage">
+        <!-- controlled preview: paused, the `frame` attribute is the playhead; layers = the timeline -->
+        <opus-motion id="pv" layers="[]" duration="300" frame="0" loop="false" autoplay="false" play-on-view="false" asset-base="/public"></opus-motion>
+      </div>
+      <div class="panel" id="props"><h3>Properties</h3><div id="fields">Select a clip.</div></div>
+    </div>
+    <div class="bar">
+      <div class="controls">
+        <button id="play">Play</button>
+        <span class="time" id="time">0 / 0 f</span>
+        <input id="add" list="ids" placeholder="add motion id (e.g. aurora)" size="26" />
+        <datalist id="ids"></datalist>
+        <button id="addBtn">Add</button>
+        <button id="del">Delete clip</button>
+        <button id="render">Render mp4 (needs mgl serve)</button>
+        <span id="msg"></span>
+      </div>
+      <div class="tl" id="tl"></div>
+    </div>
+
+    <script>
+      const FPS = 30, PPF = 3; // timeline pixels per frame
+      const params = new URLSearchParams(location.search);
+      const API = params.get('api') || 'http://127.0.0.1:4321';
+      const $ = (id) => document.getElementById(id);
+      const pv = $('pv');
+      const clips = [
+        {motion: 'aurora', props: {pixelSize: 0}, from: 0, duration: 300},
+        // clips above the bottom layer use the motion's overlayProps (transparent background), see catalog.json
+        {motion: 'blur-in-title', props: {backdrop: 'none', background: 'transparent', title: 'YOUR TITLE', subtitle: 'edited in a timeline'}, from: 30, duration: 210},
+        {motion: 'confetti-burst', props: {background: 'transparent', showSubject: false}, from: 150, duration: 100},
+      ];
+      let sel = 1, frame = 0, playing = false, schemas = {}, catalog = [];
+
+      const total = () => Math.max(30, ...clips.map((c) => c.from + c.duration));
+      const layers = () => clips.map((c) => ({motion: c.motion, props: c.props, from: c.from, duration: c.duration}));
+
+      function push() { // re-render the preview from the clips
+        pv.setAttribute('layers', JSON.stringify(layers()));
+        pv.setAttribute('duration', String(total()));
+        draw();
+      }
+
+      function draw() {
+        const tl = $('tl');
+        tl.innerHTML = '';
+        clips.forEach((c, i) => {
+          const row = document.createElement('div');
+          row.className = 'row';
+          row.style.width = total() * PPF + 40 + 'px';
+          const el = document.createElement('div');
+          el.className = 'clip' + (i === sel ? ' sel' : '');
+          el.style.left = c.from * PPF + 'px';
+          el.style.width = Math.max(20, c.duration * PPF) + 'px';
+          el.textContent = c.motion;
+          el.onpointerdown = (e) => {
+            sel = i; const x0 = e.clientX, f0 = c.from; el.setPointerCapture(e.pointerId);
+            el.onpointermove = (m) => { c.from = Math.max(0, Math.round(f0 + (m.clientX - x0) / PPF)); el.style.left = c.from * PPF + 'px'; };
+            el.onpointerup = () => { el.onpointermove = null; push(); panel(); };
+            panel(); draw();
+          };
+          row.appendChild(el);
+          tl.appendChild(row);
+        });
+        const head = document.createElement('div');
+        head.className = 'playhead';
+        head.id = 'head';
+        head.style.left = frame * PPF + 'px';
+        tl.appendChild(head);
+        $('time').textContent = `${frame} / ${total()} f  (${(frame / FPS).toFixed(1)} s)`;
+      }
+
+      function setFrame(f) {
+        frame = Math.max(0, Math.min(total() - 1, Math.round(f)));
+        pv.setAttribute('frame', String(frame)); // controlled preview: changing `frame` while paused seeks there
+        $('head').style.left = frame * PPF + 'px';
+        $('time').textContent = `${frame} / ${total()} f  (${(frame / FPS).toFixed(1)} s)`;
+      }
+      $('tl').onclick = (e) => { if (e.target.classList.contains('clip')) return; setFrame((e.clientX - $('tl').getBoundingClientRect().left + $('tl').scrollLeft) / PPF); };
+      pv.addEventListener('opus-frame', (e) => { if (playing) { frame = e.detail.frame; $('head').style.left = frame * PPF + 'px'; $('time').textContent = `${frame} / ${total()} f  (${(frame / FPS).toFixed(1)} s)`; } });
+      pv.addEventListener('opus-ended', () => { playing = false; $('play').textContent = 'Play'; frame = pv.getCurrentFrame(); pv.setAttribute('frame', String(frame)); });
+      $('play').onclick = () => {
+        playing = !playing;
+        $('play').textContent = playing ? 'Pause' : 'Play';
+        if (playing) { if (frame >= total() - 2) setFrame(0); pv.play(); }
+        else { pv.pause(); setFrame(pv.getCurrentFrame()); }
+      };
+
+      // ---- property panel generated from the JSON Schema (one request per motion type)
+      async function schemaFor(id) {
+        if (!schemas[id]) {
+          try { schemas[id] = await (await fetch(`${API}/api/motions/${id}/schema`)).json(); }
+          catch { const all = await (await fetch('/props-schema.json')).json(); schemas[id] = all.motions[id]; }
+        }
+        return schemas[id];
+      }
+      async function panel() {
+        const c = clips[sel], box = $('fields');
+        if (!c) { box.textContent = 'Select a clip.'; return; }
+        const schema = await schemaFor(c.motion);
+        box.innerHTML = `<div class="field"><label>from (frame)</label><input type="number" id="pf" value="${c.from}"></div><div class="field"><label>duration</label><input type="number" id="pd" value="${c.duration}"></div><hr style="border-color:var(--line)">`;
+        $('pf').onchange = (e) => { c.from = +e.target.value; push(); };
+        $('pd').onchange = (e) => { c.duration = Math.max(1, +e.target.value); push(); };
+        const props = Object.entries(schema.properties);
+        // text first, then colours, then the rest (what an editor user changes most)
+        const rank = (p) => (p['x-opus-text'] ? 0 : p['x-opus-widget'] === 'color' ? 1 : 2);
+        props.sort((a, b) => rank(a[1]) - rank(b[1])).slice(0, 24).forEach(([name, p]) => {
+          const w = p['x-opus-widget'], cur = c.props[name] ?? p.default;
+          let input;
+          if (w === 'toggle') { input = Object.assign(document.createElement('input'), {type: 'checkbox', checked: !!cur}); input.onchange = () => set(name, input.checked); }
+          else if (w === 'select') { input = document.createElement('select'); p.enum.forEach((o) => input.add(new Option(o, o, false, o === cur))); input.onchange = () => set(name, input.value); }
+          else if (w === 'color') { input = Object.assign(document.createElement('input'), {type: 'color', value: /^#[0-9a-f]{6}$/i.test(cur) ? cur : '#888888'}); input.oninput = () => set(name, input.value); }
+          else if (w === 'number') { input = Object.assign(document.createElement('input'), {type: 'number', value: cur, step: 'any'}); input.onchange = () => set(name, +input.value); }
+          else if (w === 'text' || w === 'image') { input = Object.assign(document.createElement('input'), {type: 'text', value: cur ?? ''}); input.onchange = () => set(name, input.value); }
+          else { input = Object.assign(document.createElement('input'), {type: 'text', value: JSON.stringify(cur)}); input.onchange = () => { try { set(name, JSON.parse(input.value)); } catch {} }; }
+          input.title = p.description || name;
+          const row = document.createElement('div'); row.className = 'field';
+          row.innerHTML = `<label title="${(p.description || '').replace(/"/g, '&quot;')}">${name}</label>`;
+          row.appendChild(input); box.appendChild(row);
+        });
+      }
+      function set(name, v) { clips[sel].props = {...clips[sel].props, [name]: v}; push(); }
+
+      $('addBtn').onclick = () => {
+        const id = $('add').value.trim(); if (!id) return;
+        const m = catalog.find((x) => x.id === id);
+        clips.push({motion: id, props: clips.length && m?.overlayProps ? {...m.overlayProps} : {}, from: frame, duration: Math.min(m?.durationInFrames ?? 120, 240)}); sel = clips.length - 1; push(); panel();
+      };
+      $('del').onclick = () => { if (clips[sel]) { clips.splice(sel, 1); sel = Math.min(sel, clips.length - 1); push(); panel(); } };
+
+      // ---- export: the same layers, rendered server-side
+      $('render').onclick = async () => {
+        $('msg').textContent = 'rendering…';
+        try {
+          const r = await fetch(`${API}/api/render?wait=1`, {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({layers: layers(), frames: total(), aspect: 'landscape', quality: 'draft'})});
+          const job = await r.json();
+          if (job.status !== 'done') throw new Error(job.error || job.status);
+          $('msg').innerHTML = `done: <a href="${API}${job.output.url}" target="_blank">${job.output.filename} (${(job.output.bytes / 1024).toFixed(0)} KB)</a>`;
+        } catch (e) { $('msg').textContent = 'start `node cli/mgl.mjs serve` first (' + e.message + ')'; }
+      };
+
+      fetch('/catalog.json').then((r) => r.json()).then((c) => { catalog = c; $('ids').innerHTML = c.map((m) => `<option value="${m.id}">${m.title}</option>`).join(''); }).catch(() => {});
+      customElements.whenDefined('opus-motion').then(() => { push(); panel(); setTimeout(() => setFrame(60), 800); });
+    </script>
+  </body>
+</html>

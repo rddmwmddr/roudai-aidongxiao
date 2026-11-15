@@ -16,7 +16,7 @@
 
 ### 动效库
 
-733 个动效，11 个分类：百分比 11、图表 55、细读图表 39、文字 26、文字特效 130、状态 64、交互 58、质感 54、加载 99、按钮 101、开关提示 96。
+733 个原有动效，11 个分类（另新增20个调研基础模板、3个预设，见下文）：百分比 11、图表 55、细读图表 39、文字 26、文字特效 130、状态 64、交互 58、质感 54、加载 99、按钮 101、开关提示 96。
 
 **特点**
 
@@ -76,6 +76,18 @@
 
 [官网教程](https://ahuamiao.com/sites/other/roudai-tools.html#m-tutorial)：十一步，一步一张图。
 
+## 重构调研数据动效（1.4 预览版）
+
+[下载调研预览版](https://github.com/rddmwmddr/roudai-aidongxiao/releases/download/v1.4.0-preview.1/RouDaiAiDongXiao-Research-Preview.dmg) · [预览版说明](docs/PREVIEW.md)。预览版为 Apple 芯片与 Intel 通用包，使用独立开发版标识，未经 Apple 公证；上方正式版下载仍为已公证的 1.3。
+
+新增20个可编辑基础模板和3个组合预设，位于动效选择器「调研数据 · Opus」「调研组合预设」。支持表格/CSV、中文样式、统一AI配置、秒级时间线、项目保存与本地视频导出。
+
+```sh
+tools/run_dev.sh  # 构建并打开全部演示工程
+```
+
+详细入口、参数口径、AI本地接口、版本/许可证与验收方法见 [docs/OPUS.md](docs/OPUS.md)。示例工程：`examples/opus/重构调研-全部模板.dmboard`。测试视频：`质检/opus/重构调研-全部动效验收.mp4`。
+
 ## 源码构建
 
 需要 Xcode、[XcodeGen](https://github.com/yonaskolb/XcodeGen)、Python 3。测试需要 Node 和 Chrome。
@@ -100,6 +112,8 @@ SIGN_ID="Developer ID Application: 名字 (TEAMID)" TEAM=TEAMID NOTARY_PROFILE=�
 
 | 来源 | 用途 | 授权 |
 |---|---|---|
+| [Opus Motion Library](https://github.com/GovinduSasanka/opus-motion-library) | 14 个调研动效的源码逻辑适配 | MIT |
+| [Natural Earth](https://www.naturalearthdata.com/) | 本地地图陆地轮廓 | 公有领域 |
 | [Motion Prompt](https://github.com/showheyohtaki/motion-prompt) | 14 个文字动效 | MIT |
 | [Colorion](https://colorion.co/) | 417 个 CSS 动效 | MIT |
 | [Lieflat Charts](https://github.com/larashero3-dotcom/lieflat-charts) | 39 种细读图表 | PolyForm Noncommercial |

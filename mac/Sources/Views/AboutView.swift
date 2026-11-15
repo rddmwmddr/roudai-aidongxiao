@@ -12,6 +12,7 @@ struct AboutView: View {
     }
 
     private let motion = [
+        Credit(name: "Opus Motion Library", author: "Govindu Sasanka", use: "14 种数据组件的 Canvas 适配", license: "MIT", url: "https://github.com/GovinduSasanka/opus-motion-library"),
         Credit(name: "Motion Prompt", author: "Shohei Ohtaki", use: "14 个文字动效", license: "MIT", url: "https://github.com/showheyohtaki/motion-prompt"),
         Credit(name: "Lieflat Charts", author: "躺在废墟里", use: "编辑部风格图表", license: "PolyForm Noncommercial", url: "https://github.com/larashero3-dotcom/lieflat-charts"),
         Credit(name: "Colorion", author: "Csaba Kissi", use: "417 个 CSS 动效", license: "MIT", url: "https://colorion.co/"),

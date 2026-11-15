@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>画面</title>
 <style>
-:root{color-scheme:light dark;--surround:#2F2B29;--dock-h:88px;--w:min(calc(100vw - 32px),calc((100vh - 24px - var(--dock-h))*16/9));--edge:none}
+:root{color-scheme:light dark;--surround:#2F2B29;--dock-h:88px;--w:min(calc(100vw - 32px),calc((100vh - 24px - var(--dock-h))*var(--motion-ratio,1.77777778)));--edge:none}
 @media (prefers-color-scheme:dark){:root{--edge:0 0 0 .5px rgba(255,255,255,.14)}}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--surround)}
 /* 选中框是柠檬黄，上面的字要深色 */

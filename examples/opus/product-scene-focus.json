@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "templateId": "product-scene-focus",
+  "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+  "data": {
+    "scene": "phone",
+    "regions": [
+      {
+        "id": "camera",
+        "label": "影像入口",
+        "x": 0.25,
+        "y": 0.25,
+        "value": 78,
+        "unit": "分",
+        "body": "用户认为拍照入口更容易找到"
+      },
+      {
+        "id": "system",
+        "label": "系统交互",
+        "x": 0.7,
+        "y": 0.5,
+        "value": 82,
+        "unit": "分",
+        "body": "常用任务的完成路径更短"
+      },
+      {
+        "id": "battery",
+        "label": "续航状态",
+        "x": 0.55,
+        "y": 0.85,
+        "value": 86,
+        "unit": "分",
+        "body": "一天使用后的剩余电量更安心"
+      }
+    ]
+  },
+  "style": {
+    "title": "操作位置 · 体验数据聚焦",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "background": "#F7F1E8",
+    "ink": "#243449",
+    "accent": "#227F77",
+    "beforeColor": "#9AA7B7",
+    "afterColor": "#227F77",
+    "goodColor": "#227F77",
+    "badColor": "#C65064",
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "titleSize": 58,
+    "numberSize": 220,
+    "unit": "",
+    "prefix": "",
+    "decimals": 0,
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ]
+  },
+  "camera": {
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "zoom": 2,
+    "route": "smooth"
+  },
+  "sequence": [],
+  "fieldMappings": {},
+  "metadata": {
+    "source": "演示研究，非真实结论",
+    "sampleSize": 200,
+    "researchTime": "2026年10月",
+    "showSource": true,
+    "showSampleSize": true,
+    "showResearchTime": true,
+    "showTitle": true,
+    "showSubtitle": true
+  },
+  "options": {
+    "focusId": "system",
+    "focusAt": 3,
+    "moveSeconds": 1.2,
+    "holdSeconds": 2.5,
+    "returnAt": 7.5,
+    "asset": ""
+  },
+  "timeline": {
+    "duration": 12,
+    "entrance": 0.3,
+    "hold": 1,
+    "inPoint": 0,
+    "outPoint": 1,
+    "currentTime": 0
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "demo": true
+}

@@ -102,6 +102,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
     }
 
     var onCommit: ((_ template: String, _ layers: String, _ label: String) -> Void)?
+    var onMotionObject: ((String) -> Void)?
     var onNavigate: ((_ direction: Int) -> Void)?
 
     private var loadedID: Int?
@@ -122,6 +123,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         config.suppressesIncrementalRendering = true
         let controller = WKUserContentController()
         config.userContentController = controller
+        controller.addScriptMessageHandler(MotionMediaBridge(), contentWorld: .page, name: "motionMedia")
         #if DEBUG
         // 窗口测试把窗口放在屏幕外，WebKit 会停掉画面循环。测试时改用定时器
         if Self.timerFrames {
@@ -191,6 +193,8 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
             let layers = body["layers"] as? String ?? "{}"
             loadedLayers = layers
             onCommit?(template, layers, body["label"] as? String ?? "调整元素")
+        case "motionObject":
+            if let json = body["json"] as? String { onMotionObject?(json) }
         case "nav":
             onNavigate?((body["dir"] as? NSNumber)?.intValue ?? 1)
         case "sceneError":
@@ -278,7 +282,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
             let seconds: Double
             let sample: Bool
         }
-        guard let json = try? await callString("return DMBridge.preview(row, id)", arguments: ["row": shot.json, "id": template]),
+        guard let json = try? await callString("return await DMBridge.preview(row, id)", arguments: ["row": shot.json, "id": template]),
               let reply = try? JSONDecoder().decode(Reply.self, from: Data(json.utf8)) else { return nil }
         let images = reply.frames.compactMap { url -> NSImage? in
             guard let comma = url.firstIndex(of: ","),
@@ -396,7 +400,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         }
         sceneError = nil
         let json = shot.json
-        Task { _ = try? await call("DMBridge.load(json, keep)", arguments: ["json": json, "keep": keep]) }
+        Task { _ = try? await call("return await DMBridge.load(json, keep)", arguments: ["json": json, "keep": keep]) }
     }
 
     func playPause() { run("DMBridge.toggle()") }

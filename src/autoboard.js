@@ -244,7 +244,7 @@
         problems.push(e.message);
       }
     }
-    const bad = numbersIn(row.groups).concat(numbersIn(row.points), numbersIn(row.ref), numbersIn(row.sets), numbersIn(row.steps), numbersIn(row.highlight), numbersIn(row.events), row.value != null ? [+row.value] : []).filter((v) => {
+    const bad = numbersIn(row.groups).concat(numbersIn(row.points), numbersIn(row.ref), numbersIn(row.sets), numbersIn(row.steps), numbersIn(row.highlight), numbersIn(row.events), row.value != null ? [+row.value] : [], row.motion && root.DMOpus ? root.DMOpus.dataNumbers(row.motion) : [], row.motion && row.motion.metadata && row.motion.metadata.showSampleSize ? [row.motion.metadata.sampleSize] : []).filter((v) => {
       const s = String(v);
       return !lineN.includes(s) && !srcN.includes(s);
     });

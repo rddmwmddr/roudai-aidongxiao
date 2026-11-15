@@ -16,7 +16,7 @@ struct ExportSheet: View {
     /// 选保存位置。测试不弹系统面板，直接给一个地址
     let destination: ((_ singleFileName: String?) -> URL?)?
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("export.size") private var sizeRaw = ExportSize.uhd.rawValue
+    @AppStorage("export.size") private var sizeRaw = ExportSize.hd.rawValue
     @AppStorage("export.fps") private var fps = 60
     @State private var scope: Scope
     @StateObject private var runner = BatchRunner()
@@ -75,7 +75,10 @@ struct ExportSheet: View {
                             Text("选中的 \(exportable(.picked).count)").tag(Scope.picked)
                         }
                     }
-                    Picker("分辨率", selection: $sizeRaw) {
+                    if base(scope).contains(where: { $0.fields["motion"] != nil }) {
+                        Text("调研动效按项目中保存的画面尺寸与帧率导出，请在右侧「画面与帧率」修改。")
+                    }
+                    Picker("分辨率（其他模板）", selection: $sizeRaw) {
                         ForEach(ExportSize.allCases) { s in Text(s.label).tag(s.rawValue) }
                     }
                     Picker("帧率", selection: $fps) {

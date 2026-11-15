@@ -15,7 +15,7 @@ _team = root / "私有" / "AI主题视频.dmboard"
 TEAM_BOARD = _team.read_text(encoding="utf-8") if _team.exists() else PUBLIC_BOARD
 b64 = lambda p: base64.b64encode((root / p).read_bytes()).decode()
 js = lambda p: (root / p).read_text(encoding="utf-8")
-order = ["src/parser.js", "src/stage.js", "src/core.js", "src/tpl_comb.js", "src/tpl_dots.js", "src/tpl_flat.js", "src/tpl_text.js", "src/tpl_lab.js", "src/tpl_screen.js", "src/tpl_gl.js", "src/match.js", "src/mp_packs.js", "src/library.js", "src/tpl_charts.js", "src/lf_charts.js", "src/lieflat.js", "src/css_film.js", "src/co_packs.js", "src/colorion.js", "src/kinetics.js", "src/arc.js", "src/samples.js", "src/stage_editor.js", "src/fontlib.js", "src/ui.js"]
+order = ["src/parser.js", "src/stage.js", "src/core.js", "src/tpl_comb.js", "src/tpl_dots.js", "src/tpl_flat.js", "src/tpl_text.js", "src/tpl_lab.js", "src/tpl_screen.js", "src/tpl_gl.js", "src/match.js", "src/mp_packs.js", "src/library.js", "src/tpl_charts.js", "src/lf_charts.js", "src/lieflat.js", "src/css_film.js", "src/co_packs.js", "src/colorion.js", "src/kinetics.js", "src/arc.js", "src/samples.js", "src/stage_editor.js", "src/fontlib.js", "src/opus_config.js", "src/opus_templates.js", "src/opus_editor.js", "src/ui.js"]
 
 
 def page(head_script, board):
@@ -25,8 +25,10 @@ def page(head_script, board):
     return js("src/index.html").replace("<!--SCRIPTS-->", "\n".join(parts))
 
 
-single = f"""window.DM_FONTS={{gothic:"data:font/woff2;base64,{b64('fonts/ChillDINGothic_Std.woff2')}",numBold:"data:font/woff2;base64,{b64('fonts/DMNum-Bold.woff2')}",numMedium:"data:font/woff2;base64,{b64('fonts/DMNum-Medium.woff2')}"}};"""
+land = "window.DM_LAND=" + js("vendor/natural-earth/land-110m.json") + ";"
+single = land + f"""window.DM_FONTS={{gothic:"data:font/woff2;base64,{b64('fonts/ChillDINGothic_Std.woff2')}",numBold:"data:font/woff2;base64,{b64('fonts/DMNum-Bold.woff2')}",numMedium:"data:font/woff2;base64,{b64('fonts/DMNum-Medium.woff2')}"}};"""
 out = root / "dist" / "肉呆爱动效.html"
+out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(page(single, PUBLIC_BOARD), encoding="utf-8")
 print(out, round(out.stat().st_size / 1e6, 2), "MB")
 
@@ -66,14 +68,14 @@ if not cached.exists():
 shutil.copy(cached, hosted / "fonts" / f"gothic-common-{key}.woff2")
 print("常用字子集", len(chars), "字", round(cached.stat().st_size / 1e6, 2), "MB")
 rare_chars = "".join(c for c in chars if ord(c) > 0x2E7F)
-head = f"""window.DM_API="api";window.DM_FONTS={{gothic:"fonts/gothic-common-{key}.woff2",gothicFull:"fonts/ChillDINGothic_Std.woff2",commonChars:{json.dumps(rare_chars, ensure_ascii=False)},numBold:"fonts/DMNum-Bold.woff2",numMedium:"fonts/DMNum-Medium.woff2"}};"""
+head = land + f"""window.DM_API="api";window.DM_FONTS={{gothic:"fonts/gothic-common-{key}.woff2",gothicFull:"fonts/ChillDINGothic_Std.woff2",commonChars:{json.dumps(rare_chars, ensure_ascii=False)},numBold:"fonts/DMNum-Bold.woff2",numMedium:"fonts/DMNum-Medium.woff2"}};"""
 (hosted / "index.html").write_text(page(head, TEAM_BOARD), encoding="utf-8")
 print(hosted / "index.html", round((hosted / "index.html").stat().st_size / 1e3), "KB")
 
 # macOS App：渲染页（单文件）、示例分镜表
 app = root / "mac" / "Resources"
 app.mkdir(parents=True, exist_ok=True)
-engine = ["src/parser.js", "src/stage.js", "src/core.js", "src/tpl_comb.js", "src/tpl_dots.js", "src/tpl_flat.js", "src/tpl_text.js", "src/tpl_lab.js", "src/tpl_screen.js", "src/tpl_gl.js", "src/match.js", "src/mp_packs.js", "src/library.js", "src/tpl_charts.js", "src/lf_charts.js", "src/lieflat.js", "src/css_film.js", "src/co_packs.js", "src/colorion.js", "src/kinetics.js", "src/arc.js", "src/samples.js", "src/stage_editor.js", "src/autoboard.js", "src/app_bridge.js"]
+engine = ["src/parser.js", "src/stage.js", "src/core.js", "src/tpl_comb.js", "src/tpl_dots.js", "src/tpl_flat.js", "src/tpl_text.js", "src/tpl_lab.js", "src/tpl_screen.js", "src/tpl_gl.js", "src/match.js", "src/mp_packs.js", "src/library.js", "src/tpl_charts.js", "src/lf_charts.js", "src/lieflat.js", "src/css_film.js", "src/co_packs.js", "src/colorion.js", "src/kinetics.js", "src/arc.js", "src/samples.js", "src/stage_editor.js", "src/autoboard.js", "src/opus_config.js", "src/opus_templates.js", "src/app_bridge.js"]
 scripts = [f"<script>{single}</script>", f"<script>{js('vendor/mp4-muxer.js')}</script>"] + [f"<script>{js(p)}</script>" for p in engine]
 stage = js("src/app_stage.html").replace("<!--SCRIPTS-->", "\n".join(scripts))
 (app / "stage.html").write_text(stage, encoding="utf-8")

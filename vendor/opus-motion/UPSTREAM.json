@@ -1,0 +1,31 @@
+{
+  "repository": "https://github.com/GovinduSasanka/opus-motion-library",
+  "commit": "8f1b78a25d0cf310c9bf904d434285046c4ed25a",
+  "adapterVersion": "canvas-1",
+  "files": {
+    "LICENSE": "16a676a812b9afeafc0252a7bafe1613017b54049e7e8a2714cf5aabc6d157f5",
+    "THIRD_PARTY_NOTICES.md": "1b1ee61f5f71adc27a4abe578c755ef9d01a2c6d939f7381cfb02dd235d52dbd",
+    "docs/INTEGRATION.md": "5950a91822c69979aa728d917116731230923cc4107a437d6e3d1ecf01532f4f",
+    "docs/HTTP_API.md": "ec55a2cd53db2b5704be254aae9739eab95095b43418e278106ef9998ba38d73",
+    "examples/timeline-editor/index.html": "e833e584418b370c3946fd8b7c37eba1dba6592ddc88aac6bc13cdd95520607d",
+    "examples/timeline-editor/TimelineEditor.tsx": "715f22f782330f22f27700c8c45cef1a3e29473efba834d81aed78121fa29ca1",
+    "src/motions/data/comparison-dumbbell.tsx": "59bca3cf75ab6712d37732274cc0b02a6133cef193a2922b386b3ac32a696afd",
+    "src/motions/data/dot-tally.tsx": "e5678ca98b30120b25cb7de33601876d6f136a5ce3ab2190afae599e9b3a9c7c",
+    "src/motions/data/bar-race.tsx": "5140a76ff95eb1294096bf6baf20a16e5ef67babd38519f6b48612d0baa7b9a7",
+    "src/motions/text/number-counter.tsx": "771a1c4a9d870e80d411093c25d6c6bbc8e8b2f6bcce7a01d0bb341614b9c277",
+    "src/core/ease.ts": "db5aca5c7938335046321caae3a6f9d4381ff5ce4adcf5cb5aaa9d608274f880",
+    "src/core/random.ts": "e96fc4b01c640fb444a1aaff8c6160f8be9d1dc0ae721f341c097164a8245487",
+    "src/core/text-kit.tsx": "045c1c45d9c9d437614dca090633b26c46863078d443618839e56e12909d6e3b",
+    "src/core/r3-chart-kit.tsx": "278faeef5787b5555fda18635479f1ceee8d4ad5606c0da6dc8e9158fcf711a4",
+    "src/motions/ui/card-stack-cascade.tsx": "8799482dca5163288d38508bf27e944c8fb2d3b6988f705cfb94e7c8967e0bc6",
+    "src/motions/ui/poll-results-bars.tsx": "4f8c6fdbf6a751961e37298d640afd2aa978901278e393f8853a75a1ac545f4f",
+    "src/motions/data/sankey-flow.tsx": "a7afd2dbda4071d40c96e82e8287ab54f330f3a45f8395ecf361e8d9e0059dca",
+    "src/motions/data/funnel-conversion.tsx": "b2c0dfb50a4c1a0ecc97e7d9cb3df34fc6474386259df1ff8d801a456f97e891",
+    "src/motions/data/bubble-scatter-grow.tsx": "fdc5e3ee2472847597602d65ae0b852e0565fd02dc1097b6708996f53b7fe914",
+    "src/motions/data/heatmap-calendar.tsx": "fcdd73af4712f4bea198a752d0502e858c8042c051d48c10499e78f0dfa2f160",
+    "src/motions/ui/testimonial-card-carousel.tsx": "c21a71cd24aacaaa6a5ca0222ea8ba46ca1e24849cd2826201badbb4cb8893cf",
+    "src/motions/data/timeline-ruler.tsx": "85e2ae30db24ac4539d52540c5c5367d1333f2e1a24a58906157e695ecb90b12",
+    "src/motions/ui/split-compare.tsx": "786b040fd8fd0637af3e4d85b29e4236a5ac35800cac6762d954230080ac4849",
+    "src/motions/data/stacked-area-flow.tsx": "d8de3db10bd9929dff7d4bb371129fc9283234afc7a2580a75045bb2051a74e8"
+  }
+}

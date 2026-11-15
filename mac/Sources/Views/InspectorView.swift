@@ -225,7 +225,10 @@ struct ShotForm: View {
                         noteRow.padding(12)
                     }
                 }
-                if hasContent {
+                if shot.fields["motion"] != nil {
+                    MotionConfigEditor(shot: $shot, stage: stage)
+                }
+                if hasContent && shot.fields["motion"] == nil {
                     SectionCard(title: "内容", symbol: "text.alignleft") {
                         VStack(alignment: .leading, spacing: 12) {
                             if shot.fields["groups"] != nil { MetricsEditor(shot: $shot) }
@@ -240,8 +243,10 @@ struct ShotForm: View {
                 SectionCard(title: "属性", symbol: "slider.horizontal.3") {
                     properties
                 }
-                ColorRows(shot: $shot, stage: stage)
-                ExtraFields(shot: $shot)
+                if shot.fields["motion"] == nil {
+                    ColorRows(shot: $shot, stage: stage)
+                    ExtraFields(shot: $shot)
+                }
             }
             .padding(.horizontal, 8)
             .padding(.bottom, 8)

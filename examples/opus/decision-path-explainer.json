@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "templateId": "decision-path-explainer",
+  "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+  "data": {
+    "nodes": [
+      {
+        "id": "recommend",
+        "label": "看到推荐",
+        "icon": "message",
+        "x": 0.1,
+        "y": 0.25,
+        "at": 0.5,
+        "count": 1000,
+        "body": "朋友与社交媒体推荐"
+      },
+      {
+        "id": "search",
+        "label": "搜索资料",
+        "icon": "phone",
+        "x": 0.37,
+        "y": 0.25,
+        "at": 2,
+        "count": 650,
+        "body": "查阅参数、口碑与体验"
+      },
+      {
+        "id": "store",
+        "label": "线下体验",
+        "icon": "store",
+        "x": 0.64,
+        "y": 0.25,
+        "at": 4,
+        "count": 320,
+        "body": "体验手感、影像与系统"
+      },
+      {
+        "id": "buy",
+        "label": "比较后购买",
+        "icon": "person",
+        "x": 0.88,
+        "y": 0.25,
+        "at": 6,
+        "count": 180,
+        "body": "形成最终选择"
+      },
+      {
+        "id": "exit",
+        "label": "暂缓购买",
+        "icon": "exit",
+        "x": 0.64,
+        "y": 0.75,
+        "at": 5,
+        "count": 140,
+        "body": "等待降价或继续比较"
+      }
+    ],
+    "links": [
+      {
+        "from": "recommend",
+        "to": "search",
+        "value": 650,
+        "at": 1,
+        "duration": 1
+      },
+      {
+        "from": "search",
+        "to": "store",
+        "value": 320,
+        "at": 3,
+        "duration": 1
+      },
+      {
+        "from": "store",
+        "to": "buy",
+        "value": 180,
+        "at": 5.5,
+        "duration": 1
+      },
+      {
+        "from": "store",
+        "to": "exit",
+        "value": 140,
+        "at": 5,
+        "duration": 1
+      },
+      {
+        "from": "exit",
+        "to": "search",
+        "value": 40,
+        "at": 7,
+        "duration": 1
+      }
+    ]
+  },
+  "style": {
+    "title": "购买决策 · 从推荐到购买",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "background": "#F7F1E8",
+    "ink": "#243449",
+    "accent": "#227F77",
+    "beforeColor": "#9AA7B7",
+    "afterColor": "#227F77",
+    "goodColor": "#227F77",
+    "badColor": "#C65064",
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "titleSize": 58,
+    "numberSize": 220,
+    "unit": "",
+    "prefix": "",
+    "decimals": 0,
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ]
+  },
+  "camera": {
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "zoom": 2,
+    "route": "smooth"
+  },
+  "sequence": [],
+  "fieldMappings": {},
+  "metadata": {
+    "source": "演示研究，非真实结论",
+    "sampleSize": 200,
+    "researchTime": "2026年10月",
+    "showSource": true,
+    "showSampleSize": true,
+    "showResearchTime": true,
+    "showTitle": true,
+    "showSubtitle": true
+  },
+  "options": {
+    "highlight": "",
+    "showCounts": true,
+    "markerIcon": "person"
+  },
+  "timeline": {
+    "duration": 12,
+    "entrance": 0.3,
+    "hold": 1,
+    "inPoint": 0,
+    "outPoint": 1,
+    "currentTime": 0
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "demo": true
+}

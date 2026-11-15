@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "templateId": "bar-race",
+  "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+  "data": {
+    "names": [
+      "品牌甲",
+      "品牌乙",
+      "品牌丙",
+      "品牌丁"
+    ],
+    "frames": [
+      {
+        "label": "2024",
+        "values": [
+          32,
+          28,
+          20,
+          20
+        ]
+      },
+      {
+        "label": "2025",
+        "values": [
+          29,
+          31,
+          24,
+          16
+        ]
+      },
+      {
+        "label": "2026",
+        "values": [
+          35,
+          27,
+          26,
+          12
+        ]
+      }
+    ]
+  },
+  "style": {
+    "title": "品牌偏好 · 年度追踪",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "background": "#F7F1E8",
+    "ink": "#243449",
+    "accent": "#227F77",
+    "beforeColor": "#9AA7B7",
+    "afterColor": "#227F77",
+    "goodColor": "#227F77",
+    "badColor": "#C65064",
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "titleSize": 58,
+    "numberSize": 220,
+    "unit": "%",
+    "prefix": "",
+    "decimals": 0,
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ]
+  },
+  "camera": {},
+  "sequence": [],
+  "fieldMappings": {},
+  "metadata": {
+    "source": "演示研究，非真实结论",
+    "sampleSize": 200,
+    "researchTime": "2026年10月",
+    "showSource": true,
+    "showSampleSize": true,
+    "showResearchTime": true,
+    "showTitle": true,
+    "showSubtitle": true
+  },
+  "options": {
+    "topN": 6,
+    "scale": "fixed",
+    "showRank": true,
+    "showPeriod": true
+  },
+  "timeline": {
+    "duration": 6,
+    "entrance": 0.3,
+    "hold": 1,
+    "inPoint": 0,
+    "outPoint": 1,
+    "currentTime": 0
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "demo": true
+}

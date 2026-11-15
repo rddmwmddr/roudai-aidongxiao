@@ -22,3 +22,6 @@ scripts/node_modules/
 # 打包生成，tools/build.py 会写
 mac/Resources/stage.html
 fonts/.common-*
+
+# Local build environment
+.venv/

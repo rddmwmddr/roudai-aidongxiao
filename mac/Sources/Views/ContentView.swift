@@ -343,6 +343,10 @@ struct ContentView: View {
             edit(label) { $0.rows[i].setLayers(layers, for: template) }
             if label == "还原这一镜" { showNotice("已还原") }
         }
+        stage.onMotionObject = { json in
+            guard let i = currentIndex, let value = try? JSONDecoder().decode(JSONValue.self, from: Data(json.utf8)) else { return }
+            edit("选择受访者") { $0.rows[i].fields["motion"] = value }
+        }
         stage.onNavigate = { dir in move(dir) }
     }
 

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "templateId": "sankey-flow",
+  "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+  "data": {
+    "links": [
+      {
+        "from": "品牌甲",
+        "to": "品牌甲",
+        "value": 60
+      },
+      {
+        "from": "品牌甲",
+        "to": "品牌乙",
+        "value": 40
+      },
+      {
+        "from": "品牌乙",
+        "to": "品牌甲",
+        "value": 20
+      },
+      {
+        "from": "品牌乙",
+        "to": "品牌乙",
+        "value": 80
+      }
+    ]
+  },
+  "style": {
+    "title": "品牌迁移 · 上一部到本次购买",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "background": "#F7F1E8",
+    "ink": "#243449",
+    "accent": "#227F77",
+    "beforeColor": "#9AA7B7",
+    "afterColor": "#227F77",
+    "goodColor": "#227F77",
+    "badColor": "#C65064",
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "titleSize": 58,
+    "numberSize": 220,
+    "unit": "",
+    "prefix": "",
+    "decimals": 0,
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ]
+  },
+  "camera": {},
+  "sequence": [],
+  "fieldMappings": {},
+  "metadata": {
+    "source": "演示研究，非真实结论",
+    "sampleSize": 200,
+    "researchTime": "2026年10月",
+    "showSource": true,
+    "showSampleSize": true,
+    "showResearchTime": true,
+    "showTitle": true,
+    "showSubtitle": true
+  },
+  "options": {
+    "highlight": "",
+    "nodeColors": {},
+    "showValues": true,
+    "linkOpacity": 0.5
+  },
+  "timeline": {
+    "duration": 6,
+    "entrance": 0.3,
+    "hold": 1,
+    "inPoint": 0,
+    "outPoint": 1,
+    "currentTime": 0
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "demo": true
+}

@@ -133,9 +133,12 @@
   });
   // sink(data, position)：边编码边交出去，4K 长镜头不占内存（macOS App 直接写文件）
   const exportMP4 = async (raw, {size = '4k', fps = 60, onProgress, signal, sink} = {}) => {
+    const motion = raw.motion && D.Opus ? D.Opus.configOf(raw) : null;
+    if (motion) { fps = motion.output.fps; await D.Opus.prepareAssets(raw); }
     if (typeof VideoEncoder === 'undefined') throw new Error('这个浏览器不能导出视频，请用 Chrome 打开');
     await D.ensureGlyphs(JSON.stringify(raw));
-    const cfg = SIZES[size];
+    const cfg = motion ? {w: motion.output.width, h: motion.output.height, codec: {[fps]: motion.output.width * motion.output.height * fps > 1920 * 1080 * 60 ? 'avc1.640034' : 'avc1.640033'}, bitrate: {[fps]: Math.min(60e6, Math.max(4e6, motion.output.width * motion.output.height * fps * 0.22))}} : SIZES[size];
+    if (!cfg) throw new Error('无效的输出尺寸');
     const canvas = document.createElement('canvas');
     canvas.width = cfg.w;
     canvas.height = cfg.h;
@@ -164,6 +167,7 @@
         throw new DOMException('已取消', 'AbortError');
       }
       if (failure) throw failure;
+      if (motion) await D.Opus.prepareFrame(raw, f / fps);
       scene.draw(ctx, f / fps);
       const vf = new VideoFrame(canvas, {timestamp: Math.round((f * 1e6) / fps), duration: Math.round(1e6 / fps)});
       encoder.encode(vf, {keyFrame: f % (fps * 2) === 0});

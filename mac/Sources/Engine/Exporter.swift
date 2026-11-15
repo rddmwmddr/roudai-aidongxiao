@@ -266,6 +266,10 @@ final class BatchRunner: ObservableObject {
     static func fileName(for shot: Shot, templateName: String, size: ExportSize, fps: Int) -> String {
         let bad = CharacterSet(charactersIn: "/\\:*?\"<>|\n\r")
         let clean = templateName.components(separatedBy: bad).joined()
+        if let output = shot.fields["motion"]?.object?["output"]?.object,
+           let width = output["width"]?.number, let height = output["height"]?.number, let rate = output["fps"]?.number {
+            return "\(shot.no)_\(clean)_\(Int(width))x\(Int(height))_\(Int(rate)).mp4"
+        }
         return "\(shot.no)_\(clean)_\(size.short)\(fps).mp4"
     }
 

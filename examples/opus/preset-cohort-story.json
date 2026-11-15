@@ -1,0 +1,498 @@
+{
+  "schemaVersion": 1,
+  "templateId": "cohort-regroup",
+  "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+  "data": {
+    "users": [
+      {
+        "id": "P001",
+        "brand": "品牌甲",
+        "age": "18–29岁",
+        "label": "匿名受访者 1",
+        "quote": "我更关注系统是否顺手，日常使用是否稳定。",
+        "weight": 1
+      },
+      {
+        "id": "P002",
+        "brand": "品牌乙",
+        "age": "18–29岁",
+        "label": "匿名受访者 2",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P003",
+        "brand": "品牌丙",
+        "age": "18–29岁",
+        "label": "匿名受访者 3",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P004",
+        "brand": "品牌甲",
+        "age": "18–29岁",
+        "label": "匿名受访者 4",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P005",
+        "brand": "品牌乙",
+        "age": "30–44岁",
+        "label": "匿名受访者 5",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P006",
+        "brand": "品牌丙",
+        "age": "30–44岁",
+        "label": "匿名受访者 6",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P007",
+        "brand": "品牌甲",
+        "age": "30–44岁",
+        "label": "匿名受访者 7",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P008",
+        "brand": "品牌乙",
+        "age": "30–44岁",
+        "label": "匿名受访者 8",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P009",
+        "brand": "品牌丙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 9",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P010",
+        "brand": "品牌甲",
+        "age": "45岁及以上",
+        "label": "匿名受访者 10",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P011",
+        "brand": "品牌乙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 11",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P012",
+        "brand": "品牌丙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 12",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P013",
+        "brand": "品牌甲",
+        "age": "18–29岁",
+        "label": "匿名受访者 13",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P014",
+        "brand": "品牌乙",
+        "age": "18–29岁",
+        "label": "匿名受访者 14",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P015",
+        "brand": "品牌丙",
+        "age": "18–29岁",
+        "label": "匿名受访者 15",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P016",
+        "brand": "品牌甲",
+        "age": "18–29岁",
+        "label": "匿名受访者 16",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P017",
+        "brand": "品牌乙",
+        "age": "30–44岁",
+        "label": "匿名受访者 17",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P018",
+        "brand": "品牌丙",
+        "age": "30–44岁",
+        "label": "匿名受访者 18",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P019",
+        "brand": "品牌甲",
+        "age": "30–44岁",
+        "label": "匿名受访者 19",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P020",
+        "brand": "品牌乙",
+        "age": "30–44岁",
+        "label": "匿名受访者 20",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P021",
+        "brand": "品牌丙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 21",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P022",
+        "brand": "品牌甲",
+        "age": "45岁及以上",
+        "label": "匿名受访者 22",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P023",
+        "brand": "品牌乙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 23",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P024",
+        "brand": "品牌丙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 24",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P025",
+        "brand": "品牌甲",
+        "age": "18–29岁",
+        "label": "匿名受访者 25",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P026",
+        "brand": "品牌乙",
+        "age": "18–29岁",
+        "label": "匿名受访者 26",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P027",
+        "brand": "品牌丙",
+        "age": "18–29岁",
+        "label": "匿名受访者 27",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P028",
+        "brand": "品牌甲",
+        "age": "18–29岁",
+        "label": "匿名受访者 28",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P029",
+        "brand": "品牌乙",
+        "age": "30–44岁",
+        "label": "匿名受访者 29",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P030",
+        "brand": "品牌丙",
+        "age": "30–44岁",
+        "label": "匿名受访者 30",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P031",
+        "brand": "品牌甲",
+        "age": "30–44岁",
+        "label": "匿名受访者 31",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P032",
+        "brand": "品牌乙",
+        "age": "30–44岁",
+        "label": "匿名受访者 32",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P033",
+        "brand": "品牌丙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 33",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P034",
+        "brand": "品牌甲",
+        "age": "45岁及以上",
+        "label": "匿名受访者 34",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P035",
+        "brand": "品牌乙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 35",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P036",
+        "brand": "品牌丙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 36",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P037",
+        "brand": "品牌甲",
+        "age": "18–29岁",
+        "label": "匿名受访者 37",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P038",
+        "brand": "品牌乙",
+        "age": "18–29岁",
+        "label": "匿名受访者 38",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P039",
+        "brand": "品牌丙",
+        "age": "18–29岁",
+        "label": "匿名受访者 39",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P040",
+        "brand": "品牌甲",
+        "age": "18–29岁",
+        "label": "匿名受访者 40",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P041",
+        "brand": "品牌乙",
+        "age": "30–44岁",
+        "label": "匿名受访者 41",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P042",
+        "brand": "品牌丙",
+        "age": "30–44岁",
+        "label": "匿名受访者 42",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P043",
+        "brand": "品牌甲",
+        "age": "30–44岁",
+        "label": "匿名受访者 43",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P044",
+        "brand": "品牌乙",
+        "age": "30–44岁",
+        "label": "匿名受访者 44",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P045",
+        "brand": "品牌丙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 45",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P046",
+        "brand": "品牌甲",
+        "age": "45岁及以上",
+        "label": "匿名受访者 46",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P047",
+        "brand": "品牌乙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 47",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      },
+      {
+        "id": "P048",
+        "brand": "品牌丙",
+        "age": "45岁及以上",
+        "label": "匿名受访者 48",
+        "quote": "日常体验比单一参数更重要。",
+        "weight": 1
+      }
+    ],
+    "aggregates": []
+  },
+  "style": {
+    "title": "用户重新分组",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "background": "#F7F1E8",
+    "ink": "#243449",
+    "accent": "#227F77",
+    "beforeColor": "#9AA7B7",
+    "afterColor": "#227F77",
+    "goodColor": "#227F77",
+    "badColor": "#C65064",
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "titleSize": 58,
+    "numberSize": 220,
+    "unit": "",
+    "prefix": "",
+    "decimals": 0,
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ]
+  },
+  "camera": {
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "zoom": 2,
+    "route": "smooth"
+  },
+  "sequence": [
+    {
+      "phase": "brand",
+      "duration": 2.5
+    },
+    {
+      "phase": "dimension",
+      "duration": 2.5
+    },
+    {
+      "phase": "highlight",
+      "duration": 2.5
+    },
+    {
+      "phase": "quote",
+      "duration": 2.5
+    }
+  ],
+  "fieldMappings": {
+    "id": "id",
+    "from": "brand",
+    "to": "age",
+    "label": "label",
+    "quote": "quote",
+    "weight": "weight"
+  },
+  "metadata": {
+    "source": "演示研究，非真实结论",
+    "sampleSize": 48,
+    "researchTime": "2026年10月",
+    "showSource": true,
+    "showSampleSize": true,
+    "showResearchTime": true,
+    "showTitle": true,
+    "showSubtitle": true
+  },
+  "options": {
+    "mode": "individual",
+    "sort": "id",
+    "fromLabel": "原有品牌",
+    "toLabel": "年龄分组",
+    "highlight": "30–44岁",
+    "selectedId": "P005",
+    "icon": "person",
+    "finalLayout": "grid",
+    "transitionSeconds": 1.5,
+    "colors": {
+      "品牌甲": "#227F77",
+      "品牌乙": "#5A7DBC",
+      "品牌丙": "#B58458"
+    }
+  },
+  "timeline": {
+    "duration": 10,
+    "entrance": 0.3,
+    "hold": 0,
+    "inPoint": 0,
+    "outPoint": 1,
+    "currentTime": 0
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "demo": true
+}

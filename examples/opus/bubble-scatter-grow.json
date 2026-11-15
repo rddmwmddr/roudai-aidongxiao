@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "templateId": "bubble-scatter-grow",
+  "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+  "data": {
+    "records": [
+      {
+        "name": "系统",
+        "importance": 85,
+        "satisfaction": 78,
+        "people": 200
+      },
+      {
+        "name": "影像",
+        "importance": 78,
+        "satisfaction": 65,
+        "people": 150
+      },
+      {
+        "name": "续航",
+        "importance": 92,
+        "satisfaction": 82,
+        "people": 250
+      },
+      {
+        "name": "外观",
+        "importance": 58,
+        "satisfaction": 88,
+        "people": 100
+      }
+    ]
+  },
+  "style": {
+    "title": "体验优先级 · 重视与满意",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "background": "#F7F1E8",
+    "ink": "#243449",
+    "accent": "#227F77",
+    "beforeColor": "#9AA7B7",
+    "afterColor": "#227F77",
+    "goodColor": "#227F77",
+    "badColor": "#C65064",
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "titleSize": 58,
+    "numberSize": 220,
+    "unit": "",
+    "prefix": "",
+    "decimals": 0,
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ]
+  },
+  "camera": {},
+  "sequence": [],
+  "fieldMappings": {
+    "label": "name",
+    "x": "importance",
+    "y": "satisfaction",
+    "size": "people"
+  },
+  "metadata": {
+    "source": "演示研究，非真实结论",
+    "sampleSize": 200,
+    "researchTime": "2026年10月",
+    "showSource": true,
+    "showSampleSize": true,
+    "showResearchTime": true,
+    "showTitle": true,
+    "showSubtitle": true
+  },
+  "options": {
+    "xMin": 0,
+    "xMax": 100,
+    "yMin": 0,
+    "yMax": 100,
+    "xLabel": "重视程度",
+    "yLabel": "满意度",
+    "sizeLabel": "气泡面积 = 涉及人数",
+    "xUnit": "分",
+    "yUnit": "分",
+    "referenceX": 70,
+    "referenceY": 75,
+    "highlight": "影像"
+  },
+  "timeline": {
+    "duration": 6,
+    "entrance": 0.3,
+    "hold": 1,
+    "inPoint": 0,
+    "outPoint": 1,
+    "currentTime": 0
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "demo": true
+}

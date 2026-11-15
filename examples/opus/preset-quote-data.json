@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "templateId": "kinetic-narration",
+  "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+  "data": {
+    "cues": [
+      {
+        "start": 0.3,
+        "end": 2,
+        "text": "日常体验比单一参数更重要。",
+        "keywords": [
+          "日常体验"
+        ],
+        "emphasis": "color"
+      },
+      {
+        "start": 2,
+        "end": 4,
+        "text": "有68%的受访者，优先考虑系统体验。",
+        "keywords": [
+          "68%",
+          "系统体验"
+        ],
+        "emphasis": "scale"
+      },
+      {
+        "start": 4,
+        "end": 7,
+        "text": "稳定与顺手，是购买决策的重要因素。",
+        "keywords": [
+          "稳定",
+          "顺手"
+        ],
+        "emphasis": "position"
+      }
+    ],
+    "chart": {
+      "templateId": "poll-results-bars",
+      "labels": [
+        "优先考虑系统体验",
+        "其他人群"
+      ],
+      "values": [
+        68,
+        32
+      ],
+      "unit": "%",
+      "value": 68
+    }
+  },
+  "style": {
+    "title": "原声变成数据",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "background": "#F7F1E8",
+    "ink": "#243449",
+    "accent": "#227F77",
+    "beforeColor": "#9AA7B7",
+    "afterColor": "#227F77",
+    "goodColor": "#227F77",
+    "badColor": "#C65064",
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "titleSize": 58,
+    "numberSize": 220,
+    "unit": "",
+    "prefix": "",
+    "decimals": 0,
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ]
+  },
+  "camera": {
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "zoom": 2,
+    "route": "smooth"
+  },
+  "sequence": [
+    {
+      "phase": "quote",
+      "duration": 2.5
+    },
+    {
+      "phase": "keyword",
+      "duration": 2.5
+    },
+    {
+      "phase": "number",
+      "duration": 2.5
+    },
+    {
+      "phase": "chart",
+      "duration": 2.5
+    },
+    {
+      "phase": "conclusion",
+      "duration": 3
+    }
+  ],
+  "fieldMappings": {},
+  "metadata": {
+    "source": "演示研究，非真实结论",
+    "sampleSize": 200,
+    "researchTime": "2026年10月",
+    "showSource": true,
+    "showSampleSize": true,
+    "showResearchTime": true,
+    "showTitle": true,
+    "showSubtitle": true
+  },
+  "options": {
+    "chartAt": 4,
+    "chartLabel": "优先考虑系统体验",
+    "conclusion": "日常体验，是持续使用与推荐的基础",
+    "conclusionAt": 8,
+    "minReadSeconds": 1.5
+  },
+  "timeline": {
+    "duration": 13,
+    "entrance": 0.3,
+    "hold": 0,
+    "inPoint": 0,
+    "outPoint": 1,
+    "currentTime": 0
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  "demo": true
+}

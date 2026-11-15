@@ -17,12 +17,15 @@
   const errEl = document.getElementById('err');
 
   const fitCanvas = () => {
+    const ratio = S.raw?.motion ? S.raw.motion.output.width / S.raw.motion.output.height : 16 / 9;
+    stageEl.style.aspectRatio = String(ratio);
+    document.documentElement.style.setProperty('--motion-ratio', String(ratio));
     const w = Math.min(1920, Math.round(stageEl.clientWidth * (root.devicePixelRatio || 1)));
     if (!w) return false;
     const want = Math.max(320, w - (w % 2));
-    if (cv.width === want) return false;
+    if (cv.width === want && cv.height === Math.round(want / ratio)) return false;
     cv.width = want;
-    cv.height = Math.round((want * 9) / 16);
+    cv.height = Math.round(want / ratio);
     return true;
   };
   const build = () => {
@@ -87,7 +90,14 @@
       report();
       post({type: 'commit', template: S.raw && S.raw.template, layers: JSON.stringify(layers), label});
     },
-    onSelect: (ids) => post({type: 'selection', ids}),
+    onSelect: (ids) => {
+      post({type: 'selection', ids});
+      const id = ids.find(id => id.startsWith('user:'));
+      if (id && S.raw?.motion?.templateId === 'cohort-regroup') {
+        const motion = root.DMOpus.validate(S.raw.motion);motion.options.selectedId = id.slice(5);
+        S.raw.motion = motion;S.dirty = true;post({type:'motionObject', json:JSON.stringify(motion)});
+      }
+    },
     onElements: (list) => post({type: 'elements', list: JSON.stringify(list.map((e) => ({id: e.id, label: e.label, parent: e.parent, kind: e.kind, group: e.group, first: e.first, last: e.last})))}),
     list: false,
     undo: false,
@@ -95,7 +105,8 @@
 
   let lastNow = performance.now();
   let lastReport = 0;
-  const tick = (now) => {
+  let frameBusy = false;
+  const tick = async (now) => {
     const dt = Math.min(0.1, (now - lastNow) / 1000);
     lastNow = now;
     if (S.scene) {
@@ -120,8 +131,15 @@
       if (S.playing || S.dirty) {
         S.dirty = false;
         try {
-          editor.draw(ctx, Math.min(S.t, S.scene.duration));
+          if (!frameBusy) {
+            frameBusy = true;
+            const raw = S.raw, time = Math.min(S.t, S.scene.duration);
+            await D.Opus.prepareFrame(raw, time);
+            if (raw === S.raw && S.scene) editor.draw(ctx, time);
+            frameBusy = false;
+          }
         } catch (e) {
+          frameBusy = false;
           errEl.hidden = false;
           errEl.textContent = `这个模板画不了这一镜：${e.message}`;
         }
@@ -161,20 +179,29 @@
 
   let exporting = null;
   const api = {
+    motionConfig(json) { return JSON.stringify(D.Opus.configOf(JSON.parse(json))); },
+    validateMotion(json) { return JSON.stringify(root.DMOpus.validate(JSON.parse(json))); },
+    motionCSV(json) { return root.DMOpus.csv(JSON.parse(json)); },
+    importMotionCSV(json, csv) { return JSON.stringify(root.DMOpus.importTable(JSON.parse(json), csv)); },
     // ---------- 预览 ----------
-    load(rowJSON, keepTime) {
+    async load(rowJSON, keepTime) {
       const row = JSON.parse(rowJSON);
       S.row = row;
+      S.scene = null;
       S.raw = Object.assign({}, row, {template: row.tpl});
       if (!keepTime) {
         S.t = 0;
         S.until = null;
       }
+      const raw = S.raw;
+      try { await D.Opus.prepareAssets(raw); } catch (e) { post({type: "sceneError", message: e.message}); throw e; }
+      if (raw !== S.raw) return 0;
       build();
       if (S.scene) {
         // 切到一镜时停在最后一帧：所有元素都看得见，马上就能调。按空格从头播放
-        if (!keepTime) S.t = Math.max(0, S.scene.duration - 0.05);
+        if (!keepTime) S.t = row.motion ? row.motion.timeline.currentTime : Math.max(0, S.scene.duration - 0.05);
         S.t = Math.min(S.t, S.scene.duration);
+        await D.Opus.prepareFrame(S.raw, S.t);
         editor.bind(S.raw);
         D.ensureGlyphs(rowJSON).then((loaded) => {
           if (loaded) build();
@@ -267,20 +294,25 @@
       return JSON.stringify({categories: D.CATEGORIES, items: D.catalog()});
     },
     // 时间线上的胶片：这一镜从出来到结束的几个瞬间
-    frames(rowJSON, count) {
+    async frames(rowJSON, count) {
       const row = JSON.parse(rowJSON);
       const canvas = document.createElement('canvas');
       canvas.width = 192;
       canvas.height = 108;
       const g = canvas.getContext('2d', {alpha: false});
       try {
-        const scene = D.createScene(Object.assign({}, row, {template: row.tpl}), 192);
+        const raw = Object.assign({}, row, {template: row.tpl});
+        await D.Opus.prepareAssets(raw);
+        const scene = D.createScene(raw, 192);
         const pick = D.thumbTime(row.tpl, scene);
-        return Array.from({length: count}, (_, i) => {
+        const frames = [];
+        for(let i=0;i<count;i++) {
           const t = count === 1 ? pick : scene.duration * (0.3 + (0.68 * i) / (count - 1));
+          await D.Opus.prepareFrame(raw,t);
           scene.draw(g, t);
-          return canvas.toDataURL('image/jpeg', 0.7);
-        });
+          frames.push(canvas.toDataURL('image/jpeg', 0.7));
+        }
+        return frames;
       } catch (e) {
         return [];
       }
@@ -318,8 +350,9 @@
       return JSON.stringify(out);
     },
     // 挑动效时的预览：用这一镜自己的字把这个动效演一遍。缺数据的放样例，并说明是样例
-    preview(rowJSON, id) {
+    async preview(rowJSON, id) {
       const row = D.adopt(JSON.parse(rowJSON), id);
+      await D.Opus.prepareAssets(Object.assign({}, row, {template:id}));
       const canvas = document.createElement('canvas');
       canvas.width = 480;
       canvas.height = 270;
@@ -327,10 +360,8 @@
       try {
         const scene = D.createScene(Object.assign({}, row, {template: id, tpl: id}), 480);
         const count = Math.max(12, Math.min(36, Math.round(scene.duration * 10)));
-        const frames = Array.from({length: count}, (_, i) => {
-          scene.draw(g, (scene.duration * i) / (count - 1) * 0.995);
-          return canvas.toDataURL('image/jpeg', 0.72);
-        });
+        const frames = [];
+        for(let i=0;i<count;i++){const t=(scene.duration*i)/(count-1)*0.995;await D.Opus.prepareFrame(Object.assign({},row,{template:id}),t);scene.draw(g,t);frames.push(canvas.toDataURL('image/jpeg',0.72));}
         return JSON.stringify({frames, seconds: Math.min(scene.duration, 4), sample: !!row.sampleData});
       } catch (e) {
         return JSON.stringify({frames: [], seconds: 0, sample: false});
@@ -369,6 +400,7 @@
       const row = JSON.parse(rowJSON);
       const tpl = D.TEMPLATES[row.tpl];
       if (!tpl) return JSON.stringify({errors: [`没有「${row.tpl}」这个模板`]});
+      if (row.motion) { try { D.Opus.configOf(Object.assign({}, row, {template: row.tpl})); return JSON.stringify({errors: []}); } catch(e) { return JSON.stringify({errors: [e.message]}); } }
       if (tpl.custom) return JSON.stringify({errors: []});
       return JSON.stringify({errors: D.validate(Object.assign({}, row, {template: row.tpl})).errors});
     },
@@ -385,7 +417,11 @@
       return JSON.stringify(row || null);
     },
     reviewRows(rowsJSON, source) {
-      return JSON.stringify(root.DMBoard.reviewRows(JSON.parse(rowsJSON), source));
+      const rows = JSON.parse(rowsJSON).map(row => {
+        if(row.motionInput) { row.motion=root.DMOpus.fromAI(row.tpl,row.motionInput,row.motionInput.style?.title||row.line);delete row.motionInput; }
+        return row;
+      });
+      return JSON.stringify(root.DMBoard.reviewRows(rows, source));
     },
     // ---------- 导出 ----------
     probes(rowJSON) {

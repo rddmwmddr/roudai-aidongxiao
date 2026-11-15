@@ -1,0 +1,3317 @@
+{
+  "title": "重构调研 · 全部模板（演示数据）",
+  "rows": [
+    {
+      "id": 1,
+      "no": "001",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "comparison-dumbbell",
+      "line": "品牌满意度 · 前后对比",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "comparison-dumbbell",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "rows": [
+            {
+              "label": "品牌甲",
+              "before": 42,
+              "after": 58
+            },
+            {
+              "label": "品牌乙",
+              "before": 55,
+              "after": 63
+            },
+            {
+              "label": "品牌丙",
+              "before": 61,
+              "after": 54
+            }
+          ]
+        },
+        "style": {
+          "title": "品牌满意度 · 前后对比",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "beforeLabel": "上一期",
+          "afterLabel": "本期",
+          "sort": "none",
+          "showValues": true,
+          "showDelta": true,
+          "deltaMode": "absolute",
+          "goodDirection": "up",
+          "zeroBased": false
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 2,
+      "no": "002",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "dot-tally",
+      "line": "购买决策 · 人群占比",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "dot-tally",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "groups": [
+            {
+              "label": "购买时优先考虑产品体验",
+              "count": 100,
+              "marked": 68
+            }
+          ]
+        },
+        "style": {
+          "title": "购买决策 · 人群占比",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "cols": 20,
+          "markStyle": "fill",
+          "shuffle": false,
+          "seed": 7,
+          "legend": [
+            "其他人群",
+            "目标人群"
+          ],
+          "totalLabel": "目标人群 / 总人数"
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 3,
+      "no": "003",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "bar-race",
+      "line": "品牌偏好 · 年度追踪",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "bar-race",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "names": [
+            "品牌甲",
+            "品牌乙",
+            "品牌丙",
+            "品牌丁"
+          ],
+          "frames": [
+            {
+              "label": "2024",
+              "values": [
+                32,
+                28,
+                20,
+                20
+              ]
+            },
+            {
+              "label": "2025",
+              "values": [
+                29,
+                31,
+                24,
+                16
+              ]
+            },
+            {
+              "label": "2026",
+              "values": [
+                35,
+                27,
+                26,
+                12
+              ]
+            }
+          ]
+        },
+        "style": {
+          "title": "品牌偏好 · 年度追踪",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "%",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "topN": 6,
+          "scale": "fixed",
+          "showRank": true,
+          "showPeriod": true
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 4,
+      "no": "004",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "number-counter",
+      "line": "净推荐值 · 持续提升",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "number-counter",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "keyframes": [
+            [
+              0,
+              12
+            ],
+            [
+              0.2,
+              12
+            ],
+            [
+              0.8,
+              46
+            ],
+            [
+              1,
+              46
+            ]
+          ]
+        },
+        "style": {
+          "title": "净推荐值 · 持续提升",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "mode": "tick",
+          "label": "净推荐值 NPS",
+          "separator": ","
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 5,
+      "no": "005",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "card-stack-cascade",
+      "line": "研究总览 · 从指标到发现",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "card-stack-cascade",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "cards": [
+            {
+              "title": "系统体验",
+              "body": "响应更快，常用任务路径缩短",
+              "value": "82分"
+            },
+            {
+              "title": "影像体验",
+              "body": "夜景与人像成为满意度提升的主要原因",
+              "value": "78分"
+            },
+            {
+              "title": "续航表现",
+              "body": "全天使用的安心感得到改善",
+              "value": "86分"
+            },
+            {
+              "title": "品牌推荐",
+              "body": "推荐意愿持续提升",
+              "value": "+12分"
+            }
+          ]
+        },
+        "style": {
+          "title": "研究总览 · 从指标到发现",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "layout": "bento",
+          "focusIndex": 1,
+          "focusAt": 2,
+          "focusHold": 1.8,
+          "dimTo": 0.22
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 6,
+      "no": "006",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "poll-results-bars",
+      "line": "购买手机时，哪些因素最重要？",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "poll-results-bars",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "options": [
+            {
+              "label": "系统体验",
+              "value": 72
+            },
+            {
+              "label": "影像表现",
+              "value": 65
+            },
+            {
+              "label": "电池续航",
+              "value": 58
+            },
+            {
+              "label": "外观设计",
+              "value": 36
+            }
+          ]
+        },
+        "style": {
+          "title": "购买手机时，哪些因素最重要？",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "%",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "questionType": "multiple",
+          "inputMode": "percent",
+          "totalVotes": 200,
+          "highlight": 0,
+          "winnerLabel": "",
+          "order": "input",
+          "stagger": 0.18
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 7,
+      "no": "007",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "sankey-flow",
+      "line": "品牌迁移 · 上一部到本次购买",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "sankey-flow",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "links": [
+            {
+              "from": "品牌甲",
+              "to": "品牌甲",
+              "value": 60
+            },
+            {
+              "from": "品牌甲",
+              "to": "品牌乙",
+              "value": 40
+            },
+            {
+              "from": "品牌乙",
+              "to": "品牌甲",
+              "value": 20
+            },
+            {
+              "from": "品牌乙",
+              "to": "品牌乙",
+              "value": 80
+            }
+          ]
+        },
+        "style": {
+          "title": "品牌迁移 · 上一部到本次购买",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "highlight": "",
+          "nodeColors": {},
+          "showValues": true,
+          "linkOpacity": 0.5
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 8,
+      "no": "008",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "funnel-conversion",
+      "line": "购买路径 · 从认知到下订",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "funnel-conversion",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "stages": [
+            {
+              "label": "听说",
+              "value": 1000
+            },
+            {
+              "label": "考虑",
+              "value": 600
+            },
+            {
+              "label": "进店",
+              "value": 360
+            },
+            {
+              "label": "试驾",
+              "value": 180
+            },
+            {
+              "label": "下订",
+              "value": 90
+            }
+          ]
+        },
+        "style": {
+          "title": "购买路径 · 从认知到下订",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 1000,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "rateMode": "previous",
+          "showConversion": true
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 9,
+      "no": "009",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "bubble-scatter-grow",
+      "line": "体验优先级 · 重视与满意",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "bubble-scatter-grow",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "records": [
+            {
+              "name": "系统",
+              "importance": 85,
+              "satisfaction": 78,
+              "people": 200
+            },
+            {
+              "name": "影像",
+              "importance": 78,
+              "satisfaction": 65,
+              "people": 150
+            },
+            {
+              "name": "续航",
+              "importance": 92,
+              "satisfaction": 82,
+              "people": 250
+            },
+            {
+              "name": "外观",
+              "importance": 58,
+              "satisfaction": 88,
+              "people": 100
+            }
+          ]
+        },
+        "style": {
+          "title": "体验优先级 · 重视与满意",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {
+          "label": "name",
+          "x": "importance",
+          "y": "satisfaction",
+          "size": "people"
+        },
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "xMin": 0,
+          "xMax": 100,
+          "yMin": 0,
+          "yMax": 100,
+          "xLabel": "重视程度",
+          "yLabel": "满意度",
+          "sizeLabel": "气泡面积 = 涉及人数",
+          "xUnit": "分",
+          "yUnit": "分",
+          "referenceX": 70,
+          "referenceY": 75,
+          "highlight": "影像"
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 10,
+      "no": "010",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "heatmap-calendar",
+      "line": "功能使用 · 日历追踪",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "heatmap-calendar",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "records": [
+            {
+              "date": "2026-10-01",
+              "value": 0
+            },
+            {
+              "date": "2026-10-02",
+              "value": 5
+            },
+            {
+              "date": "2026-10-03",
+              "value": 8
+            },
+            {
+              "date": "2026-10-05",
+              "value": 3
+            },
+            {
+              "date": "2026-10-08",
+              "value": 12
+            },
+            {
+              "date": "2026-10-12",
+              "value": 7
+            },
+            {
+              "date": "2026-10-16",
+              "value": 9
+            },
+            {
+              "date": "2026-10-20",
+              "value": 2
+            },
+            {
+              "date": "2026-10-25",
+              "value": 6
+            }
+          ]
+        },
+        "style": {
+          "title": "功能使用 · 日历追踪",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "startDate": "2026-10-01",
+          "endDate": "2026-10-31",
+          "levels": 5,
+          "maxValue": 12,
+          "highlight": "2026-10-08",
+          "showLegend": true
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 11,
+      "no": "011",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "testimonial-card-carousel",
+      "line": "用户原声 · 真实体验片段",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "testimonial-card-carousel",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "testimonials": [
+            {
+              "quote": "我最看重的是每天都能顺手使用。系统升级之后，常用功能更好找了，不需要在几个页面之间来回切换。",
+              "name": "受访者 P01",
+              "role": "重度通勤用户"
+            },
+            {
+              "quote": "拍照清晰当然重要，但我也希望电池能撑到晚上。对我来说，稳定的日常体验比某一个参数更有说服力。",
+              "name": "受访者 P02",
+              "role": "家庭影像记录者"
+            }
+          ]
+        },
+        "style": {
+          "title": "用户原声 · 真实体验片段",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "holdSeconds": 2,
+          "moveSeconds": 0.5,
+          "showAvatar": false,
+          "showRating": false
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 12,
+      "no": "012",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "timeline-ruler",
+      "line": "追踪研究 · 关键节点",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "timeline-ruler",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "events": [
+            {
+              "date": "2026-09-01",
+              "title": "首周回访",
+              "body": "记录初次使用体验"
+            },
+            {
+              "date": "2026-09-20",
+              "title": "OTA 升级",
+              "body": "系统更新后补充回访"
+            },
+            {
+              "date": "2026-10-01",
+              "title": "首月回访",
+              "body": "关注习惯形成与新鲜感变化"
+            },
+            {
+              "date": "2026-12-01",
+              "title": "首季回访",
+              "body": "观察推荐意愿与长期满意度"
+            }
+          ]
+        },
+        "style": {
+          "title": "追踪研究 · 关键节点",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "scale": "linear",
+          "highlight": 1
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 13,
+      "no": "013",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "split-compare",
+      "line": "升级前后 · 操作路径对比",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "split-compare",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "left": {
+            "label": "升级前",
+            "desc": "三步进入设置",
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAGQCAYAAAA+89ElAAAQAElEQVR4AezdB7wcVf338d9Nb4R00kNISCAUAelFEKQJgqIPqEgTBUFUQNC/0gRERBGlCIggTVQUUVBAQHoRMBSBEAikkd5JSEJ6nvnO3DM7d+/uvbt328zOJ6+c6eXM+5y7+9szrd1HS+duJGFAHaAOUAeoA9QB6gB1ID11oJ3xDwEEEEAghQIcMgIIpFmAADDNpc+xI4AAAggggEAqBQgAU1nswUHTRQABBBBAAIF0ChAAprPcOWoEEEAAgfQKcOQIGAEglQABBBBAAAEEEEiZAAFgygqcw0XAF6CDAAIIIJBqAQLAVBc/B48AAggggAACaRJwx0oA6CToI4AAAggggAACKREgAExJQXOYCCCAQCBAFwEEEDBuAqESIIAAAggggAACaROgBTBtJW5mHDICCCCAAAIIpFuAADDd5c/RI4AAAgikR4AjRSAUIAAMKRhAAAEEEEAAAQTSIUAAmI5y5igRCAToIoAAAggg4AkQAHoI/EcAAQQQQAABBOpZIPvYCACzRRhHAAEEEEAAAQTqXIAAsM4LmMNDAAEEAgG6CCCAQEaAADBjwRACCCCAAAIIIJAKAQLAVBRzcJB0EUAAAQQQQAABCRAASoGEAAIIIIBA/QpwZAg0EyAAbEbCBAQQQAABBBBAoL4FCADru3w5OgQCAboIIIAAAghEBAgAIxgMIoAAAggggAAC9SSQ71gIAPPJMB0BBBBAAAEEEKhTAQLAOi1YDgsBBBAIBOgigAACzQUIAJubMAUBBBBAAAEEEKhrAQLAui7e4ODoIoAAAggggAACUQECwKgGwwgggAACCNSPAEeCQF4BAsC8NMxAAAEEEEAAAQTqU4AAsD7LlaNCIBCgiwACCCCAQA4BAsAcKExCAAEEEEAAAQSSLNBa3gkAWxNiPgIIIIAAAgggUGcCBIB1VqAcDgIIIBAI0EUAAQTyCxAA5rdhDgIIIIAAAgggUJcCBIB1WazBQdFFAAEEEEAAAQRyCRAA5lJhGgIIIIAAAskVIOcItCpAANgqEQsggAACCCCAAAL1JUAAWF/lydEgEAjQRQABBBBAoAWBugoA53+wJjzUjRvN1qzd4KcNG7yRcE7LA6++t8wefHGBrfbWbXnJts2dNvcj++Pjc+y9WStb3MCcxavt6nun27NvLLHlH61vcdl6nXnfc/PtN/+c4afZC1cXfZgqQ7f+w+MXNlt/5ar19rdn59m9z8yzpz3nZgtUcMKylets4dI1flq3Pnf9VB2uYBbYNAIIIIBAHQoUekh1EQDqi/SSOyfbD26eZO/MWOEf+1vTl9tpV7/lpyvunupPK6Tz2CuL7a9eQHDGtRNt0sxgW4WsV8gydz022y79/WT79yuL7DcPzLCWvuCf/t9ie33Kh3brw7PsO7+eWLGAtJB812qZ/76z1F56O0iT57QcMOfK49p1G8P1n3xtcbNFZntB9j9fWGAPeAH/I/9daBu8AtHw9387yRSgNVuhjBMUmGo/SrMXNQ9uX3l3mZ3yywlhfc7e9R+8HxEtpXlLmm/TbeOhlxba/c/PLzkt/nCt2yR9BBBAAIGECSQ6AFy5er3d/eRc+8Et79r0eR/59Ff+ZZqp9cwfaeysz9PC0jg77Kml8J3GoE/D/Xt1MrUS/cwLIAtJz0/4INxWroH9d+wbTl68bK09/XrzoEQLeHGIPfNmZlt7b9fbOndMdFHpsPImtbo+++YSe3HiBy0GxXk30MYZXSKmq9dtsN8/OsdvDdQPiqu8eqRyyLXpf/xnvhVSH9wy+jGSazv5pk2d85H9+r73TXXQr89ZAaLaCx/zfkS0lKbPW5Vv83av1+p5nxcAlprUmp13J8yooQC7RgABBFoXSGRUodaNPz0xx2sZe9seGb/Q/6J0hzp2aHfr2L7BjRbVf2v6inBbIwd2td49OtpaL3hUq2IhaemKlltEBvXpbLtutWmYJ30BhyORgZcnLbWPvODWTfrsXgPcYNX7N/5jhl3xp6klpcdfzR3ouoO589HZduu/ZtlND8y0Rcsyp/HdfPUf9lrotFx20ilczW9L6hQJAPUj4dO79bN27Rr8Tc1YsMo/PeyPZHXe9U7fF1If3DJTvdP+J1/5pin98q/TsrbWfHTEwC62xaCu/gwFgT/90xTTjx1/Qpk7O4/paUrRzWpcKdc05xOdxzACCCCAQPIEEhMA6nqup7wWs4tue89+6LX4PfryojBYE/vwAV3sB1/ews45enPrt2knTSo6PTdhSbjOvh/rEw4XOjBqcLdWF/30bv3DZZauWGdq7QknNA7c57UwNQ6aWv8UiLrxQvrlXObNacv9U+E6Hd7W9O6s0k+lq1X3Se+0eHZ6rJXgsiWLaKvqGu90serNSQcPCVfR6WAFguGExoFNu3ewrp3b+8ki/xQcuenR/ibdOoRLfbR6Qzicb6BdQ4Od+fnNrUfX9v4iugb0+vtm+MPZHf2ouPxrY0yp2DrbsUODnXbEcD/13qSjv2mZuGmb9e7sT9NxuWnbjOjhT6ODAAIIIJBsgUQEgOMnLbMzrp1odzwy22YubH5q68v7D7KLjh9towsIwPIVly7E137cfNdSpy/735y1jSnpy9HNv+7b4+zGM7cJW4w0fcRmQauNhl267K7J9vWrJoRJ1yq6eer/5I9TwnluuegND8++saTZfJ0C1Loks/Yl1OAunTIrr1sfBGZ7btPLxnityM72kfEL3WDYP/nQoXbdt7a2a70UrRNnfX6E/fK0reygj/e1b312uL+Mlttj617huoUOdO/S3s7ygkC3/MT3g0Bc47q5SX2lbt5yA3p1MqVNGgNGTS8k6ZAV4Cqt9U6Bax1dB6lxpTWN0zRd40orVq3TKAkBBOIpQK4QKFgg8w1Y8CrVX3DLId2atPapdUWtEi4nw7zWPzfc1v5477Trhsa7hXcZG5ym1ak+ba+Dd0pZSaeDNa7U1QselixfG+ZLLSjRYEDLKKnFR9uNJk13KTrdDbt5ru+mu76bXo3+ecduYRefOLqkdPR+A0vO6uf23szUypWdLj1py2bbvv2RWaabLG7918xw3vwP1vjTNP2D5UEQ06lDpvorGHILf+3TQ/3A/qCd+9mJkRZBN9/13525Irw5p6fXyrfVsO52zm/eNp3a/+2DM0u+nnHzgV3t8N37+7v7xPa9w8BULcf+RK+jVkuv16b/qk8/uv09U1Irozay1msJ1bjSksabPKLLTZkTXGurZUkIIIAAAskVaJeErKsV7pM79LH9vNOyP/RO86pVZUQZgr7osT8yflE4esSeA+y5N5fYT73WOT2KxX3h6otQC+nUmfq6tkt9pXytj6O94FXXE5YrqXWqQTusUtIpxqH9ulgpqRynsFUHBjS2dEX7CryyKZ598wP/7t/XJn/YZJa7o3j2oqAV2TvTGs5X2SoI0il5nbJWfVO5X3bXFPvJH6aEy0UHnvFaZ934gV6rn36UqHw0TcGTbmzRcCnpyL0G2HEHDrYTDsqcmp44fXm4yX49g1O34YQCBtRSqLzmStmr51rGTWvfrpo1MTtnjCOAAAIIlCKQiABQB/iVTw32vwgLuc5OyxeTZi5YFd5FPG5EDxvct7M93BgQ6lEs78//KGzp03ZdS9+U2ZlHk6iVUvOyk1qQzv/KKCtX+v4XR2bvgvEiBd6dudJ0LeHdT8xpsqYet/Nj75T9bx+YabrDVncl6+7yaKDvVtA1qS9MXOqP6gfBATsFd3gfE2ntvPvJubZufWkn7Nt5Uap++Pg78jra2qMvZ36sqJXQm9zs//rG1uxmM7wJV3mnqX979jaWK+kUuLeI/1+XVuRaxk372KhN/OXoIIAAAgjUXqDYHCQmACz2wIpZXl/UbvmjvFONk73AbuHS4G5UndrdbuQmtmpNcI2YlnN3j+ouT40rtRSY6stY1221lPIFCgo0rvnbdLvqnml2z9Nztau6SPc8Pc8UgCmtjNzxHJ0efc7cv72gR8vmS5O807EORtfh/er0reyyr2ZOD/fxWso0TenZCUtMdxM/4m3TrdNSXwG/yiG6jPKpVkNNGz24u/3Pa2188MUF9uBLC/3Tx5quO7mjrYSa1lrSdXbvefUvmqLXvSow1Q0x2o4uhdhhdCYI69a5vSb7Scv95am5dv3975taMv2JXkd3detGqnxJz170FvP///OFBZZvOU1XoOwvSAcBBBBAIHECqQ8A9VDmtyKn1H7+56lNTvm5R7AsX5V5G0d374tWQZ2+rF2JPzx+of/sNj2uRKcS3XT1FSyc1vhQ6nx993gQfWlfcNu7/nVZH3lB54cr1/nBxYRpy01J26uH9NBLC0wBmJKuO3PHpABE05SiQZeCIE3Ll1xrnLaju2d1522Prpm7bzu0azBNU9IpZC2XnQb362x7b9vbvvCJzeyMzw63S0/a0r/5R5ccKAh0y6vcH391kRs13aChawv1APGn/re4SWux7iTemO+BguEWMgMK9i/3TjlHk7sDWM8f1Ftk3NKH7NLP2nkthG58aP8ubtDUavmv/y60lyctswWNP2Y0Uy3assyXomWhh2HnW07TtQ9tkxQXAfKBAAIIFC6Q+gDQ3RDgyKJBh1pY9hzXy58VbUXRF6OuFfNnNHZ0fZne3vDnp+b6pw8bJxfdm7VwtekuYAUZajEsZANqidFF+0pq2SpknTQvc8COfe1L+w+yMz8/woZFgqYv7jfITjpkiB26a3/r1b2jderQYLr5J9tK10NGA8Ls+Wo1Vt3RdF0LOPH90h+Do5tY/v7cfG3ST3pO4ME79/OHXUeXL+gUrk5Ju2m6Xm+190PCjesxRFovX3LLqX+Qt/18y2n6ATsW/6gkbZeEAAIIIFB7gUQEgGq1UGATTdPnBxfyi/DBFxf6p/Si86MPCJ67ZE2z+S6A092V2oaSe+6ZhpUO261/eDpv6fLMQ54VDCrY05erS1reJd344Yaz+7pu6vP7bGZKn2q8bix7mWLHp8xZaQoYlZLSKnPhcaPs/GPzp7O/sHkTBl372NLy7m7ZJivlGdlpy54me53aj95Brru63Sq3PDTTvv/bSaaAPrsBT41ueuaegjAFSXp24DePHO4/iuiaM7a2K08da6cePtTflG4KGdS3sz9cSGf/Hfqarifcd/umwdWAXp3Cx8KMHdbdvv/FLSwa6GnbytfJhw71H090yznbmpKu19tm88yz++Sku7IVCOoZk9lJ23Fpn+16W/Z8jR++R3/TNpRPtyx9BBBAAIFkCSQiANQr1nTRfjS566/E/cbUD/2L+qPzo4GQrsWKztOwgiWtqy9Wne67/jvj7JtHDtMkP+k0ou7s9Ee8joI+rxf+36xPpyYX0Ucfx9FSAHiA1/qkL1+l6MX94YZjOKBT5N/41QQrNl18x3t5j0bPTBw5qKu5tHDZGvvVvdPs+bc+sPbtG0zzoyuPHNgtXFbrvDZ5mR/0KoDTeJ/GBxlH18keVpnf8ehsmxd5T250FqvWDQAAEABJREFUPdcarOXcdXa53iGs7epmj/O8AFZ9BUU3/GOG6Xh/1HjM226+iX37cyO8QG2k/0YZrVNIOnTXfqabLxRgZS+/1fDutsvYTf03d+ih5Xower50/3/m+y3J2dtw44++vNAuuPXdZsnNVz/XfE373UOzNJuEAALxESAnCBQt0K7oNeplhYbMgew4uqfplN4fHs/cFfrlAwY3Of0XvSFBa+raKvWVdNp4YeN1VrrZQNvS9Fxp0bK1Nnfxaj9Fr83KtWyh0xoaIgdT6EpFLKfASNeGFZtWFvDWC2VDN8D8/t+zTddO6to6BSeani/NWrjK/vnCAtPz/s649i3TeL5l3XSdQtUpcl2jN21u5ll2fSNvjXFlrOs43Xpq4SuE1/0gca2FWketvW475ejrRiRdI3nXY3P8h6Lrwej50n3e6eILbnvXf4tLa/tWfdXjdFpKaul221F5uWH6CCCAAALJFEhEAPi5vQf4LSk6DeiSu8ZK7CccPKTZ/C98YqBm+WmAd/rMref62W9nUCvi243Xag3u19kGeIHBrQ/Psiv/HLy7dfai1f62XEfXdblr9KJ3oI4Z0t0tkrOvoOW8371rSnrGYM6FipyoZyP+3DvtqKS3URS5equL6zo4BQDFJr3NotWNews84AVzCv68Qf+Ue7TsNC07/emJpndDR1tftayu0dRdsL/4y1SNNkvzlgR3eGtG30jLoQJzBfL/8VohNU/pgKRc56bMZiWV1xaDumVNbT769cOG2i9P36rF9N2sU/LNt8IUBBBAAIEkCSQiANS1ebqWKprWRV7doPeTRudpeHjkQdEKRDQtmqLXT6kF7+YHM2+N0E0Yeh7cs28ssWnzgtai7ABQLT7uQb96BIgrdF2f5Yar1dfpap3KVNJdruXer16Lp2vJik26zq+1vKhl7p8vLggX+8we/U0PfQ4nZA2o9U6npN3kI/fczG+9deMqu7Ouf9vUmvt+5DpRzdfNG3ouo+6e1bhSf+/HgfpKCgC1noaVPj6mp3/nsIajSa247rV9ru/m66YPN019PVvQzSu1r3LePxKQqsXOvaPX9Xf28uz2s9PoTZq0Yrvp2f3r/v5+q6f3f3FP8EMoe13GEUAAAQRqK9DWvSciAMw+OD2CRacj3XR9MbrhYvvr1m/0H9/iWqCy1x8zNGhBcacHo/N1GjIaCGreuBEttwDqrQ4/O2WsKX33/22uVVKbZK7HnchQCCrHT+/aX4M5k8oqGqjr1GX0Ok2tNLBvJ78VUcPRNMAL9C4+cbTpxgb3HEfNVwColjIN6zrPaDB/+O4DNLlZ0mNdlOdoii4UnV7oafDo+i0Nf/GTg8KAVy2dowd3868JVOCnpIDara9rE91wS339GOrQvp0XLOZP3mzjHwIIIIBA/QgkMgCcEWnZ0algBQJtLRI9jy77+Xr6Qjx4l37+3Zy6kH/xssw7f/VqNF2Mr/0pYLjz37PNBaN63Vv26UgtF039vVPLfXt2NKVyvCItuu0kDev0uV61pyDG5fuUw4Z5QUju6xk3bNxoaqlyN2doHb0dRqenNeySnounQGjbkT38R7q46fn62tvAPp2azdbjVKKtyNEFunRqb7tv3atJcvMVTEbnKeB088rRb9+uwXRdotvWAy9mHg2jFk8lzVMd3iZy96+m5UunHj7M9KzDltKZR6X7x0o+u3hMJxcIIIBA8QKJDAD1WBh3qIOLeMSGWyfa33nspuGorv3T9VDXf3ucHb3vQNPz3DTz7RmZ57iNGdbdjtgj0zL09OtLtIifol/M/oQcHV3Er4dPK+lOzhyLpGLSP15YYNFgTo/FaSlg0QOQdZ2mw9FpaQVpbjzaV0Bz1uc3tx1G9YxOzju8xcCgldctoOBJzwl049l9tVSqnkSTW0anr6PTjz9wsJtVtr4eYeM29viri01BnwLkm/45w032Wjr7NHlIdDgjx8D198+w069+q8WkO7RzrMokBBBAAIGECiQyAHxt8och96hBXcPhtgyoRU+tNLo55NITt/RbddSK4zU4mR4/86u/Trdo4KFTwrrOT6cUo/tT0KCWp+i0XMPPvLHEFMwoPfTSwlyLFD0tiSt8Zvf+pufoKe87ju5peiyOhvMlubl5utP6q4cEz9lz00rpd+vc9M/g+AOHWLfO7U3XhuoNLSsib4EpZT+lrKvrE8//3bum0+AKQKOnvvX2kL8+PS8MqNUqrreZFLM/BZAtJdfKXcw2WRYBBBBAIL4CTb/54pvPMGdzFq226Y03Zmjibt6pOPVLSboxYMzQ4No9fQkq2Dj7hrdNDwNW8Dd+0rJw81s23uX7mUgroGZ+coe+Oa8907zspFPWSgoas+elZVzX4Z179EjTw4TVYmdZ/7p6QZk71R6d1dULzLReuezUIqvXy0X3sdvWQauwrlF8c+pyO/P6ty3a6hxdtqVhvcZv/DtLTe86/sT2vU2p0OvyotvVcwv1fEG1mKpuap7ulNZNIBrWjSd67ZuGlU49fGh4naDGW0unHzHMf3j0jWduk7cv89a2w3wEEKi6ADtEoM0CiQsA9Qw0d7T6Atx8YGktgG5bauHQo0N0B+ltD8+y6LVpuqhfyyno6NuzowZtwQeZR4loQiHPotNyesOFHjqtdNFxozWpSdJbIxTkKDU0NJmVd0SPqtHdpkq/vu/9vMvFbYaCQD30WK7RvK30Wtz+8Ngcc4/lcfN0Sv7Sk0Zbduurm19s/9X3ltmN/5jRbDUFhZq4dEXw9heVf/QtIZqXLykY06v59ANCgaMeEK3WuxMOGmJKn9iud75Vm0zXjU7RCaqfGnd3QOvax9O8wE3TokkPitYbTqLTWhtWfb/gtnetpXTzQ5m75FvbHvMRQAABBOIvkKgA8J0ZK2zi+8tDVbUehSNtHNDDde/xTp9967q3/EeHqNXHbWqHUZuYbuxw41sP7+EP6ktYb1rwRxo7upHk/uczF+Q3Ti66d8x+A81djK8At5ANLFq2xn+IsvK+aFkQtBSyXkvLKABWsF2upOC6pf1pnk5v6rT4d7wWN72tRdNcGj6gi11y4mgrx40zG72Naj/X/T13sPxA42Npos8LHN6/6Q8NBYV6naAeGq3LBLxNhv9fmPiB6QYhN6Etp5CjNzq57eiUuW6U0bisXn13mZlGIkkt5IUGq2411Rs9PqelpMDWLU8fAQQQQCD5AokJAPXlpOuxHLkuttdrs9x4W/sLl64x3QnsWli0HX3R6hl2x3utNtFXyukmD51+1jVXWi473ecFgIUEOtnrxXFcpy/1Vo5ypezTrO6Y9dgS3RDz8z9PtdOufsvueXquKbhy83U9ph59cqHXWqrr8tz0tvZV3pfc8Z6/H7cN7UOvA3Tjqmt/emKOvfT2UjfJdIOQG7niT1NNz/jTsyL1ruA3pmauSXXLKHjfY1wvO/XwYZbr5pbVaza4RZu901czFESq75IuUXDv/1XL6Pduesdymc5cuMq+d9Mk06liXc7g1m+pr2PXe4NbSpwCbkmQeQgggED1BUrdYyICQLVqXPL798LHreigv37YMNMjMTRcShrSv0v4BTzMG/7eMSPtvGNH2YjNuvqBodu2Tj8u804JXnLn5DAfOnV52Ve3NN1I4pbTg4T1rLrsU3huvvpqcZm5YJXXmpm5u1jXBGqekuY/8dpi/yaUpyJ3Geu0n+Znpw4dCjxXnL1ijcZ1c8Wt/5plOmX9g5sn+TfFKKiJBn7Kmh7E/ItvjDXd8FDo6XCtp5Y5Ba6PjM/cZOOMVD66a1bLKakMz/vyFrbj6J4Wfcjyoy8vCq/70wOko+Wj9bKT5msbOs2rN7LozRpf+/RQ093KmqfldVpYgaNS9IfFJl07aHaY1IqrAM5N0LWQXz9sqD340gLTNhQsL12xzs32nwOo6wvdBDnqtO4Z10y0vzw111zrnda54f73TemFiZng9u/PzvenaXq+dO+z89zmbcL05eHybbk2MtwQAwgggAACNRNIRAB4x6OZZ+1J6sg9B9jWw4ObNjReSlLopBs6dG3ej04YbbrDV9vTl+hjry7WoJ92Hbup3fRA0+ugtM7APp3tXC9o1DV7/oJe50Wv5Ujvz/UGc/5/6vXFdtHt79ldj80O528SCQLWrttgejeubkJ5sPF0pBYc3K+Les2S7l52rTdquWy2QBsmKOA96eAhVq70xU9mXs2ngEjXTCrQzc6a5qll98pTx9rpRww3taRlL9PauC4TuOuxOeZO5Wr5gb07q2ffPHK46To5jQzzAv7LTx5j7jrSY/YbZLme47jP9k2v29PDvpVPvev32AMG2+VfG2O6plMtaQrE9EYWbT87fXzMpn7rpuqWm6eWbN3V68bV13Wm7nID9VXPFCDr/b4K4rSMkvKgfeotIAo8NazWTM1TUqCtm0PcNY26tlI3NCmpJVTLKKnVUNNaSpNnr9SiflL+3bL6IeNPpFMDAXaJAAIItF2gXdtXrd6a3z5qRPjFrOfFHeEFgOXc+2G79W92mk5fpKd4rS76ktXwkXsNMH0Rm/dPrUY/8FqNdFrOG/VfXaaWQL2yTuN6pIy+xDWcK2XfCKDtq5XLLavgywWibpoCzOgybnql+jrdqjtWy5XUOhbN61cPHRqO6rEu+36sj+mh29d9e2vTHa4yCBcocmB379RrdBUFWZ/bezN/klqNT/3MMDvNSxcdP9qi+1ELqwJoBV3+wl5nQK9Otp+XN28w/H/4HgP8gE/5VauhlglntjCw+9ab+vtTPdG1pbqk4ILjRuVc4+RDh5ha/s76wgi/pVvPPHQtzTqeY/Yb6L+7N+qqYQXOek6g6pQ2rGPRfjTcrUt702npcia1lGvbJAQQQACBZAkkIgDs2qmd/eBLW5hOg7X2vDjHv1nvTvZZL2hTamvgtIvX6vfTr48xncpTIKhrufSl/+OTtjS9gsvtS319KV/stSDq9W7Z8/ScQbXSqPVJgZ3e16vtaFzB4o1njrOhXmuUtuPSsQcM8verVp0LvjLKrj1ja9OpSDdf/SSnwX07m063X/3Nre3np4y14w8cbGpRa1fMud48AGqBO987ja8W3Su9U8hXnbaVaX9ucbX66gHguXbV3QuSzjl6c9N66l/qlbUCQ7eu+lpf/WLTqMHd/LfL/OTkLe18r0wVxOW7qUWB6blHj/SDP7efk72gWXnS8SioU51081xf9VAPsdaNRLrD+quHDHGz/B8qqsvlTPqbCHfAAAIIIIBAYgQSEQBKs1ePDrb71r00WFDSqTyd2lXarYj1sjeuU5C7bbVpOFlBirYdTogMqGVw3IgekSnBoIIPPSR6py17hq8603Y0rlZEtUoFS2a6Q/p18Vtr1KqjU5S5gpXM0skcUjCcffqzXEcyclBX0ynefAFWa/vRemo9yw7+WluvkvN1TMpTIftQcKi75NW6WsjyLIMAAokSILMIlCyQmACw5CNlAwgggAACCCCAAAK+AAGgz0AHgYQJkHo4NYsAABAASURBVF0EEEAAAQRKECAALAGPVRFAAAEEEEAAgWoKlGtfBIDlkmQ7CCCAAAIIIIBAQgQIABNSUGQTAQQQCAToIoAAAqULEACWbsgWEEAAAQQQQACBRAkQACaquILM0kUAAQQQQAABBEoRIAAsRY91EUAAAQQQqJ4Ae0KgbAIEgGWjZEMIIIAAAggggEAyBAgAk1FO5BKBQIAuAggggAACZRAgACwDIptAAAEEEEAAAQQqKVDubRMAlluU7SGAAAIIIIAAAjEXIACMeQGRPQQQQCAQoIsAAgiUT4AAsHyWbAkBBBBAAAEEEEiEAAFgIoopyCRdBBBAAAEEEECgHAIEgOVQZBsIIIAAAghUToAtI1B2AQLAspOyQQQQQAABBBBAIN4CBIDxLh9yh0AgQBcBBBBAAIEyChAAlhGTTSGAAAIIIIAAAuUUqNS2CAArJct2EUAAAQQQQACBmAoQAMa0YMgWAgggEAjQRQABBMovQABYflO2iAACCCCAAAIIxFqAADDWxRNkji4CCCCAAAIIIFBOAQLAcmqyLQQQQAABBMonwJYQqJgAAWDFaNkwAggggAACCCAQTwECwHiWC7lCIBCgiwACCCCAQAUECAArgMomEUAAAQQQQACBUgQqvS4BYKWF2T4CCCCAAAIIIBAzAQLAmBUI2UEAAQQCAboIIIBA5QQIACtny5YRQAABBBBAAIFYChAAxrJYgkzRRQABBBBAAAEEKiFAAFgJVbaJAAIIIIBA2wVYE4GKCxAAVpyYHSCAAAIIIIAAAvESIACMV3mQGwQCAboIIIAAAghUUIAAsIK4bBoBBBBAAAEEEChGoFrLEgBWS5r9IIAAAggggAACMREgAIxJQZANBBBAIBCgiwACCFRegACw8sbsAQEEEEAAAQQQiJUAAWCsiiPIDF0EEEAAAQQQQKCSAgSAldRl2wgggAACCBQuwJIIVE2AALBq1OwIAQQQQAABBBCIhwABYDzKgVwgEAjQRQABBBBAoAoCBIBVQGYXCCCAAAIIIIBASwLVnkcAWG1x9ocAAggggAACCNRYgACwxgXA7hFAAIFAgC4CCCBQPQECwOpZsycEEEAAAQQQQCAWAgSAsSiGIBN0EUAAAQQQQACBaggQAFZDmX0ggAACCCCQX4A5CFRdgACw6uTsEAEEEEAAAQQQqK0AAWBt/dk7AoEAXQQQQAABBKooQABYRWx2hQACCCCAAAIIRAVqNUwAWCt59osAAggggAACCNRIgACwRvDsFgEEEAgE6CKAAALVFyAArL45e0QAAQQQQAABBGoqQABYU/5g53QRQAABBBBAAIFqChAAVlObfSGAAAIIIJARYAiBmgkQANaMnh0jgAACCCCAAAK1ESAArI07e0UgEKCLAAIIIIBADQQIAGuAzi4RQAABBBBAIN0CtT56AsBalwD7RwABBBBAAAEEqixAAFhlcHaHAAIIBAJ0EUAAgdoJ1GUA+M6MFfazu6eG6eQr3zQSBqoDrl7c//x8U6rdn17590y9p46rjudK1HvqRq56Ue/T6rnel+MbpG4CQPflpwqtQte4S+WAqsQ22Gb1BVyduM8LAJVUXxQIKlU/N6XvUcej+q7jUF/jLpW+dbZQLwKuTqjOK6m+qM4rJfEYdTyq7zoO9TXuUhKPhzxXRsDVCdV5JdUX1XmlyuwxWVtNfACoAtYHgJKGk8VPbuMgoA8GJX0oKMUhT63lQXVddV5Jw60tz3wEsgVU55VU55Wy58dxXHVddV5Jw3HMY4F5YrEaCajOK6nOK9UoG7HYbaIDQBUeHwSxqEd1kQl9KCipXsX5gJQ/6n2cSyhZeVOdV1K9inPOlT/qfZxLKFl5U51XUr1KVs7Ll9vEBoD6IFDhlY+CLSEQCKheVfxDIdhV0V3qfdFkrFCgAPW+QCgWqyuBONf7SkMnMgDUlyDN/5WuGunevj4UVM/ipKD8UO/jVCL1lxfqff2VKUfUukC1633rOarOEokLANUyw5dgdSpH2veieqagKw4O1Ps4lEI68kC9T0c5c5RNBeJU75vmrHJjiQoA9SWoSL1yHGwZgaYC+lBQvWs6tbpj2j/1vrrmld1b/LdOvY9/GZHD8gvEod6X/6jybzExASBfgvkLkTmVFVDwpQ+Gyu4l99ap97ldmFp5Aep95Y3ZQ/wEalnvq62RmACw2jCV3B/bTp6APhSSl2tyjEBpAtT70vxYO5kCaan3iQgAaQVJ5h9RPeVaLYBK1Twm6n01tdlXLgHVeaVc8yo1rc7rfaXY2G4ZBVTnlcq4yVhuKhEBYCzlyFTqBNLyqzB1BcsBtyhAvW+Rh5l1KpCGep+IADANBVGnf0N1dVhl+UVYhAj1vggsFq2YAPW+YrRsOMYC1a73taCIfQCo0wG1gGGfCOQSqNaHAvU+lz7TaiVAva+VPPutpUC5630tjyXXvmMfAObKNNMQqJUArXK1kme/tRSg3tdSn33XSqDe633sA8C3Z6yoVdmzXwRqJkC9rxl9BXfMplsToN63JsR8BMonEPsAsHyHypYQQAABBBBAAAEEJBD7ALCezsELnJRsgWrVx2rtJ9mlQe6rJVCt+lit/VTLjf0kW6De62PsA8BkVx9yjwACCCCAgEGAQOwECABjVyRkCAEEEEAAAQQQqKwAAWBlfdk6AoEAXQQQQAABBGIkQAAYo8IgKwgggAACCCBQXwJxPRoCwLiWDPlCAAEEEEAAAQQqJEAAWCFYNosAAggEAnQRQACB+AkQAMavTMgRAggggAACCCBQUQECwIryBhuniwACCCCAAAIIxEmAADBOpUFeEEAAAQTqSYBjQSC2AgSAsS0aMoYAAggggAACCFRGgACwMq5sFYFAgC4CCCCAAAIxFCAAjGGhkCUEEEAAAQQQSLZA3HNPABj3EiJ/CCCAAAIIIIBAmQUIAMsMyuYQQACBQIAuAgggEF8BAsD4lg05QwABBBBAAAEEKiJAAFgR1mCjdBFAAAEEEEAAgTgKEADGsVTIEwIIIIBAkgXIOwKxFyAAjH0RkUEEEEAAAQQQQKC8AgSA5fVkawgEAnQRQAABBBCIsQABYIwLh6whgAACCCCAQLIEkpJbAsCklBT5RAABBBBAAAEEyiRAAFgmSDaDAAIIBAJ0EUAAgfgLEADGv4zIIQIIIIAAAgggUFYBAsCycgYbo4sAAggggAACCMRZgAAwzqVD3hBAAAEEkiRAXhFIjAABYGKKiowigAACCCCAAALlESAALI8jW0EgEKCLAAIIIIBAAgQIABNQSGQRAQQQQAABBOItkLTcEQAmrcTILwIIIIAAAgggUKIAAWCJgKyOAAIIBAJ0EUAAgeQIEAAmp6zIKQIIIIAAAgggUBYBAsCyMAYboYsAAggggAACCCRBgAAwCaVEHhFAAAEE4ixA3hBInAABYOKKjAwjgAACCCCAAAKlCRAAlubH2ggEAnQRQAABBBBIkAABYIIKi6wigAACCCCAQLwEkpobAsCklhz5RgABBBBAAAEE2iiQ+gCwY4fWCQpZpo3+rIZATQQKqdOFLFOTzMdup2QoKQKF1OlClknK8ZJPBFoSaD36aWntOpj3k9N3tTt+tL9ddeaetkm3js2OaOyIXnbbhZ+0m8/b1046fGyz+ZWYcMdF+9vvL97ffnf+fpXYPNtEwOJY76PF8o2jxvl/A/o7+NJBo6OzGEagzQJxr/c6MD7/pUCqhkCqA8Ce3TvZ4H7drX27Buu3aRf7cOXaZuaf3nO4P61r5w7Wu2dnfzi7U+7x9u0brKGhwTp3al/uTbM9BCyu9T5aNPp7a2gI/g769eoSncUwAm0SSEK914Hx+S8FUjUE2lVjJ3Hdx+c/OTLM2oaNG+2HJ+7YJO2302Dbdos+4TKjhm5qF5788SbprC9tH84vduBbR29rt3itfEpDB/TIuXoPr1UyV8q5MBMRKECg0vW+U8f2pvrc0NDQam76eD+q1Lquv4HvH79DzuU7dWhvuf4GtJ+cKzARgRwCFar34Z5UH0cM3CTnmaRwocgAn/8RDAZrIpDqAHDP7QeG6LruY5st+tg2W2TSIXsMsy6dM61wvXp0Mp0SjqaPb9Uv3IYGGhoaTEHhXZccYC7ts8MgzWqWhm3Ww7p4rXxKnTvlLorf/N8nLFdSC0mzDTIBgQIEKlXvTzx8rH+5xK0X7GdXnLGbfwpXdXfM8F55c9Vrk86muqy/gb5eK3yuBXfy/sa0nex07lc+lmtxpiGQU6BS9f74T48J671OMd/ofWbrB01rly7w+Z+zmJhYRYHcUUcVM1CrXR3zqVHWrUsHf/dr123w++ps9FoC35u5zJTUiqFpSkuXr1EvTJqvNGHKknCaTjH86qw9beet+4fTNKBTzOqT6lAgYYdUiXovgstP39UO3HWo6YeUxl1Sy51azQ9tvJTCTaePQDUFKlXvf/T1ne3g3Yc1q/f6QXP43iPsO8dsV83DZF8IFCWQygCwf68u9pl9RoRQ1/3lTVv+kbv+r8Gu/P1r9sT4WeY15vnLeDGhnXfjS/b+vOX+uDrPvz7XLrrpv3b57a9q1P8AuOa7e1k/b9v+hDJ1Xpow33KlNevWl2kPbCYtApWo97L7lBf4qTVDwy7ph5Qb1t/RsQdvaZt6LehuWjH9Dz5cnfNv4Ln/zS1mMyybUoFK1fudxvaz0UN7NlFdG2lM0Ixdtxlgg/p202CbUq7Pfk1bw+d/mzzLvVLSt5fKAPDc43bwgrvg+qT5Sz6y8RMX2ItvzvfLUl9Wh+wx3I49ZEt/XJ2J05bYkmWr7Tf3vqVRPx21X+b6QU3o1LGdHwRamf9dffcbliutX7+xzHtic/UuUIl6L7O9tt9MPT+pXl7o/TA67kdP2F8em+xPU0d/VwftNkyDRae3p3+Q82/gyVdmF70tVkifQKXq/e7bRer9ho12ztX/sRMvecKu8T6zo8p757kEKLpMvuFcn/2apr+zfOswHYFCBdoVumA9Lffsa3NtrfdLTS17V/7+f34w+PALM2zd+g02YcpiLyCcbz+941VTcLje+8NWC2FDQ4NNn7vcFngB48IPVtmfHs18uWXbaFv8gWarMF5rgUrV+wF9Mi0cU2cvs8kzl9lG74/r709N8/+m3HEPHdDdDdZJn8NIgkCl6v2Q/pn6rDo/Z9FKn+NF76zNqjWZMzTUe5+FTgwFUhkA3v/MNDvl8qe9wM/sZ9/a3b9YXf0O7dv5N4H8+Bu72iWn7GIDenf1HxFz/ff28ZfRM8n6e9N0mvfkI7ZqUpwbNpgfVP7irv/ZHQ9OajIvOqILkU/57NampDsg3bwvHjjan6bpbpr6Gs+Xsq811PIkBPIJVKLea18dvb8b9ZXempq5JlbjajlXX8ldH6i+q9PRlnT9vbnpIwdvolX8NG5k7/Bvw813/ZMOH2t6bIa/IB0EcghUqt53aB+cRdIu1XCgvkvzFgfBoMZV39VX4vNfCqS4CKQyABQOirxtAAAQAElEQVT+mrWZX2gab0uKrvPR6nV28mVP2ivvLIxObja8/86Dbd+dgqS7H90C+pJz09009d20XP2jIo+x0bIkBFoTKHe91/7uePAd++Mj7/np2azr8nQTiJZRWrYiuJFKl0u4+rzj2H6a5Sd9Ubrp0TuCdXOVm57d1/WHAyMtkP6G6CCQJVCJev/96160Yy98zE/3PD6lyR57dO0YjkefL8vnf8jCQAwEUhsAyv72B96xOx+a1Cy5pnwt85835jWZ39IHCad9JUaKu0C5672Cvn8+O92UZi1YER6+3qzTpVNwp70mTp61TD0SAjURKHO9z3sM+iHTp2eXcP7LExeEwwwgECeBVAeAj7w40/71nxnN0vzFH4Vl9PSrc5rMX7POO9cbzi1+4Nf3TLDzbnipSbrs1lfCcV035baqR89kLxsd/8Vdr7tF6SNQsEC16v3Xjtzav8zCZey1xtbxlavWh/Xd1Wf9DZx/Y+bvQi3qbr3bvB9qbrlc/bmR021uHfoIZAtUut5vs0Vv+/LBW9p15+4d1vuNG81eficTAPL5n10qjNdSINUBoG7hv/ybu1l22mpEr7BMdK1fdH73LpkWjXChIgZ0TdS0OR+aSzuM6WvnnbSTnXPsx2zk4J628INV4db0JeiWU3+v7Qfat4/Zzgb27eavv2hpZtlwJQaqI5DgvVSj3usC+Y9vlXke5qT3P7AFjXVbN4ioPrukxyt916v/eqaa7r6f5/0Ai7amvz93uV/ftfzshSvte8ftYHqu4OJlq/3p0WUTXCxkvcICla733/3yx+ywvYabO/2ren7VH/5n0frJ53+FC5nNFyWQ6gBwq8172/DNejRLnTu1DxH79erSZH5DQ+bC33ChNg506tjePtf4OJnePTt7AWDmwvfsTerBogfvMcw269PV9Aqh6MXz2csyjkBLAtWo9wrS3J+KWkFu+GvmEUrZedObFFS/O7RvZ2OGb+rfQZy9jBs/8bAx/vME9/7YQLv67D3dZPoItCpQjXrfNBMN/isRm07LjPH5n7FI2lC95DfVAaCCKVeQukBd1/4pRa/zW75yrWladlKLhlu3rf3Tjhpn+tLT+qvXrDed6tJwrnTSZ7ay9u2C4FO/LB9+cUauxZiGQKsCla73X9h/C9MPJ5eRp16d7T9SyY1H+7rB41O7DAkn/e3JaRZ9hEY4wxvQm3s+sWPmtYovv93yDVfeKvxHIBSodL1/6a35kRcKmH8a+JgDR5lawy3HPz7/c6AwqaoCqQ4A+/fqGmLfeO9b/oM89TDPidM+CKfrmg1Ny06X3PJyuExbBnR6bJdxA8JVFfxt2LAxHI8O6GL66MN2n3t9nq34aF10EYYRKFigkvVed+9+dt/Nw7zoDTs33/d2OB4daGhoML0mrqEh+GGjH2F/f2pqdJEmw8E1hcGyej7nLffn3m6TlSoywkaTKFDJei8PfYecevnTdvHNTb8bop/zWk6Jz38pkGotkOoAsF/vLqG/njum1gWlAd5pVjfjY1v2NU3LlfRMJ7dcMf0thvS0s760nf8LUevpmifdbKLh7NTOa/W77LRdvWUbv/jWb7Rb/8EXX7YT44ULVLLe/98JO4R1VTm66g+v5z2l+8MTd7RB/bppMT+1dJpYp3x32ybzg+mZ1+aYrpH1V6SDQAEClaz30d3r7JBeX+imbbV5Lzfo9/n89xnoxEAg1QFg7x6dwyL4fweMslM/N85P0Xc3HrLHMH+am6e+S6d/fly4fqEDvTbp3KTVQ28fufR3TX8xRrd10dd2NrWquGm3P/hO3lNkbhn6CLQkUKl6rxszBvfLvB3hpQnz7Z3pmdb0aJ50c9W4kb3DSU+9Mttef29ROB4d0MX73zhqm3CSWgpp/Qs5GChQoFL1Ptfup8z6MJzcb9NMQwOf/yELAzEQSHUAGL3Zoy1lsc5rjSt2vfXrN5iu99N6ujj+Z3e+5r9nWOPZSXf76svPTX/l7YX22H9nuVH6CLRJoBL1Xtfyfemg0WF+dB3fdfe8GY5nDyz5cHU4SXcB3/T3ieF49oAerdF4lth06vdHvx1v+S6XyF6XcQScQJnqvduc/fSbu9kdF+3vp312GBRO18Ba73NefT8FJ2/8QT7/fQY6MRFIdQD4vWtfsGjSLfrZ5XLHg5OaLKPl3TJr2/BMQD0V/uyrnzf17/73ezZhStNXZ61eu947Zeb2kOkrb1f9kef+ZUQYaquA6nA0qW5lb6vYeq+7ft1NStrWtX9+o8njLzQtmu59Yqr99fEp/t/BRTeNj87yh/Od3r3pb2+ZLpnwF6KDQBEC0Tqv4VLrvW5K0msIlbJfy6lLilzWPlqVuV5bn/t8/jsZ+rUWSHUAOHvhCtObC5T0blE9iiW7QOYsXBkuo+WiX0zR4ez1WhrXDRzf+OnT9o9npjdZTB8kwTMIm94MMnfRSjv76v94gWHT6U1WZqQ6AnWwl9llrvd6PVv0C++NyYvttUm5T+dG+e59cqrp7yB6173mjxney8w1+VnwT63lv/GCP711JJhCF4HiBMpd75etWBtmYPvRfUxvANEEXbLTP3KD4cz5mbfjaD6f/1IgxUEg1QGgKwA9iHn0sE39UZ1imjl/uT+cq+N/OTXOiH4ANE5qc0/XGt78w33tgF2GeN99mXMGuobqnGtesOwvyTbviBURaBQoV73/cuTUrza97Ra9/dNi7vSY6+tHlubnS/ri1MOgL/rax61/r8x1U/qbvOLOVy3fjVL5tsd0BHIJlKvevzZpYbh5PdPv1gv2s1+fu7dd8929vM/wcJbphqXMWO4hPv9zu8Rtar3lJ9UB4Nab97Ybvr+PjWu8GF2tDFfc8aotWpq5PkkFPnRAD9OzzQ7abagd/alRmuQntcz5A23o6MG3n9p1qJ3/1Z1MHxzHHTrG9CHiNrV+/Ua7+9HJpsfN6Ll/bjp9BEoVKHe9d8+ydPlqaGgwtWZnp+5dO1r2P90RqRtCrj57L1PasvGHmFtuxrzl9t1fPW9vvLfYTaKPQJsEyl3v1YK9MnJ6t6GhwXSTRzRzE6cusbe8FJ2mYT7/pUCqtUAqA8CunTvY/52wox986eJ1FYKCv+v+8maza/I0b9MeHU1v7DjhsLH+mzg0TWl8gS/5jrbe6Q0e+pV4y/n72UmHjzV9KEUDP213wpTF9o0rnrb7n5mmURICZRGodr3PzrS7ZlYtfRefsovdduEn7dJTd7H9dx7iPzja+/409083kegZnP/36xfDV8i5ebXrs+ckClSq3utGpLO9HyfT5nzYjEU/2h8fP8suu+3VJvP4/G/CwUiNBVIZAKoVb7tRfUJ6/YrTo1heeHNeOC06MGHKEnNfXm66/ujzLa9ljr/4cTv2wsf89Pwbme3qdFb2r0Qtr+3r+qYzrnzWfuJ9aChPmk5CoFwClar3J1/2pF/PXX3P19cPLB3LshVrbGj/7uE1U5rmkq7TuuGvE+zkHz9pz78+102mj0CbBSpV75Uh3dRx3g0v2SmXP2WX3/6q/dprRNANJl+56HHTo4oUCGo5l/j8dxL04yCQygDw9gfesSmzlvn+asVTa5uutfMn5Ol856rn7Adea4T+2E/96dOmfp5FW5x839PTTK+X00L6Inz57QV27Z/ftBMvecL0xZfrzjQtS0KgVIFa1vto3vVj586HJvmT1q3fYHoMjFq7v/2L5+zca14w/RDyZ9JBoAwC1aj3urHjzcmLTT/2dbNgvmzz+Z9Phum1EEhlACjoS3/3iul5Yr/84+um6+00zSX9kf7h4XdNSS19mr50+Rr/i0rjLoDT9LakH3q/GNXCcdoVz5jelNBSS2Jbts86COQTqGW9j+bpyVdmm1pKTrj4CdMPK13vumjpqugiDCNQNoEy1Puy5YXP/7JRsqESBVIbAOq6vHdnLM3Jp9bAB55735TUSpdzoRIm6otO1ziVsAlWRaBNArWs99kZbqmlJHtZxhEoRSBO9Z7P/1JKknXLKZDaALCciGwrBQIcIgIIIIAAAnUkQABYR4XJoSCAAAIIIIBAeQXqdWsEgPVashwXAggggAACCCCQR4AAMA8MkxFAAIFAgC4CCCBQfwIEgPVXphwRAggggAACCCDQogABYIs8wUy6CCCAAAIIIIBAPQkQANZTaXIsCCCAAALlFGBbCNStAAFg3RYtB4YAAggggAACCOQWIADM7cJUBAIBuggggAACCNShAAFgHRYqh4QAAggggAACpQnU+9oEgPVewhwfAggggAACCCCQJUAAmAXCKAIIIBAI0EUAAQTqV4AAsH7LliNDAAEEEEAAAQRyChAA5mQJJtJFAAEEEEAAAQTqUYAAsB5LlWNCAAEEEChFgHURqHsBAsC6L2IOEAEEEEAAAQQQaCpAANjUgzEEAgG6CCCAAAII1LEAAWAdFy6HhgACCCCAAALFCaRlaQLAtJQ0x4kAAggggAACCDQKEAA2QtBDAAEEAgG6CCCAQP0LEADWfxlzhAgggAACCCCAQBMBAsAmHMEIXQQQQAABBBBAoJ4FCADruXQ5NgQQQACBYgRYFoHUCBAApqaoOVAEEEAAAQQQQCAQIAAMHOgiEAjQRQABBBBAIAUCBIApKGQOEQEEEEAAAQRaFkjbXALAtJU4x4sAAggggAACqRcgAEx9FQAAAQQCAboIIIBAegQIANNT1hwpAggggAACCCDgCxAA+gxBhy4CCCCAAAIIIJAGAQLANJQyx4gAAggg0JIA8xBInQABYOqKnANGAAEEEEAAgbQLEACmvQZw/IEAXQQQQAABBFIkQACYosLmUBFAAAEEEECgqUBaxwgA01ryHDcCCCCAAAIIpFaAADC1Rc+BI4BAIEAXAQQQSJ8AAWD6ypwjRgABBBBAAIGUCxAAmlnK6wCHjwACCCCAAAIpEyAATFmBc7gIIIAAAqEAAwikVoAAMLVFz4EjgAACCCCAQFoFCADTWvIcdyBAFwEEEEAAgRQKEACmsNA5ZAQQQAABBNIukPbjJwBMew3g+BFAAAEEEEAgdQIEgKkrcg4YAQQCAboIIIBAegUIANNb9hw5AggggAACCKRUINUBYErLnMNGAAEEEEAAgZQLEACmvAJw+AgggEAKBThkBFIvQACY+ioAAAIIIIAAAgikTYAAMG0lzvEGAnQRQAABBBBIsUDsA8Cxw7qnuHg49LgJVKs+Vms/cfMlP/EUqFZ9rNZ+4qlMrqolUOh+6r0+xj4ALLSgWA4BBBBAAAEEEECgMAECwMKcWAoBX2ArWqR9h2R3yH2xAtT7YsVYvh4E6r3exz4APHLPAfVQjzgGBIoSoN4XxcXCdSJAva+TguQwEiEQ+wCwEufgE1EyZDKWAkdU6QcJ9T6WxZ/aTFHvU1v0qT7watX7WiHHPgAUDF+GUiDVWqDarRPU+1qXOPuXQJ3Vex0SCYFWBapd71vNUAUWSEQAmIaCqEDZssmEC1DvE16AZL9NAtT7NrGxEgJFz6b85QAACuhJREFUCyQiAFRLiFLRR8cKCGQLtHFcX0rVPh2gOq/UxiyzGgIlC1DvSyZkAwkUqEW9rwVTIgJAwahA1CchkCYB6n2aSptjdQLUeydBv5wCbKupQGICQLWE8KHQtPAYq46A6l21W//ckVHvnQT9agtQ76stzv7iIFDLel/t409MACgYfQnrC1HDJASqIRCHDwPqfblKmu0UKkC9L1SK5epJIA71vpqeiQoABfO9Y0YaQaAkSJUWUD1T8FXp/RSyfep9IUosUw4B6n05FNlG0gTiVO+rZZe4AFAw+jJUpK7hYhLLIlCogD4MVM8KXb4ayyk/1PtqSKd3H9T79JZ9mo88jvW+GuWRyABQMGqZ4ctQEqRyC6heKdgq93bLsT3qfTkU2UYugTqv97kOmWkIWJzrfaWLJ7EBoGDcl6EKUOMkBEoRcL8CVa9K2U6l11X+VOeVKr0vtl//AtT7+i9jjrC5QFLqffOcl29KogNAMejLUElfhkqaRkKgmUALE9wHgVr9NNzCorGZpTqvpDqvFJuMkZHECKiuq84raTgJGVedV1KdV0pCnsljvARU11XnlTQcr9xVNzeJDwAdlz4UlG45Z1u/SVcfDipcJbcMfQRUH1zSB4Dqi/qalkQd1XklHYfqvJKORSmJx0OeKyOg+uCS6rvqi/qaVpk9VnarqvNKOg7VeSUdi1Jl98zWkySg+qCkpPqu+qK+xpN0HJXKa90EgFEgfTAoqaCVVOikbQ2DbU31waV6+xBQnVdyx0d5U+ddHXB1Qn3qPfXC1Yt676u+u1Rv9T4a87R1uC4DwLZisB4CCNSjAMeEAAIIIJAtQACYLcI4AggggAACCCBQ5wKpCADrvAw5PAQQQAABBBBAoCgBAsCiuFgYAQQQQCBBAmQVAQTyCBAA5oFhMgIIIIAAAgggUK8CBID1WrIcVyBAFwEEEEAAAQSaCRAANiNhAgIIIIAAAggkXYD8tyxAANiyD3MRQAABBBBAAIG6EyAArLsi5YAQQCAQoIsAAgggkE+AADCfDNMRQAABBBBAAIE6FajrALBOy4zDQgABBBBAAAEEShIgACyJj5URQAABBGIoQJYQQKAVAQLAVoCYjQACCCCAAAII1JsAAWC9lSjHEwjQRQABBBBAAIG8AgSAeWmYgQACCCCAAAJJEyC/hQkQABbmxFIIIIAAAggggEDdCBAA1k1RciAIIBAI0EUAAQQQaE2AALA1IeYjgAACCCCAAAJ1JlCXAWCdlRGHgwACCCCAAAIIlFWAALCsnGwMAQQQQKCGAuwaAQQKFCAALBCKxRBAAAEEEEAAgXoRIACsl5LkOAIBuggggAACCCDQqgABYKtELIAAAggggAACcRcgf8UJEAAW58XSCCCAAAIIIIBA4gUIABNfhBwAAggEAnQRQAABBAoVIAAsVIrlEEAAAQQQQACBOhGoqwCwTsqEw0AAAQQQQAABBCoqQABYUV42jgACCCBQBQF2gQACRQoQABYJxuIIIIAAAggggEDSBQgAk16C5D8QoIsAAggggAACBQsQABZMxYIIIIAAAgggEDcB8tM2AQLAtrmxFgIIIIAAAgggkFgBAsDEFh0ZRwCBQIAuAggggECxAgSAxYqxPAIIIIAAAgggkHCBuggAE14GZB8BBBBAAAEEEKiqAAFgVbnZGQIIIIBAGQXYFAIItFGAALCNcKyGAAIIIIAAAggkVYAAMKklR74DAboIIIAAAgggULQAAWDRZKyAAAIIIIAAArUWYP+lCRAAlubH2ggggAACCCCAQOIECAATV2RkGAEEAgG6CCCAAAJtFSAAbKsc6yGAAAIIIIAAAgkVSHQAmFBzso0AAggggAACCNRUgACwpvzsHAEEEECgDQKsggACJQoQAJYIyOoIIIAAAggggEDSBAgAk1Zi5DcQoIsAAggggAACbRYgAGwzHSsigAACCCCAQLUF2F95BAgAy+PIVhBAAAEEEEAAgcQIEAAmpqjIKAIIBAJ0EUAAAQRKFSAALFWQ9RFAAAEEEEAAgYQJJDIATJgx2UUAAQQQQAABBGIlQAAYq+IgMwgggAACLQgwCwEEyiRAAFgmSDaDAAIIIIAAAggkRYAAMCklRT4DAboIIIAAAgggULIAAWDJhGwAAQQQQAABBCotwPbLK0AAWF5PtoYAAggggAACCMRegAAw9kVEBhFAIBCgiwACCCBQLgECwHJJsh0EEEAAAQQQQCAhAokKABNiSjYRQAABBBBAAIFYCxAAxrp4yBwCCCCAgJmBgAACZRYgACwzKJtDAAEEEEAAAQTiLkAAGPcSIn+BAF0EEEAAAQQQKJsAAWDZKNkQAggggAACCJRbgO1VRoAAsDKubBUBBBBAAAEEEIitAAFgbIuGjCGAQCBAFwEEEECg3AIEgOUWZXsIIIAAAggggEDMBRIRAMbckOwhgAACCCCAAAKJEiAATFRxkVkEEEAgVQIcLAIIVEiAALBCsGwWAQQQQAABBBCIqwABYFxLhnwFAnQRQAABBBBAoOwCBIBlJ2WDCCCAAAIIIFCqAOtXVoAAsLK+bB0BBBBAAAEEEIidAAFg7IqEDCGAQCBAFwEEEECgUgIEgJWSZbsIIIAAAggggEBMBWIdAMbUjGwhgAACCCCAAAKJFiAATHTxkXkEEECgLgU4KAQQqLAAAWCFgdk8AggggAACCCAQNwECwLiVCPkJBOgigAACCCCAQMUECAArRsuGEUAAAQQQQKBYAZavjgABYHWc2QsCCCCAAAIIIBAbAQLA2BQFGUEAgUCALgIIIIBApQUIACstzPYRQAABBBBAAIGYCcQyAIyZEdlBAAEEEEAAAQTqSoAAsK6Kk4NBAAEEEi1A5hFAoEoCBIBVgmY3CCCAAAIIIIBAXAQIAONSEuQjEKCLAAIIIIAAAhUXIACsODE7QAABBBBAAIHWBJhfXQECwOp6szcEEEAAAQQQQKDmAgSANS8CMoAAAoEAXQQQQACBagkQAFZLmv0ggAACCCCAAAIxEYhVABgTE7KBAAIIIIAAAgjUtQABYF0XLweHAAIIJEKATCKAQJUFCACrDM7uEEAAAQQQQACBWgsQANa6BNh/IEAXAQQQQAABBKomQABYNWp2hAACCCCAAALZAozXRoAAsDbu7BUBBBBAAAEEEKiZAAFgzejZMQIIBAJ0EUAAAQSqLUAAWG1x9ocAAggggAACCNRYIBYBYI0N2D0CCCCAAAIIIJAqAQLAVBU3B4sAAgjESoDMIIBAjQQIAGsEz24RQAABBBBAAIFaCRAA1kqe/QYCdBFAAAEEEECg6gIEgFUnZ4cIIIAAAggggEBtBQgAa+vP3hFAAAEEEEAAgaoLEABWnZwdIoBAIEAXAQQQQKBWAgSAtZJnvwgggAACCCCAQI0EahoA1uiY2S0CCCCAAAIIIJBqAQLAVBc/B48AAgjURICdIoBAjQUIAGtcAOweAQQQQAABBBCotgABYLXF2V8gQBcBBBBAAAEEaiZAAFgzenaMAAIIIIBA+gQ44ngIEADGoxzIBQIIIIAAAgggUDUBAsCqUbMjBBAIBOgigAACCNRagACw1iXA/hFAAAEEEEAAgSoL1CQArPIxsjsEEEAAAQQQQACBiAABYASDQQQQQACBigqwcQQQiIkAAWBMCoJsIIAAAggggAAC1RIgAKyWNPsJBOgigAACCCCAQM0FCABrXgRkAAEEEEAAgfoX4AjjJfD/AQAA///aVAexAAAABklEQVQDACr87QggOKsTAAAAAElFTkSuQmCC",
+            "kind": "image"
+          },
+          "right": {
+            "label": "升级后",
+            "desc": "一步打开常用功能",
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAGQCAYAAAA+89ElAAAQAElEQVR4AezdB5wV1dnH8Wd3KYI0saCCDQERQUFE7IoiFsSKqBiNPfb6xiTGxBJN1MQWa8QWFWPvYkMQEeyiIIoFQUGkSFFBBCnv/OfuzM7evXfrLVN++XCmnJk5M+d7xtxnz7TSpT/MXk3CgHOAc4BzgHOAc4BzgHMgOedAqfE/BBBAAIEEClBlBBBIsgABYJJbn7ojgAACCCCAQCIFCAAT2eypSjNEAAEEEEAAgWQKEAAms92pNQIIIIBAcgWoOQJGAMhJgAACCCCAAAIIJEyAADBhDU51EXAFGCCAAAIIJFqAADDRzU/lEUAAAQQQQCBJAl5dCQA9CcYIIIAAAggggEBCBAgAE9LQVBMBBBBICTBEAAEEjIdAOAkQQAABBBBAAIGkCdADmLQWNzOqjAACCCCAAALJFiAATHb7U3sEEEAAgeQIUFMEfAECQJ+CCQQQQAABBBBAIBkCBIDJaGdqiUBKgCECCCCAAAKOAAGgg8A/BBBAAAEEEEAgzgLpdSMATBdhHgEEEEAAAQQQiLkAAWDMG5jqIYAAAikBhggggECFAAFghQVTCCCAAAIIIIBAIgQIABPRzKlKMkQAAQQQQAABBCRAACgFEgIIIIAAAvEVoGYIVBEgAKxCQgYCCCCAAAIIIBBvAQLAeLcvtUMgJcAQAQQQQACBgAABYACDSQQQQAABBBBAIE4C2epCAJhNhnwEEEAAAQQQQCCmAgSAMW1YqoUAAgikBBgigAACVQUIAKuakIMAAggggAACCMRagAAw1s2bqhxDBBBAAAEEEEAgKEAAGNRgGgEEEEAAgfgIUBMEsgoQAGalYQECCCCAAAIIIBBPAQLAeLYrtUIgJcAQAQQQQACBDAIEgBlQyEIAAQQQQAABBKIsUNOxEwDWJMRyBBBAAAEEEEAgZgIEgDFrUKqDAAIIpAQYIoAAAtkFCACz27AEAQQQQAABBBCIpQABYCybNVUphggggAACCCCAQCYBAsBMKuQhgAACCCAQXQGOHIEaBQgAayRiBQQQQAABBBBAIF4CBIDxak9qg0BKgCECCCCAAALVCMQqAJz9009+VVetXm3LVqxw08pVq/z8mibe/OYbe2TiRPvF2bamdQux/DunTmOnTbfVhdhZyPZx/wcT7O+jR7vpm0WL6nV0t7/1tru9yvn511/rVUZYN1rpnONzflpsSj8tW1anw/z2xx/tmjGvm86tpVlcbh7/pt00frw9OnFSncpmZQQQQACB4gnUds+xCADnLF5spz/1lO017E6b+N1st+4fzppl2/77Jjdd8PwIN682gyc/nmyXjXzVdrv9P/bx7Dm12SRn6+iHePKcOfbU5Ml25ajRts9dd1t/p06nPvmkXfnqKFNQm7OdRaCgV6d+acMnfOimT+fOrdcRP/vpp+72KicsQX29KpJho/lLltiew4a56YRHH8uwRvasFz/7zP77/vumc2v3/9yR8Q+M2956yxRA/9sJArOXxBIEEEAAgSgKRDoAXLJ8ud3x9js26N7/2pivprn+Jz3+uM384Qd32hv8unKlN1ntWD2Fr331lbuOyt6gVUtb7Ozjgueet9qkV7+c6m6bbaAARD1Z786YaQpMdOyXO8HmKU884QZ72910sw0Z/qD9+aWX7cEPP6xUj/999JFd/dqYbEVHOl+9rq988YXJvhBB7nLnfJjr/NFQlxQ8LrVdbc6H2qxz65tv1bvtVge2XLG69r3c2uzpTz7VyE2H9ehur02d6p53n8/73s2rbqA/UtQzXd06LCumAPtGAAEEahaIZACoy1e3v/229btjmN04bpwpWPOqukfHjta4rMybrdP4w+++88tSOWs3b24KFl78/HOrTVrw889Z93fJKyOtt9Mjud/d99hxjz5qf3zhRffYH3YuN4+b/nWlYC9YyOZrr22/6dXLbhw0yE7pu31wUWymrxkzxs599jk746mnbZ7Tq5WpYgqAdTkyPd33/geZVq82T73DOnfqkt765hu/zC++n1+r86E258xoJ/DyCtYfILqcW12qdBk7EAE2Kqn9f8oK8qbOn+/t1tZdc0078+ln3J7nO999189Pn9B/Z7psPMT5I+Wkxx63Rb/8kr4K8wgggAACERGo/a9GkSuk3rMRzmWrkx9/wgbceZfdNG68H6zp0HbdbFN77DdH2zX772ftWrRQVp3TS06g5210YLctvclaj7dcb72s6+p+xGwL12zSxLqv38727dLFTuzTx67cZ4A9cvRQe//ss+yZ3x5rf+q3h/Xv3MkUkGYrI5gfx2n1mupyZHoa7vSURrm+paUl/uHPdnolvUu62cZXvDrKX3914MJtsBx/hSwTDzm9yd6ig7fa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",
+            "kind": "image"
+          }
+        },
+        "style": {
+          "title": "升级前后 · 操作路径对比",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "divider": 0.5,
+          "syncStart": 0
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 14,
+      "no": "014",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "stacked-area-flow",
+      "line": "品牌构成 · 随时间变化",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "stacked-area-flow",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "xLabels": [
+            "首周",
+            "首月",
+            "首季",
+            "半年"
+          ],
+          "series": [
+            {
+              "name": "品牌甲",
+              "values": [
+                40,
+                42,
+                46,
+                50
+              ]
+            },
+            {
+              "name": "品牌乙",
+              "values": [
+                35,
+                34,
+                32,
+                30
+              ]
+            },
+            {
+              "name": "其他品牌",
+              "values": [
+                25,
+                24,
+                22,
+                20
+              ]
+            }
+          ]
+        },
+        "style": {
+          "title": "品牌构成 · 随时间变化",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {},
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "stackMode": "percent",
+          "denominator": "各时点有效样本总数",
+          "highlight": "",
+          "showLegend": true
+        },
+        "timeline": {
+          "duration": 6,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 15,
+      "no": "015",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "cohort-regroup",
+      "line": "同一批用户 · 连续重新分组",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "cohort-regroup",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "users": [
+            {
+              "id": "P001",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 1",
+              "quote": "我更关注系统是否顺手，日常使用是否稳定。",
+              "weight": 1
+            },
+            {
+              "id": "P002",
+              "brand": "品牌乙",
+              "age": "18–29岁",
+              "label": "匿名受访者 2",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P003",
+              "brand": "品牌丙",
+              "age": "18–29岁",
+              "label": "匿名受访者 3",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P004",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 4",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P005",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 5",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P006",
+              "brand": "品牌丙",
+              "age": "30–44岁",
+              "label": "匿名受访者 6",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P007",
+              "brand": "品牌甲",
+              "age": "30–44岁",
+              "label": "匿名受访者 7",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P008",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 8",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P009",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 9",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P010",
+              "brand": "品牌甲",
+              "age": "45岁及以上",
+              "label": "匿名受访者 10",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P011",
+              "brand": "品牌乙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 11",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P012",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 12",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P013",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 13",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P014",
+              "brand": "品牌乙",
+              "age": "18–29岁",
+              "label": "匿名受访者 14",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P015",
+              "brand": "品牌丙",
+              "age": "18–29岁",
+              "label": "匿名受访者 15",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P016",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 16",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P017",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 17",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P018",
+              "brand": "品牌丙",
+              "age": "30–44岁",
+              "label": "匿名受访者 18",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P019",
+              "brand": "品牌甲",
+              "age": "30–44岁",
+              "label": "匿名受访者 19",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P020",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 20",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P021",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 21",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P022",
+              "brand": "品牌甲",
+              "age": "45岁及以上",
+              "label": "匿名受访者 22",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P023",
+              "brand": "品牌乙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 23",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P024",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 24",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P025",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 25",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P026",
+              "brand": "品牌乙",
+              "age": "18–29岁",
+              "label": "匿名受访者 26",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P027",
+              "brand": "品牌丙",
+              "age": "18–29岁",
+              "label": "匿名受访者 27",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P028",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 28",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P029",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 29",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P030",
+              "brand": "品牌丙",
+              "age": "30–44岁",
+              "label": "匿名受访者 30",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P031",
+              "brand": "品牌甲",
+              "age": "30–44岁",
+              "label": "匿名受访者 31",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P032",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 32",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P033",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 33",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P034",
+              "brand": "品牌甲",
+              "age": "45岁及以上",
+              "label": "匿名受访者 34",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P035",
+              "brand": "品牌乙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 35",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P036",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 36",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P037",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 37",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P038",
+              "brand": "品牌乙",
+              "age": "18–29岁",
+              "label": "匿名受访者 38",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P039",
+              "brand": "品牌丙",
+              "age": "18–29岁",
+              "label": "匿名受访者 39",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P040",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 40",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P041",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 41",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P042",
+              "brand": "品牌丙",
+              "age": "30–44岁",
+              "label": "匿名受访者 42",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P043",
+              "brand": "品牌甲",
+              "age": "30–44岁",
+              "label": "匿名受访者 43",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P044",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 44",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P045",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 45",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P046",
+              "brand": "品牌甲",
+              "age": "45岁及以上",
+              "label": "匿名受访者 46",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P047",
+              "brand": "品牌乙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 47",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P048",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 48",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            }
+          ],
+          "aggregates": []
+        },
+        "style": {
+          "title": "同一批用户 · 连续重新分组",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {
+          "from": [
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0
+          ],
+          "zoom": 2,
+          "route": "smooth"
+        },
+        "sequence": [],
+        "fieldMappings": {
+          "id": "id",
+          "from": "brand",
+          "to": "age",
+          "label": "label",
+          "quote": "quote",
+          "weight": "weight"
+        },
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 48,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "mode": "individual",
+          "sort": "id",
+          "fromLabel": "原有品牌",
+          "toLabel": "年龄分组",
+          "highlight": "30–44岁",
+          "selectedId": "P005",
+          "icon": "person",
+          "finalLayout": "grid",
+          "transitionSeconds": 1.5,
+          "colors": {
+            "品牌甲": "#227F77",
+            "品牌乙": "#5A7DBC",
+            "品牌丙": "#B58458"
+          }
+        },
+        "timeline": {
+          "duration": 12,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 16,
+      "no": "016",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "sample-scale-reveal",
+      "line": "从一个人 · 看到整组样本",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "sample-scale-reveal",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "total": 1200,
+          "subgroup": 240,
+          "target": 360,
+          "person": {
+            "id": "P001",
+            "label": "受访者 P001",
+            "quote": "希望一天使用下来，手机仍然稳定、顺手。"
+          }
+        },
+        "style": {
+          "title": "从一个人 · 看到整组样本",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {
+          "from": [
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0
+          ],
+          "zoom": 2,
+          "route": "smooth"
+        },
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 1200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "individualLabel": "个体",
+          "subgroupLabel": "核心用户群",
+          "totalLabel": "整体样本",
+          "targetLabel": "重度通勤用户",
+          "perMarker": 10,
+          "arrangement": "grid",
+          "cameraRoute": "zoom-out",
+          "individualHold": 1.5,
+          "subgroupHold": 1.5,
+          "highlightColor": "#227F77"
+        },
+        "timeline": {
+          "duration": 12,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 17,
+      "no": "017",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "kinetic-narration",
+      "line": "用户原声 · 转换为数据",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "kinetic-narration",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "cues": [
+            {
+              "start": 0.3,
+              "end": 2,
+              "text": "日常体验比单一参数更重要。",
+              "keywords": [
+                "日常体验"
+              ],
+              "emphasis": "color"
+            },
+            {
+              "start": 2,
+              "end": 4,
+              "text": "有68%的受访者，优先考虑系统体验。",
+              "keywords": [
+                "68%",
+                "系统体验"
+              ],
+              "emphasis": "scale"
+            },
+            {
+              "start": 4,
+              "end": 7,
+              "text": "稳定与顺手，是购买决策的重要因素。",
+              "keywords": [
+                "稳定",
+                "顺手"
+              ],
+              "emphasis": "position"
+            }
+          ],
+          "chart": {
+            "templateId": "poll-results-bars",
+            "labels": [
+              "优先考虑系统体验",
+              "其他人群"
+            ],
+            "values": [
+              68,
+              32
+            ],
+            "unit": "%",
+            "value": 68
+          }
+        },
+        "style": {
+          "title": "用户原声 · 转换为数据",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {
+          "from": [
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0
+          ],
+          "zoom": 2,
+          "route": "smooth"
+        },
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "chartAt": 4,
+          "chartLabel": "优先考虑系统体验",
+          "conclusion": "日常体验，是持续使用与推荐的基础",
+          "conclusionAt": 8,
+          "minReadSeconds": 1.5
+        },
+        "timeline": {
+          "duration": 12,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 18,
+      "no": "018",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "research-map-journey",
+      "line": "样本分布 · 城市研究之旅",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "research-map-journey",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "cities": [
+            {
+              "id": "sh",
+              "name": "上海",
+              "lon": 121.4737,
+              "lat": 31.2304,
+              "sample": 300,
+              "value": 82,
+              "label": "满意度"
+            },
+            {
+              "id": "bj",
+              "name": "北京",
+              "lon": 116.4074,
+              "lat": 39.9042,
+              "sample": 260,
+              "value": 78,
+              "label": "满意度"
+            },
+            {
+              "id": "gz",
+              "name": "广州",
+              "lon": 113.2644,
+              "lat": 23.1291,
+              "sample": 240,
+              "value": 85,
+              "label": "满意度"
+            }
+          ],
+          "links": []
+        },
+        "style": {
+          "title": "样本分布 · 城市研究之旅",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "分",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {
+          "from": [
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0
+          ],
+          "zoom": 2,
+          "route": "smooth"
+        },
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 800,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "holdSeconds": 1.5,
+          "moveSeconds": 0.8,
+          "zoom": 2.4,
+          "pointStyle": "dot",
+          "mapColor": "#DDDCCF",
+          "highlightColor": "#227F77",
+          "order": [
+            "sh",
+            "bj",
+            "gz"
+          ]
+        },
+        "timeline": {
+          "duration": 12,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 19,
+      "no": "019",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "decision-path-explainer",
+      "line": "购买决策 · 从推荐到购买",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "decision-path-explainer",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "nodes": [
+            {
+              "id": "recommend",
+              "label": "看到推荐",
+              "icon": "message",
+              "x": 0.1,
+              "y": 0.25,
+              "at": 0.5,
+              "count": 1000,
+              "body": "朋友与社交媒体推荐"
+            },
+            {
+              "id": "search",
+              "label": "搜索资料",
+              "icon": "phone",
+              "x": 0.37,
+              "y": 0.25,
+              "at": 2,
+              "count": 650,
+              "body": "查阅参数、口碑与体验"
+            },
+            {
+              "id": "store",
+              "label": "线下体验",
+              "icon": "store",
+              "x": 0.64,
+              "y": 0.25,
+              "at": 4,
+              "count": 320,
+              "body": "体验手感、影像与系统"
+            },
+            {
+              "id": "buy",
+              "label": "比较后购买",
+              "icon": "person",
+              "x": 0.88,
+              "y": 0.25,
+              "at": 6,
+              "count": 180,
+              "body": "形成最终选择"
+            },
+            {
+              "id": "exit",
+              "label": "暂缓购买",
+              "icon": "exit",
+              "x": 0.64,
+              "y": 0.75,
+              "at": 5,
+              "count": 140,
+              "body": "等待降价或继续比较"
+            }
+          ],
+          "links": [
+            {
+              "from": "recommend",
+              "to": "search",
+              "value": 650,
+              "at": 1,
+              "duration": 1
+            },
+            {
+              "from": "search",
+              "to": "store",
+              "value": 320,
+              "at": 3,
+              "duration": 1
+            },
+            {
+              "from": "store",
+              "to": "buy",
+              "value": 180,
+              "at": 5.5,
+              "duration": 1
+            },
+            {
+              "from": "store",
+              "to": "exit",
+              "value": 140,
+              "at": 5,
+              "duration": 1
+            },
+            {
+              "from": "exit",
+              "to": "search",
+              "value": 40,
+              "at": 7,
+              "duration": 1
+            }
+          ]
+        },
+        "style": {
+          "title": "购买决策 · 从推荐到购买",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {
+          "from": [
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0
+          ],
+          "zoom": 2,
+          "route": "smooth"
+        },
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "highlight": "",
+          "showCounts": true,
+          "markerIcon": "person"
+        },
+        "timeline": {
+          "duration": 12,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 20,
+      "no": "020",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "product-scene-focus",
+      "line": "操作位置 · 体验数据聚焦",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "product-scene-focus",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "scene": "phone",
+          "regions": [
+            {
+              "id": "camera",
+              "label": "影像入口",
+              "x": 0.25,
+              "y": 0.25,
+              "value": 78,
+              "unit": "分",
+              "body": "用户认为拍照入口更容易找到"
+            },
+            {
+              "id": "system",
+              "label": "系统交互",
+              "x": 0.7,
+              "y": 0.5,
+              "value": 82,
+              "unit": "分",
+              "body": "常用任务的完成路径更短"
+            },
+            {
+              "id": "battery",
+              "label": "续航状态",
+              "x": 0.55,
+              "y": 0.85,
+              "value": 86,
+              "unit": "分",
+              "body": "一天使用后的剩余电量更安心"
+            }
+          ]
+        },
+        "style": {
+          "title": "操作位置 · 体验数据聚焦",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {
+          "from": [
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0
+          ],
+          "zoom": 2,
+          "route": "smooth"
+        },
+        "sequence": [],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "focusId": "system",
+          "focusAt": 3,
+          "moveSeconds": 1.2,
+          "holdSeconds": 2.5,
+          "returnAt": 7.5,
+          "asset": ""
+        },
+        "timeline": {
+          "duration": 12,
+          "entrance": 0.3,
+          "hold": 1,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 21,
+      "no": "021",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "cohort-regroup",
+      "line": "用户重新分组",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "cohort-regroup",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "users": [
+            {
+              "id": "P001",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 1",
+              "quote": "我更关注系统是否顺手，日常使用是否稳定。",
+              "weight": 1
+            },
+            {
+              "id": "P002",
+              "brand": "品牌乙",
+              "age": "18–29岁",
+              "label": "匿名受访者 2",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P003",
+              "brand": "品牌丙",
+              "age": "18–29岁",
+              "label": "匿名受访者 3",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P004",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 4",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P005",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 5",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P006",
+              "brand": "品牌丙",
+              "age": "30–44岁",
+              "label": "匿名受访者 6",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P007",
+              "brand": "品牌甲",
+              "age": "30–44岁",
+              "label": "匿名受访者 7",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P008",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 8",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P009",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 9",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P010",
+              "brand": "品牌甲",
+              "age": "45岁及以上",
+              "label": "匿名受访者 10",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P011",
+              "brand": "品牌乙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 11",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P012",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 12",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P013",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 13",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P014",
+              "brand": "品牌乙",
+              "age": "18–29岁",
+              "label": "匿名受访者 14",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P015",
+              "brand": "品牌丙",
+              "age": "18–29岁",
+              "label": "匿名受访者 15",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P016",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 16",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P017",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 17",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P018",
+              "brand": "品牌丙",
+              "age": "30–44岁",
+              "label": "匿名受访者 18",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P019",
+              "brand": "品牌甲",
+              "age": "30–44岁",
+              "label": "匿名受访者 19",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P020",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 20",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P021",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 21",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P022",
+              "brand": "品牌甲",
+              "age": "45岁及以上",
+              "label": "匿名受访者 22",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P023",
+              "brand": "品牌乙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 23",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P024",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 24",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P025",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 25",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P026",
+              "brand": "品牌乙",
+              "age": "18–29岁",
+              "label": "匿名受访者 26",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P027",
+              "brand": "品牌丙",
+              "age": "18–29岁",
+              "label": "匿名受访者 27",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P028",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 28",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P029",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 29",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P030",
+              "brand": "品牌丙",
+              "age": "30–44岁",
+              "label": "匿名受访者 30",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P031",
+              "brand": "品牌甲",
+              "age": "30–44岁",
+              "label": "匿名受访者 31",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P032",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 32",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P033",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 33",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P034",
+              "brand": "品牌甲",
+              "age": "45岁及以上",
+              "label": "匿名受访者 34",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P035",
+              "brand": "品牌乙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 35",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P036",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 36",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P037",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 37",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P038",
+              "brand": "品牌乙",
+              "age": "18–29岁",
+              "label": "匿名受访者 38",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P039",
+              "brand": "品牌丙",
+              "age": "18–29岁",
+              "label": "匿名受访者 39",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P040",
+              "brand": "品牌甲",
+              "age": "18–29岁",
+              "label": "匿名受访者 40",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P041",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 41",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P042",
+              "brand": "品牌丙",
+              "age": "30–44岁",
+              "label": "匿名受访者 42",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P043",
+              "brand": "品牌甲",
+              "age": "30–44岁",
+              "label": "匿名受访者 43",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P044",
+              "brand": "品牌乙",
+              "age": "30–44岁",
+              "label": "匿名受访者 44",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P045",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 45",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P046",
+              "brand": "品牌甲",
+              "age": "45岁及以上",
+              "label": "匿名受访者 46",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P047",
+              "brand": "品牌乙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 47",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            },
+            {
+              "id": "P048",
+              "brand": "品牌丙",
+              "age": "45岁及以上",
+              "label": "匿名受访者 48",
+              "quote": "日常体验比单一参数更重要。",
+              "weight": 1
+            }
+          ],
+          "aggregates": []
+        },
+        "style": {
+          "title": "用户重新分组",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {
+          "from": [
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0
+          ],
+          "zoom": 2,
+          "route": "smooth"
+        },
+        "sequence": [
+          {
+            "phase": "brand",
+            "duration": 2.5
+          },
+          {
+            "phase": "dimension",
+            "duration": 2.5
+          },
+          {
+            "phase": "highlight",
+            "duration": 2.5
+          },
+          {
+            "phase": "quote",
+            "duration": 2.5
+          }
+        ],
+        "fieldMappings": {
+          "id": "id",
+          "from": "brand",
+          "to": "age",
+          "label": "label",
+          "quote": "quote",
+          "weight": "weight"
+        },
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 48,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "mode": "individual",
+          "sort": "id",
+          "fromLabel": "原有品牌",
+          "toLabel": "年龄分组",
+          "highlight": "30–44岁",
+          "selectedId": "P005",
+          "icon": "person",
+          "finalLayout": "grid",
+          "transitionSeconds": 1.5,
+          "colors": {
+            "品牌甲": "#227F77",
+            "品牌乙": "#5A7DBC",
+            "品牌丙": "#B58458"
+          }
+        },
+        "timeline": {
+          "duration": 10,
+          "entrance": 0.3,
+          "hold": 0,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 22,
+      "no": "022",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "sample-scale-reveal",
+      "line": "从一个人看到整组样本",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "sample-scale-reveal",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "total": 1200,
+          "subgroup": 240,
+          "target": 360,
+          "person": {
+            "id": "P001",
+            "label": "受访者 P001",
+            "quote": "希望一天使用下来，手机仍然稳定、顺手。"
+          }
+        },
+        "style": {
+          "title": "从一个人看到整组样本",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {
+          "from": [
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0
+          ],
+          "zoom": 2,
+          "route": "smooth"
+        },
+        "sequence": [
+          {
+            "phase": "individual",
+            "duration": 2.5
+          },
+          {
+            "phase": "subgroup",
+            "duration": 2.5
+          },
+          {
+            "phase": "total",
+            "duration": 2.5
+          },
+          {
+            "phase": "target",
+            "duration": 2.5
+          }
+        ],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 1200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "individualLabel": "个体",
+          "subgroupLabel": "核心用户群",
+          "totalLabel": "整体样本",
+          "targetLabel": "重度通勤用户",
+          "perMarker": 10,
+          "arrangement": "grid",
+          "cameraRoute": "zoom-out",
+          "individualHold": 1.5,
+          "subgroupHold": 1.5,
+          "highlightColor": "#227F77"
+        },
+        "timeline": {
+          "duration": 10,
+          "entrance": 0.3,
+          "hold": 0,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    },
+    {
+      "id": 23,
+      "no": "023",
+      "ch": "重构调研 · 数据动效",
+      "kind": "B",
+      "cat": "数据动效",
+      "tpl": "kinetic-narration",
+      "line": "原声变成数据",
+      "visual": "重构调研 · 演示数据，非真实研究结论",
+      "motion": {
+        "schemaVersion": 1,
+        "templateId": "kinetic-narration",
+        "templateVersion": "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1",
+        "data": {
+          "cues": [
+            {
+              "start": 0.3,
+              "end": 2,
+              "text": "日常体验比单一参数更重要。",
+              "keywords": [
+                "日常体验"
+              ],
+              "emphasis": "color"
+            },
+            {
+              "start": 2,
+              "end": 4,
+              "text": "有68%的受访者，优先考虑系统体验。",
+              "keywords": [
+                "68%",
+                "系统体验"
+              ],
+              "emphasis": "scale"
+            },
+            {
+              "start": 4,
+              "end": 7,
+              "text": "稳定与顺手，是购买决策的重要因素。",
+              "keywords": [
+                "稳定",
+                "顺手"
+              ],
+              "emphasis": "position"
+            }
+          ],
+          "chart": {
+            "templateId": "poll-results-bars",
+            "labels": [
+              "优先考虑系统体验",
+              "其他人群"
+            ],
+            "values": [
+              68,
+              32
+            ],
+            "unit": "%",
+            "value": 68
+          }
+        },
+        "style": {
+          "title": "原声变成数据",
+          "subtitle": "重构调研 · 演示数据，非真实研究结论",
+          "background": "#F7F1E8",
+          "ink": "#243449",
+          "accent": "#227F77",
+          "beforeColor": "#9AA7B7",
+          "afterColor": "#227F77",
+          "goodColor": "#227F77",
+          "badColor": "#C65064",
+          "fontFamily": "local-gothic",
+          "fontSize": 30,
+          "titleSize": 58,
+          "numberSize": 220,
+          "unit": "",
+          "prefix": "",
+          "decimals": 0,
+          "colors": [
+            "#227F77",
+            "#5A7DBC",
+            "#B58458",
+            "#9E77B4",
+            "#C65064",
+            "#4B92A6"
+          ]
+        },
+        "camera": {
+          "from": [
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0
+          ],
+          "zoom": 2,
+          "route": "smooth"
+        },
+        "sequence": [
+          {
+            "phase": "quote",
+            "duration": 2.5
+          },
+          {
+            "phase": "keyword",
+            "duration": 2.5
+          },
+          {
+            "phase": "number",
+            "duration": 2.5
+          },
+          {
+            "phase": "chart",
+            "duration": 2.5
+          },
+          {
+            "phase": "conclusion",
+            "duration": 3
+          }
+        ],
+        "fieldMappings": {},
+        "metadata": {
+          "source": "演示研究，非真实结论",
+          "sampleSize": 200,
+          "researchTime": "2026年10月",
+          "showSource": true,
+          "showSampleSize": true,
+          "showResearchTime": true,
+          "showTitle": true,
+          "showSubtitle": true
+        },
+        "options": {
+          "chartAt": 4,
+          "chartLabel": "优先考虑系统体验",
+          "conclusion": "日常体验，是持续使用与推荐的基础",
+          "conclusionAt": 8,
+          "minReadSeconds": 1.5
+        },
+        "timeline": {
+          "duration": 13,
+          "entrance": 0.3,
+          "hold": 0,
+          "inPoint": 0,
+          "outPoint": 1,
+          "currentTime": 0
+        },
+        "output": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60
+        },
+        "demo": true
+      }
+    }
+  ]
+}

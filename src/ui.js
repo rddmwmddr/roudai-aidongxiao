@@ -574,9 +574,8 @@
       playUntil = to;
       setPlaying(true);
     },
-    invalidate: () => {
-      lastDraw = -1;
-    },
+    invalidate: () => { lastDraw = -1; },
+    onSelect: (ids) => { const id=ids.find(id=>id.startsWith('user:'));const row=rows[S.sel];if(id&&row.motion?.templateId==='cohort-regroup'){row.motion.options.selectedId=id.slice(5);rebuild(row,false);renderShot();} },
     commit: (layers) => {
       const row = rows[S.sel];
       row.layers = row.layers || {};
@@ -590,7 +589,10 @@
   const buildScene = (reset, keepSelection = false) => {
     const row = rows[S.sel];
     try {
+      const ratio = row.motion ? row.motion.output.width / row.motion.output.height : 16 / 9;
+      cv.height = Math.round(cv.width / ratio);$('stage').style.aspectRatio = String(ratio);
       S.scene = D.createScene(rawOf(row), cv.width);
+      D.Opus.prepareAssets(rawOf(row)).then(() => { lastDraw = -1; }).catch(e=>{ $('err').textContent=e.message; $('err').style.display='grid'; });
       $('err').style.display = 'none';
     } catch (e) {
       S.scene = null;
@@ -599,7 +601,7 @@
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, cv.width, cv.height);
     }
-    if (reset) S.t = 0;
+    if (reset) S.t = row.motion ? row.motion.timeline.currentTime : 0;
     if (S.scene) S.t = Math.min(S.t, S.scene.duration);
     if (editor && S.scene) {
       // 撤销时动效没换，选中的元素留着
@@ -646,7 +648,7 @@
     const hasAdv = Object.keys(adv).length > 0;
     const tpl = D.TEMPLATES[row.tpl];
     const roles = D.colorRoles ? D.colorRoles(row) : [];
-    $('shot').innerHTML = `
+    $('shot').innerHTML = `${D.Opus.editorHTML(row)}
       <div class="block">
         <h3>镜 ${esc(row.no)} · ${esc(row.ch)} · ${esc(row.cat)}</h3>
         <p class="line">${esc(row.line)}</p>
@@ -675,8 +677,9 @@
       <div class="block">
         <h3>输出视频</h3>
         <div class="expo">
-          <select id="xSize"><option value="4k">4K</option><option value="1080p">1080p</option></select>
-          <select id="xFps"><option value="60">60 帧</option><option value="30">30 帧</option></select>
+          <select id="xSize" ${row.motion ? 'hidden' : ''}><option value="4k">4K</option><option value="1080p">1080p</option></select>
+          <select id="xFps" ${row.motion ? 'hidden' : ''}><option value="60">60 帧</option><option value="30">30 帧</option></select>
+          ${row.motion ? `<span>${row.motion.output.width} × ${row.motion.output.height} · ${row.motion.output.fps}fps（按项目配置）</span>` : ''}
           <button id="xGo" class="primary" ${tpl && tpl.noExport ? 'disabled' : ''}>输出这一镜</button>
           <button id="xCancel" style="display:none">取消</button>
           
@@ -693,6 +696,7 @@
     refreshClip(S.sel);
   };
   const bindShot = (row) => {
+    D.Opus.bindEditor(row, rebuild, renderShot, () => S.t);
     // 颜色：选好写进这一镜；右键恢复默认
     document.querySelectorAll('#shot [data-color]').forEach((el) => {
       el.onchange = () => {
@@ -805,7 +809,7 @@
   };
 
   // ---------- 输出 ----------
-  const fileName = (row, size, fps) => `镜${row.no}_${D.TEMPLATES[row.tpl].name}_${size}${fps}.mp4`;
+  const fileName = (row, size, fps) => `镜${row.no}_${D.TEMPLATES[row.tpl].name}_${row.motion ? `${row.motion.output.width}x${row.motion.output.height}_${row.motion.output.fps}` : `${size}${fps}`}.mp4`;
   // 发布成网页时，保存要走平台的下载接口；本地打开时 window.claude 不存在，直接下载
   const hostDownloads = window.claude ? window.claude.use('downloads') : Promise.resolve(null);
   const saveBlob = async (blob, name, dir) => {
@@ -1586,7 +1590,7 @@
   });
   let lastNow = performance.now();
   let lastDraw = -1;
-  const tick = (now) => {
+  const tick = async (now) => {
     const dt = Math.min(0.1, (now - lastNow) / 1000);
     lastNow = now;
     if (S.scene && !S.exporting && S.page === 'stage') {
@@ -1610,6 +1614,8 @@
       const t = Math.min(S.t, S.scene.duration);
       if (t !== lastDraw || S.playing) {
         try {
+          const raw = rawOf(rows[S.sel]);
+          await D.Opus.prepareFrame(raw,t);
           editor.draw(ctx, t);
         } catch (err) {
           $('err').style.display = 'grid';
