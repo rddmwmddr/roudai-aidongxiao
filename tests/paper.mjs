@@ -41,7 +41,7 @@ try {
  },board);
  for(const [name,uri] of Object.entries(report.images))fs.writeFileSync(path.join(out,name+'.png'),Buffer.from(uri.split(',')[1],'base64'));delete report.images;
  assert.deepEqual(report.fails,[]);console.log('PASS catalog/search, keyword alignment, reverse seek, 30/60fps and portrait rendering');
- await page.evaluate(()=>DMApp.select(0));await page.locator('#btnInspector').click();
+ await page.evaluate(()=>DMApp.select(0));if(!await page.locator('#motionEditor').isVisible())await page.locator('#btnInspector').click();
  for(const [index,key,value] of [[0,'options.keyword','真实声音'],[2,'options.direction','down'],[3,'style.title','人工编辑后保存的剪字']]){
   await page.evaluate(i=>DMApp.select(i),index);const el=page.locator(`[data-motion="${key}"]`);if(!await el.isVisible())await el.locator("xpath=ancestor::details[1]").locator("summary").first().click();await el.fill(value);await el.dispatchEvent('change');
   await page.waitForFunction(({index,key,value})=>{const [a,b]=key.split('.');return DMApp.rows[index].motion[a][b]===value},{index,key,value});

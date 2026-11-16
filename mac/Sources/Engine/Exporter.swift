@@ -73,6 +73,13 @@ final class ExportEngine: NSObject, WKScriptMessageHandlerWithReply, WKScriptMes
         }
     }
 
+    func refreshMotionPack() async {
+        await stage.waitUntilReady()
+        if stage.motionPackRevision != MotionPackLibrary.shared.revision {
+            await stage.reloadMotionPack()
+        }
+    }
+
     // 写文件。position 由封装器给，文件头最后才回写，所以要能跳着写
     fileprivate func receive(_ body: Any) -> Bool {
         guard let d = body as? [String: Any], let b64 = d["b64"] as? String, let pos = (d["pos"] as? NSNumber)?.uint64Value, let data = Data(base64Encoded: b64), let handle else { return false }
@@ -98,6 +105,9 @@ final class ExportEngine: NSObject, WKScriptMessageHandlerWithReply, WKScriptMes
     // 编码写到 target，然后读回核对
     func export(_ shot: Shot, to target: URL, size: ExportSize, fps: Int, onProgress: @escaping (Double, Double) -> Void) async throws -> ExportCheck {
         await prepare()
+        let probesJSON = try await stage.callString("return DMBridge.probes(json)", arguments: ["json": shot.json])
+        let probes = try JSONDecoder().decode(ProbeInfo.self, from: Data(probesJSON.utf8))
+        try Task.checkCancellation()
         FileManager.default.createFile(atPath: target.path(percentEncoded: false), contents: nil)
         let h = try FileHandle(forWritingTo: target)
         handle = h
@@ -108,8 +118,6 @@ final class ExportEngine: NSObject, WKScriptMessageHandlerWithReply, WKScriptMes
             handle = nil
             self.onProgress = nil
         }
-        let probesJSON = try await stage.callString("return DMBridge.probes(json)", arguments: ["json": shot.json])
-        let probes = try JSONDecoder().decode(ProbeInfo.self, from: Data(probesJSON.utf8))
         do {
             _ = try await withTaskCancellationHandler {
                 try await stage.call(
@@ -339,6 +347,7 @@ final class BatchRunner: ObservableObject {
             finished = true
         }
         items[0].status = .running(0)
+        await engine.refreshMotionPack()
         do {
             let check = try await engine.export(items[0].shot, to: url, size: size, fps: fps) { [weak self] p, _ in
                 self?.items[0].status = .running(p)
@@ -365,6 +374,7 @@ final class BatchRunner: ObservableObject {
         // 批量经常在后台跑，告诉系统不要因为窗口不在前台就降速
         let activity = ProcessInfo.processInfo.beginActivity(options: [.userInitiated, .idleSystemSleepDisabled], reason: "批量导出动效")
         defer { ProcessInfo.processInfo.endActivity(activity) }
+        await engine.refreshMotionPack()
         var csv = "序号,章节,动效,口播,文件,状态,核对,时长秒\n"
         let startAll = Date()
         var encodedSeconds = 0.0

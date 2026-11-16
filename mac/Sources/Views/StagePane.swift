@@ -62,6 +62,9 @@ struct ElementList: View {
             .listStyle(.plain)
             Divider()
             HStack {
+                Button("全选元素") { stage.selectAllElements() }
+                    .buttonStyle(.pill(.quiet, size: .small))
+                    .disabled(tops.isEmpty)
                 Spacer()
                 Button("还原这一镜") { stage.resetElements() }
                     .buttonStyle(.pill(.quiet, size: .small))
@@ -74,7 +77,7 @@ struct ElementList: View {
     }
 
     private func row(_ e: StageElement) -> some View {
-        let hidden = layers[e.id]?.object?["hidden"]?.bool ?? false
+        let hidden = layers[e.id]?.object?["hidden"]?.bool ?? e.templateHidden ?? false
         return HStack(spacing: 6) {
             Text(e.label)
                 .lineLimit(1)
@@ -88,6 +91,12 @@ struct ElementList: View {
             }
             .buttonStyle(.icon(diameter: 22, faint: !hidden))
             .named(hidden ? "显示\(e.label)" : "隐藏\(e.label)")
+        }
+        .contextMenu {
+            Button("复制元素 ID") {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(e.id, forType: .string)
+            }
         }
     }
 }

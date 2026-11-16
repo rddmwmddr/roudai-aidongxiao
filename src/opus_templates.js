@@ -33,13 +33,10 @@
     "stacked-area-flow": "构成随时间变化",
   };
   function configOf(row) {
-    const c = O.validate(row.motion);
-    if (
-      c.templateId !==
-      (O.PRESETS[row.template || row.tpl]?.templateId ||
-        row.template ||
-        row.tpl)
-    )
+    const c = O.validate(row.motion),
+      id = row.template || row.tpl,
+      base = D.TEMPLATES[id]?.baseID || id;
+    if (c.templateId !== (O.PRESETS[base]?.templateId || base))
       throw new Error("motion.templateId 与所选模板不匹配");
     if (row.dur > 0) {
       c.timeline.duration = row.dur;
@@ -3252,20 +3249,20 @@
   const adopt = D.adopt;
   D.adopt = (row, id) => {
     const next = adopt(row, id);
-    if (
-      (O.IDS.includes(id) || O.PRESETS[id]) &&
-      next.motion?.templateId === (O.PRESETS[id]?.templateId || id)
-    ) {
-      next.motion = JSON.parse(JSON.stringify(next.motion));
-      if (O.PRESETS[id]) {
-        const preset = O.preset(id);
-        next.motion.sequence = preset.sequence;
-        next.motion.timeline = preset.timeline;
-      }
-      delete next.sampleData;
-      delete next.pending;
-      next.note = next.motion.demo ? "演示数据，非真实研究结论" : "";
+    if (next === row) return next;
+    const base = D.TEMPLATES[id]?.baseID || id;
+    if (!O.IDS.includes(base) && !O.PRESETS[base]) {
+      if (row.tpl !== id) delete next.motion;
+      return next;
     }
+    next.motion = JSON.parse(JSON.stringify(next.motion));
+    if (next.sampleData) return next;
+    if (O.PRESETS[base] && row.tpl !== id) {
+      const preset = O.preset(base);
+      next.motion.sequence = preset.sequence;
+      next.motion.timeline = preset.timeline;
+    }
+    if (next.motion.demo && !next.note) next.note = "演示数据，非真实研究结论";
     return next;
   };
   const libraryPrompt = D.libraryPrompt;

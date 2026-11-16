@@ -13,12 +13,22 @@ xcodebuild -project mac/DataMotion.xcodeproj -scheme DataMotion -configuration D
   -derivedDataPath "$DD" ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
   build >"$DD.log" 2>&1 || { tail -40 "$DD.log"; exit 1; }
 OUT="$ROOT/mac/成品"
-PREVIEW_VERSION="${DM_PREVIEW_VERSION:-1.6.0-preview.1}"
+PREVIEW_VERSION="${DM_PREVIEW_VERSION:-1.7.0-preview.1}"
 mkdir -p "$OUT"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 APP="$STAGE/肉呆爱动效-调研预览版.app"
 ditto "$DD/Build/Products/Debug/肉呆爱动效.app" "$APP"
+HELPER="$APP/Contents/Helpers/dm-motion"
+mkdir -p "${HELPER:h}"
+for arch in arm64 x86_64; do
+  xcrun swiftc -swift-version 6 -parse-as-library -O -target "$arch-apple-macos13.0" \
+    -module-cache-path "$DD/ModuleCache.noindex" "$ROOT/mac/Tools/MotionPackCLI.swift" -o "$STAGE/dm-motion-$arch"
+done
+lipo -create "$STAGE/dm-motion-arm64" "$STAGE/dm-motion-x86_64" -output "$HELPER"
+rm "$STAGE/dm-motion-arm64" "$STAGE/dm-motion-x86_64"
+codesign --force --sign - "$HELPER"
+codesign --force --sign - --preserve-metadata=identifier,entitlements,flags "$APP"
 codesign --verify --deep --strict "$APP"
 ARCHITECTURES="$(lipo -archs "$APP/Contents/MacOS/肉呆爱动效")"
 [[ " $ARCHITECTURES " == *" arm64 "* && " $ARCHITECTURES " == *" x86_64 "* ]]

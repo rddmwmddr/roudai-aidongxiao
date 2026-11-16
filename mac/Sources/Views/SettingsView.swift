@@ -3,8 +3,59 @@ import UniformTypeIdentifiers
 
 struct SettingsView: View {
     var body: some View {
-        AISettingsView()
-            .frame(width: 640, height: 400)
+        TabView {
+            AISettingsView()
+                .tabItem { Label("AI", systemImage: "sparkles") }
+            MotionPackSettingsView()
+                .tabItem { Label("动效包", systemImage: "square.stack.3d.up") }
+        }
+        .frame(width: 640, height: 400)
+    }
+}
+
+private struct MotionPackSettingsView: View {
+    @ObservedObject private var library = MotionPackLibrary.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("在 App 里做动效").font(.headline)
+            Text("选中一个镜头，打开动效选择器，点「AI 做动效」。输入描述，预览满意后保存到动效库。")
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Divider()
+            DisclosureGroup("外部动效包与 Agent") {
+                VStack(alignment: .leading, spacing: 9) {
+                    Text("连接外部工作文件夹后，App 会自动加载通过校验的动效包。同一个动效在 App 内也有保存时，优先使用 App 内的版本。")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let folder = library.folder {
+                        Text(folder.path)
+                            .textSelection(.enabled)
+                            .lineLimit(2)
+                        HStack {
+                            Button("在访达中打开") { NSWorkspace.shared.open(folder) }
+                            if library.agentCommand != nil {
+                                Button("复制 Agent 命令") { library.copyAgentCommand() }
+                            }
+                            Button("断开文件夹") { library.disconnect() }
+                        }
+                    } else if library.hasBackup {
+                        Button("停用外部动效包") { library.disconnect() }
+                    }
+                    Text(library.status).fixedSize(horizontal: false, vertical: true)
+                    HStack {
+                        Button(library.folder == nil ? "选择文件夹…" : "更换文件夹…") { library.chooseFolder() }
+                        Button("复制协议给 Agent") { library.copyProtocol() }
+                        Button("复制内置动效名称和 ID") { Task { await library.copyIndex() } }
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+            Spacer()
+        }
+        .padding(22)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .buttonStyle(.pill())
     }
 }
 
@@ -29,11 +80,15 @@ struct AISettingsView: View {
                     if !askingRemove {
                         addMenu
                     }
-                    // 配置和钥匙串里的 Key 删了找不回来，所以这里要确认
-                    ConfirmDeleteButton(symbol: "minus", label: "删除服务", confirmTitle: "删除服务和 Key", enabled: selection != nil, asking: $askingRemove) {
+                    // 删除后要重新添加服务，所以这里要确认
+                    ConfirmDeleteButton(symbol: "minus", label: "删除服务", confirmTitle: "确认删除服务", enabled: selection != nil, asking: $askingRemove) {
                         if let p = settings.profiles.first(where: { $0.id == selection }) {
-                            settings.remove(p)
-                            selection = settings.profiles.first?.id
+                            do {
+                                try settings.remove(p)
+                                selection = settings.profiles.first?.id
+                            } catch {
+                                message = error.localizedDescription
+                            }
                         }
                     }
                     Spacer()
@@ -94,7 +149,7 @@ struct AISettingsView: View {
             .padding(18)
             .frame(width: 500)
         }
-        .alert("导入配置", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
+        .alert("AI 设置", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
             Button("好") { message = nil }
         } message: {
             Text(message ?? "")
@@ -141,9 +196,8 @@ struct AISettingsView: View {
 
 struct ProfileForm: View {
     @Binding var profile: AIProfile
-    let settings: AISettings
+    @ObservedObject var settings: AISettings
     @State private var keyDraft = ""
-    @State private var hasKey = false
     @State private var models: [String] = []
     @State private var problem: String?
     @State private var testResult: ResultPhase = .idle
@@ -173,14 +227,15 @@ struct ProfileForm: View {
                     .named("选择模型")
                 }
             }
-            SecureField("Key", text: $keyDraft, prompt: Text(hasKey ? "••••••••" : ""))
+            SecureField("Key", text: $keyDraft, prompt: Text(settings.hasKey(for: profile) ? "已在本机保存" : "输入 Key"))
+                .help("Key 保存在本机，正常替换 App 后可继续使用。")
                 .focused($keyFocused)
                 .onSubmit(saveKey)
                 .onChange(of: keyFocused) { f in
                     if !f { saveKey() }
                 }
             HStack {
-                ResultButton(title: "测试连接", phase: $testResult, enabled: hasKey || !keyDraft.isEmpty, action: connect)
+                ResultButton(title: "测试连接", phase: $testResult, action: connect)
             }
             if let problem {
                 Label(problem, systemImage: "exclamationmark.circle")
@@ -191,7 +246,6 @@ struct ProfileForm: View {
         .formStyle(.columns)
         .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .onAppear { hasKey = settings.key(for: profile) != nil }
     }
 
     private func saveKey() {
@@ -199,7 +253,6 @@ struct ProfileForm: View {
         do {
             try settings.setKey(keyDraft, for: profile)
             keyDraft = ""
-            hasKey = true
             problem = nil
         } catch {
             problem = error.localizedDescription
@@ -209,7 +262,14 @@ struct ProfileForm: View {
     // 一个按钮做完连接要做的事：存 Key、拿模型列表（有的服务不给，不算失败）、试一句话
     private func connect() {
         saveKey()
-        guard let key = settings.key(for: profile) else { return }
+        guard keyDraft.isEmpty else { return }
+        let key: String
+        do {
+            key = try settings.key(for: profile)
+        } catch {
+            problem = error.localizedDescription
+            return
+        }
         problem = nil
         testResult = .working
         let client = AIClient(profile: profile, apiKey: key)

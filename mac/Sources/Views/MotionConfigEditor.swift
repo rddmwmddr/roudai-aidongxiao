@@ -229,8 +229,6 @@ struct MotionConfigEditor: View {
                 lastWritten = value
                 shot.fields["motion"] = value
                 shot.fields["dur"] = nil
-                shot.fields["sampleData"] = nil
-                shot.fields["pending"] = nil
                 problem = nil
                 await refreshTable()
             } catch { if revision == stamp { problem = BatchRunner.describe(error) } }

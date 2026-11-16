@@ -29,11 +29,17 @@ struct ShotTable: View {
             .width(min: 120, ideal: 220)
             TableColumn("动效") { shot in
                 HStack(spacing: 8) {
-                    MotionButton(shot: shot, stage: stage, names: names) { next in
-                        if let i = board.rows.firstIndex(where: { $0.id == shot.id }) { board.rows[i] = next }
+                    MotionButton(shot: shot, stage: stage, names: names) { original, next in
+                        guard let i = board.rows.firstIndex(where: { $0.id == original.id }),
+                              board.rows[i] == original else { return false }
+                        board.rows[i] = next
+                        return true
                     }
                     Spacer(minLength: 0)
-                    if !shot.note.isEmpty {
+                    if shot.isPending {
+                        Text(shot.usesSampleData ? "样例" : "待补数据")
+                            .foregroundStyle(.orange)
+                    } else if !shot.note.isEmpty {
                         ReviewDot().help(shot.note)
                     }
                 }

@@ -30,9 +30,9 @@ final class Storyboarder: ObservableObject {
         return nil
     }
 
-    // 上次选了规则就还是规则。否则用最近选过的、填了 Key 的服务
+    // 打开文稿页恢复上次的引擎，生成时检查服务是否配置了 Key。
     func pickEngine() {
-        if !settings.useRules, let active = settings.active, settings.key(for: active) != nil {
+        if !settings.useRules, let active = settings.active {
             engine = .ai(active.id)
         } else {
             engine = .rules
@@ -74,9 +74,7 @@ final class Storyboarder: ObservableObject {
                 } else {
                     output = try await runRules(source: source, stage: stage)
                 }
-                try Task.checkCancellation()
-                warnings = output.warnings
-                onDone(output)
+                try finish(output, onDone: onDone)
             } catch is CancellationError {
                 errorText = "已停止"
             } catch {
@@ -124,15 +122,23 @@ final class Storyboarder: ObservableObject {
                 for i in output.rows.indices {
                     output.rows[i].duration = result.durations[i]
                 }
-                try Task.checkCancellation()
-                warnings = output.warnings
-                onDone(output)
+                try finish(output, onDone: onDone)
             } catch is CancellationError {
                 errorText = "已停止"
             } catch {
                 errorText = error.localizedDescription
             }
         }
+    }
+
+    private func finish(_ output: Output, onDone: (Output) -> Void) throws {
+        try Task.checkCancellation()
+        warnings = output.warnings
+        guard !output.rows.isEmpty else {
+            errorText = "没有生成分镜。请检查文稿里是否有正文，再试一次。"
+            return
+        }
+        onDone(output)
     }
 
     private func runRules(source: String, stage: StageController, sentences: Bool = false) async throws -> Output {
@@ -148,7 +154,7 @@ final class Storyboarder: ObservableObject {
     }
 
     private func runAI(source: String, profile: AIProfile, stage: StageController) async throws -> Output {
-        guard let key = settings.key(for: profile), !key.isEmpty else { throw AIError.missingKey(profile.name) }
+        let key = try settings.key(for: profile)
         let client = AIClient(profile: profile, apiKey: key)
         let chunks = StoryboardPrompt.chunks(of: source)
         let library = (try? await stage.callString("return DMBridge.libraryPrompt()")) ?? ""
@@ -190,10 +196,19 @@ final class Storyboarder: ObservableObject {
         struct Review: Decodable {
             let rows: [Shot]
             let coverage: Double
-            let flagged: Int
+            struct Issue: Decodable {
+                let no: String
+                let chapter: String
+                let template: String
+                let reasons: [String]
+            }
+
+            let issues: [Issue]
         }
         let review = try JSONDecoder().decode(Review.self, from: Data(json.utf8))
-        if review.flagged > 0 { warnings.append("\(review.flagged) 镜 AI 的结果用不了，已换成规则版，都标了「要确认」。") }
+        warnings += review.issues.map { issue in
+            "第 \(issue.no) 镜（\(issue.chapter) · \(issue.template)）已换成规则版。\(issue.reasons.joined(separator: "；"))"
+        }
         if review.coverage < 0.97 { warnings.append("文稿里约 \(Int((1 - review.coverage) * 100))% 的文字没有进分镜，请对照检查。") }
         return Output(source: source, title: nil, rows: review.rows, warnings: warnings)
     }

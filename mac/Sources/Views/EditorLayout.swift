@@ -20,7 +20,8 @@ struct EditorStage<Center: View>: View {
     @ObservedObject var stage: StageController
     let names: [String: String]
     let previousDataTemplate: String?
-    let onPick: (Shot) -> Void
+    let onPick: (Shot, Shot) -> Bool
+    let onOpenData: () -> Void
     let onUndo: () -> Void
     let onRedo: () -> Void
     let onAdd: () -> Void
@@ -50,6 +51,12 @@ struct EditorStage<Center: View>: View {
                         ElementList(shot: current, stage: stage)
                     }
                     Spacer(minLength: 0)
+                    if current.isPending {
+                        Button(action: onOpenData) {
+                            Label(current.usesSampleData ? "处理样例数据" : "处理待确认数据", systemImage: "exclamationmark.circle")
+                        }
+                        .buttonStyle(.pill())
+                    }
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
@@ -157,7 +164,7 @@ struct ShotTimeline: View {
     @ObservedObject var stage: StageController
     let names: [String: String]
     let previousDataTemplate: String?
-    let onPick: (Shot) -> Void
+    let onPick: (Shot, Shot) -> Bool
     let onAdd: () -> Void
     let onDelete: (Shot.ID) -> Void
     let onTrim: (Shot.ID, Double?) -> Void
@@ -176,6 +183,11 @@ struct ShotTimeline: View {
     static let pxPerSecond = 40.0
     private static let minWidth = 56.0
     private static let gap = 5.0
+
+    private struct TimelineDataKey: Hashable {
+        let rows: [Shot]
+        let packRevision: Int
+    }
 
     private func duration(_ shot: Shot) -> Double {
         if let trimming, trimming.id == shot.id { return trimming.seconds }
@@ -280,7 +292,7 @@ struct ShotTimeline: View {
             }
         }
         .frame(height: 172)
-        .task(id: rows) {
+        .task(id: TimelineDataKey(rows: rows, packRevision: stage.motionPackRevision)) {
             seconds = await stage.durations(rows)
             naturals = await stage.naturals(rows)
         }
@@ -344,7 +356,7 @@ private struct ClipColumn: View {
     let onSelect: () -> Void
     let onTap: () -> Void
     let onScrub: (Double) -> Void
-    let onPick: (Shot) -> Void
+    let onPick: (Shot, Shot) -> Bool
     let onAdd: () -> Void
     let onDelete: () -> Void
     let onTrimChange: (Double) -> Void
@@ -378,7 +390,7 @@ private struct ClipColumn: View {
             // 拖时长时播放头让开，秒数和速率的气泡不被竖线挡住
             if selected && !trimming { Playhead(clock: stage.clock, duration: stage.duration, startTime: startTime, seconds: seconds, width: width) }
         }
-        .task(id: "\(frameCount)|\(shot.json)") { strip = await stage.frames(of: shot, count: frameCount) }
+        .task(id: "\(stage.motionPackRevision)|\(frameCount)|\(shot.json)") { strip = await stage.frames(of: shot, count: frameCount) }
     }
 
     // 刻度：一秒一格，点或拖就是定位
@@ -455,7 +467,12 @@ private struct ClipColumn: View {
                 Text(shot.no)
                     .font(.system(size: 10, weight: .medium).monospacedDigit())
                     .foregroundStyle(Color.white)
-                if !shot.note.isEmpty {
+                if shot.isPending {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .foregroundStyle(.orange)
+                        .help(shot.usesSampleData ? "正在使用样例数据" : "数据待确认")
+                        .accessibilityLabel("数据待确认")
+                } else if !shot.note.isEmpty {
                     ReviewDot().help(shot.note)
                 }
             }

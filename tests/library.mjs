@@ -201,6 +201,37 @@ const result = await page.evaluate(async () => {
   out.adoptBack = withNote.note.includes('原来的备注') && !back.sampleData && !back.points && back.note === '原来的备注';
   const kept = D.adopt({line: '抖音有3亿', tpl: 'statement', series: [{label: 'a', value: 1}, {label: 'b', value: 2}, {label: 'c', value: 3}]}, 'chBars');
   out.adoptKeepsData = kept.series[0].label === 'a' && !kept.sampleData;
+  const source = {id: 7, no: '007', line: '甲 20%，乙 50%，丙 32%。', tpl: 'chBars', unit: '%', dur: 4, series: [{label: '甲', value: 20}, {label: '乙', value: 50}]};
+  const percent = D.adopt(source, 'comb');
+  const fallback = D.adopt(source, 'chPaired');
+  const pending = {...percent, pending: true};
+  const confirmed = D.confirmMotionData(pending).row;
+  const invalid = {...source, pending: true, series: [{label: '甲', value: null}, {label: '乙', value: 50}]};
+  const request = {tpl: 'chLine', points: [{label: '甲', v: 20}, {label: '乙', v: 50}, {label: '丙', v: 32}]};
+  const generated = D.applyMotionData(source, 'chLine', request).row;
+  out.switchChecks = {
+    reuse: percent.groups?.[1].metrics[0].value === 50 && !percent.sampleData && percent.dur === 4,
+    restore: fallback.sampleData && D.adopt(fallback, 'chBars').series[0].value === 20,
+    confirmation: !!D.exportIssue(pending) && confirmed && !D.exportIssue(confirmed),
+    invalid: !!D.confirmMotionData(invalid).error && !!D.exportIssue({...invalid, pending: false}),
+    generated: generated?.tpl === 'chLine' && generated.line === source.line && generated.dur === 4 && generated.id === 7,
+    invented: !!D.applyMotionData(source, 'chLine', {...request, points: [{v: 2}, {v: 50}]}).error,
+    wrongTemplate: !!D.applyMotionData(source, 'chBars', request).error,
+  };
+  const graph = {tpl: 'chNetwork', nodes: ['甲', '乙', '丙'], links: [[0, 1], [1, 2]]};
+  const graphShot = {tpl: 'statement', line: '甲和乙相连，乙和丙相连。'};
+  Object.assign(out.switchChecks, {
+    graphIndices: !!D.applyMotionData(graphShot, graph.tpl, graph).row,
+    graphBounds: D.applyMotionData(graphShot, graph.tpl, {...graph, links: [[0, 3]]}).error?.includes('节点编号'),
+    scaledUnits: D.numberProblems({series: [{value: 30000}], unit: '万'}, 'chBars', '三亿人').length === 0,
+    chinesePercent: D.numberProblems({value: 86}, 'comb', '百分之八十六').length === 0,
+    groupedNumber: D.numberProblems({value: 1234}, 'comb', '有 1,234 人').length === 0,
+    distinctNumbers: D.numberProblems({value: 45100}, 'comb', '45，100').length === 1,
+    issueDetail: D.numberProblems({series: [{value: 999}]}, 'chBars', source.line)[0]?.includes('series[1].value = 999'),
+    pointCount: D.motionError({tpl: 'chDraw', points: [{v: 20}, {v: 50}]}, true).includes('本镜有 2 个'),
+    invalidPoint: D.motionError({tpl: 'chDraw', points: [{v: 20}, {v: null}, {v: 50}]}, true).includes('第 2个点缺少有效数值'),
+    pointValueAlias: D.motionError({tpl: 'chDraw', points: [{value: 20}, {value: 50}, {value: 32}]}, true) === '',
+  });
   // 换颜色：组件、CSS 动效、数据模板都能换，画面里出现换上的颜色
   out.colors = ['arc_bar_chart', 'kxs_ring', 'cob14', 'comb'].map((id) => {
     const raw = Object.assign({line: ''}, D.sampleOf(id), {template: id, tpl: id});
@@ -273,6 +304,6 @@ if (errs.length) console.log('页面错误', errs);
 const widget = result.widget;
 const timedBad = Object.values(result.timed).filter((v) => !v).length + result.pagedAllChars.length;
 const widgetBad = timedBad + (widget.short === null ? 1 : 0) + (widget.long === null ? 0 : 1) + (widget.noNumber ? 1 : 0) + (widget.percent ? 0 : 1) + (widget.notPercent ? 1 : 0) + (widget.adopted ? 0 : 1) + widget.stockWords.length + (result.filmInherit === 'rgb(0, 0, 0)' ? 0 : 1);
-const bad = result.colors.length + widgetBad + result.lfEnglish.length + result.lfNoData.length + (result.adopt.sample && result.adopt.canDraw ? 0 : 1) + (result.adoptKeepsData ? 0 : 1) + (result.adoptBack ? 0 : 1) + result.noCategory.length + result.failed.length + result.impure.length + result.blank.length + result.noKeywords.length + result.textFailed.length + errs.length;
+const bad = Object.values(result.switchChecks).filter((v) => !v).length + result.colors.length + widgetBad + result.lfEnglish.length + result.lfNoData.length + (result.adopt.sample && result.adopt.canDraw ? 0 : 1) + (result.adoptKeepsData ? 0 : 1) + (result.adoptBack ? 0 : 1) + result.noCategory.length + result.failed.length + result.impure.length + result.blank.length + result.noKeywords.length + result.textFailed.length + errs.length;
 console.log(bad ? `有 ${bad} 处问题` : '全部通过');
 process.exit(bad ? 1 : 0);

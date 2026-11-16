@@ -98,7 +98,7 @@
     if (row.tpl === 'lucy') return 1.9;
     return s + 2.4;
   };
-  const outputable = (r) => !r.sampleData && !!D.TEMPLATES[r.tpl] && !D.TEMPLATES[r.tpl].noExport;
+  const outputable = (r) => !r.pending && !r.sampleData && !!D.TEMPLATES[r.tpl] && !D.TEMPLATES[r.tpl].noExport;
   const nameOf = (row) => (D.TEMPLATES[row.tpl] ? D.TEMPLATES[row.tpl].name : '重音字幕');
   const fmt = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
 
@@ -170,7 +170,7 @@
     const q = S.query.trim();
     if (q && !(r.line || '').includes(q) && !String(r.no).includes(q)) return false;
     if (S.filter === 'all') return true;
-    if (S.filter === 'note') return !!r.note;
+    if (S.filter === 'note') return !!(r.note || r.pending || r.sampleData);
     if (S.filter === 'adjusted') return !!(r.layers && Object.keys(r.layers).length);
     if (S.filter.startsWith('ch:')) return r.ch === S.filter.slice(3);
     return r.cat === S.filter;
@@ -178,7 +178,7 @@
   const renderFilter = () => {
     const count = (fn) => rows.filter(fn).length;
     const chapters = [...new Set(rows.map((r) => r.ch))];
-    const opts = [['all', '全部', rows.length], ['数据动效', '数据动效', count((r) => r.cat === '数据动效')], ['文字动效', '文字动效', count((r) => r.cat === '文字动效')], ['屏幕动效', '屏幕动效', count((r) => r.cat === '屏幕动效')], ['note', '要确认', count((r) => r.note)], ['adjusted', '调整过', count((r) => r.layers && Object.keys(r.layers).length)]].filter((o) => o[2] || o[0] === 'all');
+    const opts = [['all', '全部', rows.length], ['数据动效', '数据动效', count((r) => r.cat === '数据动效')], ['文字动效', '文字动效', count((r) => r.cat === '文字动效')], ['屏幕动效', '屏幕动效', count((r) => r.cat === '屏幕动效')], ['note', '要确认', count((r) => r.note || r.pending || r.sampleData)], ['adjusted', '调整过', count((r) => r.layers && Object.keys(r.layers).length)]].filter((o) => o[2] || o[0] === 'all');
     chapters.forEach((c) => opts.push([`ch:${c}`, c, count((r) => r.ch === c)]));
     $('filter').innerHTML = opts.map(([k, n, c]) => `<option value="${esc(k)}" ${S.filter === k ? 'selected' : ''}>${esc(n)} ${c}</option>`).join('');
   };
@@ -586,6 +586,20 @@
       if (!Object.keys(row.layers).length) delete row.layers;
       saveRow(row);
     },
+    // 双击画面里的字改字：改到的字段写回这一镜
+    editRow: (patch, label, id) => {
+      const i = rows.findIndex((r) => r.id === id);
+      if (i < 0) return;
+      const row = rows[i];
+      Object.assign(row, patch);
+      saveRow(row);
+      refreshClip(i);
+      if (i === S.sel) {
+        buildScene(false);
+        renderShot();
+      }
+      renderTable();
+    },
     list: true,
   });
   D.PaperText.bind({surface:editor.root,canvas:cv,raw:()=>rawOf(rows[S.sel]),time:()=>S.t,pause:()=>setPlaying(false),commit:motion=>{const row=rows[S.sel];row.motion=motion;rebuild(row,false);renderShot()}});
@@ -644,23 +658,26 @@
       </div>`).join('');
     const hasLines = row.lines && row.lines.length;
     const advKeys = ['points', 'ref', 'cohort', 'events', 'sets', 'steps', 'highlight', 'nodes', 'left', 'right', 'dialog', 'words', 'sub', 'wrong', 'title', 'ceil', 'caption', 'pre', 'post', 'head', 'foot', 'prefix', 'key', 'center', 'total', 'from', 'to'];
+    const ownKeys = new Set(['id', 'no', 'ch', 'kind', 'cat', 'line', 'visual', 'tpl', 'note', 'pending', 'sampleData', 'sampleBackup', 'layers', 'groups', 'lines', 'theme', 'colors', 'speed', 'dur', 'hold']);
     const adv = {};
-    advKeys.forEach((k) => {
+    new Set([...advKeys, ...Object.keys(D.sampleOf(row.tpl)).filter((k) => !ownKeys.has(k))]).forEach((k) => {
       if (row[k] !== undefined) adv[k] = row[k];
     });
     const hasAdv = Object.keys(adv).length > 0;
-    const tpl = D.TEMPLATES[row.tpl];
+    const issue = D.exportIssue(row);
     const roles = D.colorRoles ? D.colorRoles(row) : [];
     $('shot').innerHTML = `${D.Opus.editorHTML(row)}
       <div class="block">
         <h3>镜 ${esc(row.no)} · ${esc(row.ch)} · ${esc(row.cat)}</h3>
         <p class="line">${esc(row.line)}</p>
         ${row.visual ? `<p class="visual">${esc(row.visual)}</p>` : ''}
-        ${row.note ? `<p class="note">${esc(row.note)}</p>` : ''}
+        ${row.note && !row.sampleData ? `<p class="note">${esc(row.note)}</p>` : ''}
+        ${issue ? `<p class="note" id="dataIssue">${esc(issue)}</p>` : ''}
+        ${row.pending || row.sampleData ? '<button id="confirmData">确认当前数据，可导出</button>' : ''}
       </div>
       ${row.groups && row.groups.length ? `<div class="block"><h3>数据</h3>${metricsHtml}<button id="addMetric">加一个数</button> <button id="addGroup">加一组</button></div>` : ''}
       ${hasLines ? `<div class="block"><h3>上屏文字（一行一条）</h3><textarea id="linesBox" rows="${Math.min(8, row.lines.length + 1)}">${esc(row.lines.join('\n'))}</textarea></div>` : ''}
-      ${hasAdv ? `<details class="block"><summary style="cursor:pointer;color:var(--mute)">其他参数</summary><textarea id="advBox" rows="8" style="margin-top:8px;font-family:Menlo,monospace;font-size:12px">${esc(JSON.stringify(adv, null, 1))}</textarea><div id="advErr" class="warn" style="font-size:12px"></div></details>` : ''}
+      ${hasAdv ? `<details class="block" ${row.pending || row.sampleData ? 'open' : ''}><summary style="cursor:pointer;color:var(--mute)">其他参数</summary><textarea id="advBox" rows="8" style="margin-top:8px;font-family:Menlo,monospace;font-size:12px">${esc(JSON.stringify(adv, null, 1))}</textarea><div id="advErr" class="warn" style="font-size:12px"></div></details>` : ''}
       <div class="block">
         <h3>节奏与颜色</h3>
         <div class="two">
@@ -683,7 +700,7 @@
           <select id="xSize" ${row.motion ? 'hidden' : ''}><option value="4k">4K</option><option value="1080p">1080p</option></select>
           <select id="xFps" ${row.motion ? 'hidden' : ''}><option value="60">60 帧</option><option value="30">30 帧</option></select>
           ${row.motion ? `<span>${row.motion.output.width} × ${row.motion.output.height} · ${row.motion.output.fps}fps（按项目配置）</span>` : ''}
-          <button id="xGo" class="primary" ${tpl && tpl.noExport ? 'disabled' : ''}>输出这一镜</button>
+          <button id="xGo" class="primary" ${issue ? 'disabled' : ''}>输出这一镜</button>
           <button id="xCancel" style="display:none">取消</button>
           
         </div>
@@ -697,6 +714,9 @@
     saveRow(row);
     buildScene(reset);
     refreshClip(S.sel);
+    const issue = D.exportIssue(row);
+    if ($('dataIssue')) $('dataIssue').textContent = issue;
+    if ($('xGo')) $('xGo').disabled = !!issue || !!S.exporting;
   };
   const bindShot = (row) => {
     D.Opus.bindEditor(row, rebuild, renderShot, () => S.t);
@@ -727,7 +747,6 @@
           else if (k === 'land') m.land = el.value === '' ? null : +el.value;
           else m[k] = el.value;
           if (k === 'value') {
-            row.pending = false;
             if (row.tpl === 'swap') row.value = m.value;
           }
         } else {
@@ -808,6 +827,19 @@
       renderAll();
       select(S.sel);
     };
+    if ($('confirmData')) $('confirmData').onclick = () => {
+      const result = D.confirmMotionData(row);
+      if (result.error) {
+        $('dataIssue').textContent = result.error;
+        return;
+      }
+      Object.keys(row).forEach((k) => delete row[k]);
+      Object.assign(row, result.row);
+      rebuild(row, false);
+      renderShot();
+      renderFilter();
+      renderTable();
+    };
     $('xGo').onclick = () => exportRow(row);
   };
 
@@ -837,6 +869,11 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 60000);
   };
   const exportRow = async (row) => {
+    const issue = D.exportIssue(row);
+    if (issue) {
+      $('result').textContent = issue;
+      return;
+    }
     const size = $('xSize').value;
     const fps = +$('xFps').value;
     const ctl = new AbortController();
@@ -903,6 +940,7 @@
         <div class="two"><div class="field"><label>尺寸</label><select id="bSize"><option value="4k">4K</option><option value="1080p">1080p</option></select></div><div class="field"><label>帧率</label><select id="bFps"><option value="60">60 帧</option><option value="30">30 帧</option></select></div></div>
         <label style="display:flex;gap:8px;align-items:center;margin:2px 0 10px;color:var(--mute);font-size:13px"><input id="bSkip" type="checkbox" checked style="width:auto">文件夹里已有的不重复输出（中断后接着出）</label>
         <p id="bPlan" style="color:var(--ink);font-size:13px;margin:0 0 6px"></p>
+        <div id="bIssues" style="max-height:150px;overflow:auto"></div>
         <p style="color:var(--mute);font-size:13px;margin:0 0 12px">${canPickFolder ? '选一次文件夹，之后自动存，不用逐个确认。会同时写一份输出清单。输出时可以切到别的标签页，别关掉这一页。' : '这个环境不能选文件夹，每个文件要单独保存。请用 Chrome 或 Edge 打开服务器版。'}</p>
       </div>
       <div id="bBar" style="height:6px;background:#242428;border-radius:3px;overflow:hidden;display:none;margin-bottom:8px"><i style="display:block;height:100%;background:var(--hi);width:0"></i></div>
@@ -915,20 +953,37 @@
       if (scope === 'picked') pool = rows.filter((r) => S.picked.has(r.id));
       else if (scope === 'filter') pool = rows.filter(matches);
       else if (scope.startsWith('ch:')) pool = rows.filter((r) => r.ch === scope.slice(3));
-      const motion = pool.filter(outputable);
       const ok = [];
       const bad = [];
-      motion.forEach((r) => {
-        const v = D.TEMPLATES[r.tpl].custom ? {errors: []} : D.validate(rawOf(r));
-        (v.errors.length ? bad : ok).push(r);
+      pool.forEach((r) => {
+        const reason = D.exportIssue(r);
+        if (reason) bad.push({row: r, reason});
+        else ok.push(r);
       });
-      return {ok, bad, skipped: pool.length - motion.length};
+      return {ok, bad};
     };
     const plan = () => {
-      const {ok, bad, skipped} = listOf();
+      const {ok, bad} = listOf();
       const sec = ok.reduce((a, r) => a + secondsOf(r), 0);
       const speed = ($('bSize').value === '4k' ? 0.7 : 0.3) * (+$('bFps').value === 60 ? 1 : 0.55);
-      $('bPlan').textContent = `将输出 ${ok.length} 镜，成片约 ${fmt(sec)}，大约要 ${Math.max(1, Math.ceil((sec * speed) / 60))} 分钟。${skipped ? `样例数据 ${skipped} 镜不输出。` : ''}${bad.length ? `缺数据 ${bad.length} 镜跳过（${bad.map((r) => r.no).join('、')}）。` : ''}`;
+      $('bPlan').textContent = ok.length
+        ? `可输出 ${ok.length} 镜，成片约 ${fmt(sec)}，大约要 ${Math.max(1, Math.ceil((sec * speed) / 60))} 分钟。`
+        : '当前范围没有可输出的镜头。';
+      $('bIssues').innerHTML = bad.map(({row, reason}, i) => `
+        <p><button data-fix="${i}">处理第 ${esc(row.no)} 镜</button> ${esc(reason)}</p>`).join('');
+      $('bIssues').querySelectorAll('[data-fix]').forEach((button) => {
+        button.onclick = () => {
+          const {row} = bad[+button.dataset.fix];
+          closeOverlay();
+          rawStore.set('dm_inspector', true);
+          S.filter = 'all';
+          S.query = '';
+          $('search').value = '';
+          renderAll();
+          setPage('stage');
+          select(rows.indexOf(row));
+        };
+      });
       $('bGo').disabled = !ok.length;
     };
     ['bScope', 'bSize', 'bFps'].forEach((id) => ($(id).onchange = plan));
@@ -1281,6 +1336,7 @@
   // ---------- 换效果：左边分类，上面预览，下面缩略图 ----------
   // 指到哪个就用这一镜自己的字演哪个，点一下换到画面上，弹窗不关，可以一个个试
   const SUGGESTED = 'suggested';
+  const ALL_MOTIONS = 'all';
   const pk = {cat: SUGGESTED, query: '', hovered: null, scene: null, start: 0, raf: 0, id: null, timer: 0};
   const thumbs = new Map();
   const pkCtx = $('pkCanvas').getContext('2d', {alpha: false});
@@ -1296,10 +1352,10 @@
       const top = D.rankTemplates(rows[S.sel], previousDataTpl()).slice(0, 9).map((t) => t.id);
       return top.map((id) => all.find((m) => m.id === id)).filter(Boolean);
     }
-    return all.filter((m) => m.category === pk.cat);
+    return pk.cat === ALL_MOTIONS ? all : all.filter((m) => m.category === pk.cat);
   };
   const renderPkCats = () => {
-    $('pkCats').innerHTML = [[SUGGESTED, '适合']].concat(D.CATEGORIES.map((c) => [c.id, c.name])).map(([id, n]) => `<button data-c="${id}" class="${pk.cat === id && !pk.query ? 'on' : ''}">${esc(n)}</button>`).join('');
+    $('pkCats').innerHTML = [[SUGGESTED, '适合'], [ALL_MOTIONS, '全部动效']].concat(D.CATEGORIES.map((c) => [c.id, c.name])).map(([id, n]) => `<button data-c="${id}" class="${pk.cat === id && !pk.query ? 'on' : ''}">${esc(n)}</button>`).join('');
     $('pkCats').querySelectorAll('button').forEach((b) => (b.onclick = () => {
       pk.cat = b.dataset.c;
       pk.query = '';
@@ -1368,7 +1424,7 @@
       }
       pk.scene = scene;
       pk.start = performance.now();
-      $('pkInfo').innerHTML = `<b>${esc(tpl ? tpl.name : '')}</b><p>${esc(tpl ? tpl.desc || '' : '')}</p>${adopted.sampleData ? '<small>样例数据</small>' : ''}`;
+      $('pkInfo').innerHTML = `<b>${esc(tpl ? tpl.name : '')}</b><p>${esc(tpl ? tpl.desc || '' : '')}</p>${adopted.sampleData ? '<small>样例数据。切换后在检查器补齐并确认即可导出。</small>' : ''}`;
     }, 80);
   };
   const pkLoop = (now) => {
@@ -1399,6 +1455,8 @@
     renderShot();
     refreshClip(S.sel);
     renderTable();
+    pk.id = null;
+    previewEffect(id);
   };
   const openPicker = () => {
     pk.cat = SUGGESTED;
@@ -1486,7 +1544,7 @@
     }
   };
   document.querySelectorAll('.seg button').forEach((b) => (b.onclick = () => setPage(b.dataset.p)));
-  const inspectorOpen = () => rawStore.get('dm_inspector', false);
+  const inspectorOpen = () => rawStore.get('dm_inspector', true);
   const syncInspector = () => {
     const open = inspectorOpen() && S.page !== 'script';
     $('inspector').hidden = !open;

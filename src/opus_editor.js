@@ -72,8 +72,6 @@
         const mediaOpen=document.getElementById("mediaEditor")?.open;
         row.motion = O.validate(next);
         delete row.dur;
-        delete row.sampleData;
-        delete row.pending;
         rebuild(row, false);
         render();
         if(mediaOpen)document.getElementById("mediaEditor").open=true;

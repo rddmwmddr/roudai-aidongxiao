@@ -141,7 +141,8 @@
 
   // ---------- 配置 ----------
   const themeColors = (template, theme) => {
-    const inkFirst = template === 'dots' || template === 'survey';
+    const id = TEMPLATES[template]?.baseID || template;
+    const inkFirst = id === 'dots' || id === 'survey';
     if (theme === 'paper') return inkFirst ? {bg: '#F1EFE8', primary: '#141416', secondary: '#EE3A17'} : {bg: '#F1EFE8', primary: '#EE3A17', secondary: '#141416'};
     if (theme === 'black') return inkFirst ? {bg: '#0A0A0B', primary: '#F4F1EA', secondary: '#FF5C1E'} : {bg: '#0A0A0B', primary: '#FF5C1E', secondary: '#FFF4E2'};
     return {};
@@ -172,12 +173,19 @@
         groups.push({title: String(g.title || ''), sTitle: g.sTitle == null ? null : +g.sTitle, relation, metrics});
       }
     });
+    // 一行一个数的模板（一百根）：一共三个数以上，每个数自己一行。
+    // 两个数叠在一行（包含、相反）只在一共两个数时用；行数放不下（超过 maxGroups）时照旧
+    let rows = groups;
+    const total = groups.reduce((a, g) => a + g.metrics.length, 0);
+    if (d.rowEach && total >= 3 && total <= (d.maxGroups || 4) && groups.some((g) => g.metrics.length > 1)) {
+      rows = groups.flatMap((g) => g.metrics.map((m, i) => ({title: i === 0 ? g.title : '', sTitle: i === 0 ? g.sTitle : null, relation: 'single', metrics: [m]})));
+    }
     return {
       template,
       speed: raw.speed > 0 ? +raw.speed : 1,
       hold: raw.hold != null && raw.hold !== '' ? +raw.hold : 3.3,
       colors: {bg: colors.bg || d.colors.bg, primary: colors.primary || d.colors.primary, secondary: colors.secondary || d.colors.secondary},
-      groups,
+      groups: rows,
     };
   };
 
@@ -193,6 +201,7 @@
     return out;
   };
   const colorRoles = (row) => {
+    row = root.DM.motionDefaults?.(row, row.tpl || row.template) || row;
     const t = TEMPLATES[row.tpl || row.template];
     if (!t) return [];
     if (t.colorRoles) {
@@ -622,8 +631,11 @@
     return d;
   };
   const staged = (scene, raw, template, S) => {
-    const stage = new root.DMStage.Stage(S, layersOf(raw, template));
+    const defaults = root.DM.motionLayerDefaults?.(template);
+    const effective = (layers) => defaults ? root.DM.mergeMotionLayers(defaults, layers) : layers;
+    const stage = new root.DMStage.Stage(S, effective(layersOf(raw, template)));
     const inner = scene.draw;
+    const overlay = root.DM.motionOverlay?.(raw, template);
     const base = scene.duration;
     // 时间线上拖出来的秒数，也就是速率：拉长整段放慢，缩短整段加快，动画跟着总时长走，内容不会被切掉
     const want = +raw.dur > 0 ? +raw.dur : 0;
@@ -631,6 +643,25 @@
     const timed = (t) => {
       const n = natural();
       return want ? (t * n) / want : t;
+    };
+    const paint = (ctx, t) => {
+      const u = timed(t);
+      stage.begin(ctx, u);
+      if (overlay) {
+        // 底图可能切换过混合模式、阴影或裁切。叠加层用画布原坐标和自己的状态。
+        ctx.save();
+        try {
+          inner(stage, u);
+        } finally {
+          stage.end();
+          ctx.restore();
+        }
+        stage.begin(ctx, u, false);
+        overlay(stage);
+      } else {
+        inner(stage, u);
+      }
+      stage.end();
     };
     const out = Object.assign(scene, {
       stage,
@@ -640,25 +671,17 @@
       rate: () => (want ? natural() / want : 1),
       edited: !!stage.layers,
       duration: want || natural(),
-      draw(ctx, t) {
-        const u = timed(t);
-        stage.begin(ctx, u);
-        inner(stage, u);
-        stage.end();
-      },
+      draw: paint,
       setLayers(layers) {
-        stage.setLayers(layers);
+        stage.setLayers(effective(layers));
         out.edited = !!stage.layers;
         out.duration = want || natural();
       },
       // 画一帧，同时收集每个元素这一帧的矩形
       inspect(ctx, t, registry) {
-        const u = timed(t);
         stage.rec = [];
         stage.reg = registry || null;
-        stage.begin(ctx, u);
-        inner(stage, u);
-        stage.end();
+        paint(ctx, t);
         const rec = stage.rec;
         stage.rec = null;
         stage.reg = null;
@@ -669,7 +692,11 @@
   };
   const createScene = (raw1, width = 1920) => {
     // 文件里写的动效已经删了（旧的出镜镜头、删掉的分类）：按重音字幕画，字不丢
-    const raw0 = TEMPLATES[raw1.template] || !TEMPLATES.statement ? raw1 : Object.assign({}, raw1, {template: 'statement'});
+    if (typeof raw1.template === 'string' && raw1.template.startsWith('local.') && !Object.hasOwn(TEMPLATES, raw1.template)) {
+      throw new Error('这一镜的本机模板未加载，请连接对应的动效包');
+    }
+    const source = TEMPLATES[raw1.template] || !TEMPLATES.statement ? raw1 : Object.assign({}, raw1, {template: 'statement'});
+    const raw0 = root.DM.motionDefaults?.(source, source.template) || source;
     const tplDef = TEMPLATES[raw0.template];
     const S0 = width / 1920;
     if (tplDef && tplDef.custom) {

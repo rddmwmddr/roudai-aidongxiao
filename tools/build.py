@@ -76,7 +76,9 @@ print(hosted / "index.html", round((hosted / "index.html").stat().st_size / 1e3)
 # macOS App：渲染页（单文件）、示例分镜表
 app = root / "mac" / "Resources"
 app.mkdir(parents=True, exist_ok=True)
-engine = ["src/parser.js", "src/stage.js", "src/core.js", "src/tpl_comb.js", "src/tpl_dots.js", "src/tpl_flat.js", "src/tpl_text.js", "src/tpl_lab.js", "src/tpl_screen.js", "src/tpl_gl.js", "src/match.js", "src/mp_packs.js", "src/library.js", "src/tpl_charts.js", "src/lf_charts.js", "src/lieflat.js", "src/css_film.js", "src/co_packs.js", "src/colorion.js", "src/kinetics.js", "src/arc.js", "src/samples.js", "src/stage_editor.js", "src/autoboard.js", "src/paper_specs.js", "src/motion_media_spec.js", "src/opus_config.js", "src/opus_templates.js", "src/paper_press.js", "src/paper_templates.js", "src/motion_media.js", "src/motion_media_editor.js", "src/paper_text_editor.js", "src/app_bridge.js"]
+engine = [p for p in order if p not in {"src/fontlib.js", "src/opus_editor.js", "src/ui.js"}]
+# Register built-ins before retaining the motion-pack base templates.
+engine += ["src/motion_pack.js", "src/autoboard.js", "src/app_bridge.js", "src/motion_pack_cli.js"]
 scripts = [f"<script>{single}</script>", f"<script>{js('vendor/mp4-muxer.js')}</script>"] + [f"<script>{js(p)}</script>" for p in engine]
 stage = js("src/app_stage.html").replace("<!--SCRIPTS-->", "\n".join(scripts))
 (app / "stage.html").write_text(stage, encoding="utf-8")

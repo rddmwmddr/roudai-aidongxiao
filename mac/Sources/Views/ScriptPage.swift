@@ -92,21 +92,29 @@ struct ScriptPage: View {
     @ViewBuilder
     private var messages: some View {
         if storyboarder.errorText != nil || !storyboarder.warnings.isEmpty {
-            VStack(alignment: .leading, spacing: 4) {
-                if let error = storyboarder.errorText {
-                    Label(error, systemImage: "exclamationmark.circle")
-                        .foregroundStyle(.red)
-                }
-                ForEach(storyboarder.warnings, id: \.self) { warning in
-                    Label(warning, systemImage: "exclamationmark.triangle")
-                }
+            ViewThatFits(in: .vertical) {
+                messageList
+                ScrollView { messageList }
             }
-            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxHeight: 150)
             .frame(maxWidth: 720, alignment: .leading)
             .padding(.horizontal, 24)
             .padding(.top, 8)
             .padding(.bottom, hasText || storyboarder.running ? 0 : 16)
         }
+    }
+
+    private var messageList: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if let error = storyboarder.errorText {
+                Label(error, systemImage: "exclamationmark.circle")
+                    .foregroundStyle(.red)
+                    .named("分镜生成错误")
+            }
+            GenerationWarnings(messages: storyboarder.warnings)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // 菜单里写清文稿会发到哪：选 AI 就看得到地址，规则版写明离线
@@ -139,6 +147,18 @@ struct ScriptPage: View {
             } else {
                 Text(title)
             }
+        }
+    }
+}
+
+struct GenerationWarnings: View {
+    let messages: [String]
+
+    var body: some View {
+        ForEach(messages.indices, id: \.self) { index in
+            Label(messages[index], systemImage: "exclamationmark.triangle")
+                .textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

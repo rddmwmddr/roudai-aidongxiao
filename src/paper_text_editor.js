@@ -11,7 +11,7 @@
    const error=document.createElement('p');error.setAttribute('role','alert');error.style.color='#b23b25';const bar=document.createElement('div');bar.style.cssText='display:flex;justify-content:flex-end;gap:12px;margin-top:16px';
    const cancel=document.createElement('button');cancel.textContent='取消';const apply=document.createElement('button');apply.textContent='应用文字';for(const b of [cancel,apply])b.style.cssText='font:inherit;padding:8px 18px;border:1px solid #aaa;border-radius:8px;cursor:pointer';
    cancel.onclick=()=>dialog.close();apply.onclick=()=>{try{const latest=o.raw();if(latest?.id!==raw.id||latest?.motion?.templateId!==c.templateId)throw new Error('镜头已切换，请重新打开文字编辑');const next=root.DMOpus.validate(latest.motion);let parent=next;for(const k of hit.path.slice(0,-1))parent=parent[k];parent[hit.path.at(-1)]=field.value;o.commit(root.DMOpus.validate(next));dialog.close()}catch(e){error.textContent=e.message}};
-   bar.append(cancel,apply);dialog.append(title,hint,field,error,bar);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();field.focus();field.select();
+   bar.append(cancel,apply);dialog.append(title,hint,field,error,bar);document.body.append(dialog);dialog.addEventListener('close',()=>{o.onTyping?.(false);dialog.remove()});o.onTyping?.(true);dialog.showModal();field.focus();field.select();
   },{capture:true});
  }
  D.PaperText={bind};

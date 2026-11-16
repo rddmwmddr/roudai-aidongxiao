@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import SwiftUI
 import Testing
 import WebKit
 @testable import DataMotion
@@ -82,6 +83,29 @@ struct OpusTests {
         #expect((motion["templateId"] as? String) == "comparison-dumbbell")
         let provenance = try #require(motion["metadata"] as? [String: Any])
         #expect((provenance["showSampleSize"] as? Bool) == false)
+    }
+
+    @Test("Opus 检查器同时显示调研样本量和叠层样本人数", .timeLimit(.minutes(2)))
+    func inspectorShowsOverlaySampleSize() async throws {
+        let stage = try await readyStage()
+        let json = try await stage.callString("return JSON.stringify(DMOpus.row(DMOpus.defaults('comparison-dumbbell')))")
+        var shot = try JSONDecoder().decode(Shot.self, from: Data(json.utf8))
+        shot.fields["sampleSize"] = .number(800)
+
+        let suite = "OpusInspectorTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let form = ShotForm(shot: .constant(shot), previousDataTemplate: nil, stage: stage) { _ in }
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 800, height: 900), styleMask: [.borderless], backing: .buffered, defer: false)
+        window.contentView = NSHostingView(rootView: form.defaultAppStorage(defaults))
+        Backstage.install()
+        Backstage.place(window)
+        window.orderBack(nil)
+        defer { window.orderOut(nil) }
+        let driver = WindowDriver(document: NSDocument(), window: window, web: stage.web, out: FileManager.default.temporaryDirectory)
+
+        try #require(await driver.until("Opus 配置的样本量") { driver.hasControl("样本量") })
+        #expect(driver.hasControl("样本人数"))
     }
 
     @Test("WebKit双视频素材可同步定位并原生导出", .timeLimit(.minutes(2)))

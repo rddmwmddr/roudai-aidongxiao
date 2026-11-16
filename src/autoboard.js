@@ -209,68 +209,46 @@
     return {title: title || opts.title || (lenOf(first) <= 30 && !HEAD.test(first) ? stripEnd(first) : '新分镜表'), rows, stats: {motion: rows.length}};
   };
 
-  // 校验 AI 给的分镜：模板要存在，数据要画得出来，所有数字必须出自文稿
-  const numbersIn = (o, bag = []) => {
-    if (o == null) return bag;
-    if (Array.isArray(o)) o.forEach((v) => numbersIn(v, bag));
-    else if (typeof o === 'object') {
-      Object.entries(o).forEach(([k, v]) => {
-        if (k === 'value' || k === 'v') {
-          if (Number.isFinite(+v)) bag.push(+v);
-        } else if (k === 'n' || k === 'out' || k === 'total') {
-          if (Number.isFinite(+v)) bag.push(+v);
-        } else if (k !== 'land' && k !== 'sheets' && k !== 'size' && k !== 'ceil' && k !== 'hold' && k !== 'speed' && k !== 'id' && k !== 'g' && k !== 'tier' && k !== 'no') numbersIn(v, bag);
-      });
-    }
-    return bag;
-  };
   const checkRow = (row, source) => {
     const problems = [];
-    const tpl = D.TEMPLATES[row.tpl];
-    if (!tpl) problems.push(`没有「${row.tpl}」这个模板`);
     const srcN = P.normalizeText(source || '');
     const lineN = P.normalizeText(row.line || '');
-    if (!row.line) problems.push('缺口播原文');
+    if (!lineN) problems.push('缺口播原文');
     else if (srcN && !srcN.includes(lineN)) problems.push('口播和文稿原文不一致');
-    if (tpl) {
-      try {
-        const raw = Object.assign({}, row, {template: row.tpl});
-        const scene = D.createScene(raw, 320);
-        const cv = document.createElement('canvas');
-        cv.width = 320;
-        cv.height = 180;
-        scene.draw(cv.getContext('2d', {alpha: false}), scene.duration * 0.6);
-      } catch (e) {
-        problems.push(e.message);
-      }
-    }
-    const bad = numbersIn(row.groups).concat(numbersIn(row.points), numbersIn(row.ref), numbersIn(row.sets), numbersIn(row.steps), numbersIn(row.highlight), numbersIn(row.events), row.value != null ? [+row.value] : [], row.motion && root.DMOpus ? root.DMOpus.dataNumbers(row.motion) : [], row.motion && row.motion.metadata && row.motion.metadata.showSampleSize ? [row.motion.metadata.sampleSize] : []).filter((v) => {
-      const s = String(v);
-      return !lineN.includes(s) && !srcN.includes(s);
-    });
-    if (bad.length) problems.push(`数字 ${[...new Set(bad)].join('、')} 在文稿里找不到`);
+    const render = D.motionRenderProblem(row);
+    if (render) problems.push(render);
+    problems.push(...D.numberProblems(D.motionData(row), row.tpl, source || row.line));
     return problems;
   };
   const reviewRows = (rows, source) => {
-    let last = null;
+    const issues = [];
     const out = rows.map((row, i) => {
-      const r = Object.assign({}, row, {id: i + 1, no: String(i + 1).padStart(3, '0')});
+      let r = Object.assign({}, row, {id: i + 1, no: String(i + 1).padStart(3, '0')});
+      // 样本人数由分镜口播识别，或由用户在检查器明确填写。
+      delete r.sampleSize;
       r.kind = 'B';
       r.ch = r.ch || '正片';
       r.visual = r.visual || '';
       r.cat = r.cat || '文字动效';
-      const problems = checkRow(r, source);
+      let problems;
+      try {
+        r = D.normalizeGeneratedMotion(r);
+        problems = checkRow(r, source);
+      } catch (e) {
+        problems = [e.message];
+      }
       if (problems.length) {
         // 用规则版兜底，文字不丢，并标出来让人看
         const fb = generate(r.line || '').rows[0];
+        issues.push({no: r.no, chapter: r.ch, template: D.TEMPLATES[r.tpl]?.name || r.tpl || '未指定动效', reasons: problems});
         const note = `AI 的结果用不了：${problems.join('；')}。已换成规则版，请确认`;
         if (fb) return Object.assign(fb, {id: r.id, no: r.no, ch: r.ch, line: r.line || fb.line, note});
+        delete r.motion;
+        delete r.motionInput;
         return Object.assign(r, {tpl: 'statement', lines: r.line ? [stripEnd(r.line)] : r.lines, kind: 'B', cat: '文字动效', note});
       }
-      if (r.groups) last = r.tpl;
       return r;
     });
-    void last;
     // 覆盖率：文稿里有多少文字进了分镜，防止 AI 悄悄漏掉段落
     // 章节标题不上屏，不算漏掉的文字
     const body = String(source || '').split(/\r?\n/).filter((l) => {
@@ -292,7 +270,7 @@
         if (any >= 0) covered += l.length;
       }
     });
-    return {rows: out, coverage: srcN.length ? Math.min(1, covered / srcN.length) : 1, flagged: out.filter((r) => /^AI 的结果用不了/.test(r.note || '')).length};
+    return {rows: out, coverage: srcN.length ? Math.min(1, covered / srcN.length) : 1, flagged: issues.length, issues};
   };
 
   root.DMBoard = {generate, checkRow, reviewRows};

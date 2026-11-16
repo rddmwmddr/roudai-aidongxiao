@@ -228,18 +228,35 @@ struct AIConfigTests {
     }
 }
 
-@Suite("钥匙串")
-struct KeychainTests {
-    @Test("写入、读取、替换、删除")
-    func cycle() throws {
-        let account = "test-\(UUID().uuidString)"
-        defer { Keychain.delete(account: account) }
-        try Keychain.save("甲", account: account)
-        #expect(Keychain.read(account: account) == "甲")
-        try Keychain.save("乙", account: account)
-        #expect(Keychain.read(account: account) == "乙")
-        Keychain.delete(account: account)
-        #expect(Keychain.read(account: account) == nil)
+@Suite("本机 AI Key")
+struct AIKeyFileTests {
+    @Test("迁移旧安装包的 Key，重开保留，清除后不从旧文件恢复")
+    func migrateAndPersist() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let legacy = directory.appending(path: "keys.json")
+        let file = directory.appending(path: "credentials.json")
+        let profile = AIProfile(name: "测试", kind: .openAICompatible, baseURL: "", model: "")
+        struct LegacyContents: Encodable {
+            let packageID: String
+            let keys: [UUID: String]
+        }
+        let oldData = try JSONEncoder().encode(LegacyContents(packageID: "旧安装包", keys: [profile.id: "甲"]))
+        try oldData.write(to: legacy)
+        let store = AIKeyFile(url: file)
+        let settings = AISettings(keyFile: store)
+        #expect(try settings.key(for: profile) == "甲")
+        #expect(!FileManager.default.fileExists(atPath: legacy.path))
+        #expect(try AISettings(keyFile: store).key(for: profile) == "甲")
+        let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
+        #expect(attributes[.posixPermissions] as? Int == 0o600)
+
+        try settings.setKey("乙", for: profile)
+        #expect(try AISettings(keyFile: store).key(for: profile) == "乙")
+        try settings.setKey("", for: profile)
+        try oldData.write(to: legacy)
+        #expect(!AISettings(keyFile: store).hasKey(for: profile))
     }
 }
 
@@ -323,6 +340,19 @@ struct AIClientTests {
 
     private let claude = AIProfile(name: "Claude", kind: .anthropic, baseURL: "https://api.anthropic.com", model: "claude-opus-5-5")
     private let compat = AIProfile(name: "兼容", kind: .openAICompatible, baseURL: "https://x.example.com/v1/", model: "m")
+
+    @Test("单镜重做按官方接口启用思考，兼容代理保留默认设置")
+    func thinkingOptions() {
+        let deepSeek = AIProfile(name: "DeepSeek", kind: .openAICompatible, baseURL: "https://api.deepseek.com/v1", model: "deepseek-v4-pro")
+        let adaptive = AIClient(profile: claude, apiKey: "", enableThinking: true)
+        let deep = AIClient(profile: deepSeek, apiKey: "", enableThinking: true)
+        let proxy = AIClient(profile: compat, apiKey: "", enableThinking: true)
+        #expect((adaptive.thinkingOptions["thinking"] as? [String: String])?["type"] == "adaptive")
+        #expect((deep.thinkingOptions["thinking"] as? [String: String])?["type"] == "enabled")
+        #expect(deep.thinkingOptions["reasoning_effort"] as? String == "high")
+        #expect(proxy.thinkingOptions.isEmpty)
+        #expect(AIClient(profile: claude, apiKey: "").thinkingOptions.isEmpty)
+    }
 
     @Test("Claude：请求格式和流式解析")
     func claudeStream() async throws {

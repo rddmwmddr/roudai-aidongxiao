@@ -512,6 +512,8 @@
     source: 'metalforge Progress 前沿 + motion-showreel data-motion',
     colors: DEFAULT,
     maxGroups: 4,
+    // 三个数以上一个数一行，见 core.js normalize
+    rowEach: true,
     create,
   });
 })(window);

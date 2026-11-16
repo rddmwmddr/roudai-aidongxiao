@@ -14,6 +14,7 @@
 
   const compatible = (row) =>
     Object.values(D.TEMPLATES).filter((t) => {
+      if (t.external && t.id !== row.tpl) return false;
       if (t.custom) return t.accepts ? t.accepts(row) : true;
       if (!(row.groups && row.groups.length && row.groups.some((g) => g.metrics && g.metrics.length))) return false;
       // 数量超出这个模板的上限就不列出来；缺数（XX%）的镜头不算不合适
@@ -52,6 +53,7 @@
     };
     switch (tplId) {
       case 'comb':
+        if (f.n >= 3 && f.n <= 4) add(0, '三四个数：一个数一行，同一把尺子上下比较');
         if (f.nested) add(26, '有包含关系：同一批竖条再烧白');
         if (f.opposing) add(30, '两拨相反的人：前沿从两头往中间走');
         if (f.groups >= 2) add(10, '几组上下对齐，同一把尺子比较');
@@ -133,6 +135,7 @@
   });
   // sink(data, position)：边编码边交出去，4K 长镜头不占内存（macOS App 直接写文件）
   const exportMP4 = async (raw, {size = '4k', fps = 60, onProgress, signal, sink} = {}) => {
+    if (raw.pending || raw.sampleData) throw new Error('请先核对并确认这一镜的数据');
     const motion = raw.motion && D.Opus ? D.Opus.configOf(raw) : null;
     if (motion) { fps = motion.output.fps; await D.Opus.prepareAssets(raw); }
     if (typeof VideoEncoder === 'undefined') throw new Error('这个浏览器不能导出视频，请用 Chrome 打开');
