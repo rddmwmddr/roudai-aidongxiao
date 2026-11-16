@@ -100,6 +100,7 @@ const dragTrim = async (page, i, dx) => {
   await page.locator('.clip[data-i="5"] .cap').click();
   await page.waitForFunction(() => !document.getElementById('picker').hidden, null, {timeout: 3000});
   const cats = await page.evaluate(() => [...document.querySelectorAll('#pkCats button')].map((b) => b.textContent));
+  check('适合之外可以浏览全部动效', cats.includes('全部动效'));
   check('分类没有删掉的和出镜', !['图形', '转场', '镜头', '光影', '界面', '网页', '出镜'].some((c) => cats.includes(c)), cats.join(' '));
   await page.waitForTimeout(500);
   const px = () => page.evaluate(() => {
@@ -153,9 +154,8 @@ const dragTrim = async (page, i, dx) => {
   await page.waitForTimeout(300);
   check('贴文案加进分镜，回到画面', (await page.evaluate(() => DMApp.rows.length)) === n0 + 1 && (await page.locator('#p-stage').isVisible()));
   // 这一镜
-  await page.locator('#btnInspector').click();
   await page.waitForTimeout(200);
-  check('这一镜能开', await page.locator('#inspector').isVisible());
+  check('这一镜默认展开', await page.locator('#inspector').isVisible());
   await page.locator('#dur').fill('6.5');
   await page.locator('#dur').press('Tab');
   await page.waitForTimeout(200);
@@ -180,6 +180,19 @@ const dragTrim = async (page, i, dx) => {
   await page.waitForTimeout(300);
   check('字体面板', await page.locator('#fontBox').isVisible());
   await page.locator('#fClose').click();
+  await page.locator('#btnMotion').click();
+  await page.locator('#pkFind').fill('K 线');
+  await page.locator('.tile').filter({hasText: 'K 线图'}).click();
+  await page.keyboard.press('Escape');
+  const repairNo = await page.evaluate(() => DMApp.rows.at(-1).no);
+  await page.locator('#btnBatch').click();
+  await page.locator('#bScope').selectOption('all');
+  const repair = page.getByRole('button', {name: `处理第 ${repairNo} 镜`});
+  check('批量导出列出使用样例的镜头', await repair.isVisible());
+  await repair.click();
+  check('定位后样例镜头不能导出', await page.locator('#inspector').isVisible() && await page.locator('#xGo').isDisabled());
+  await page.locator('#confirmData').click();
+  check('确认当前数据后恢复导出', await page.locator('#xGo').isEnabled());
   check('页面没有报错', page.errs.length === 0, page.errs.slice(0, 3).join(' | '));
   // 窄屏不撑破
   await page.setViewportSize({width: 390, height: 844});

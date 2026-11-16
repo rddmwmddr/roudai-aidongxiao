@@ -11,7 +11,7 @@ enum ShotFilter: Hashable {
     func includes(_ shot: Shot) -> Bool {
         switch self {
         case .all: true
-        case .needsReview: !shot.note.isEmpty
+        case .needsReview: shot.isPending || !shot.note.isEmpty
         case .adjusted: shot.adjustedElementCount > 0
         case .chapter(let c): shot.chapter == c
         }
@@ -49,11 +49,11 @@ struct ContentView: View {
     @State private var importTypes = ScriptImporter.contentTypes
     @State private var errorText: String?
     @State private var notice: UndoNotice?
-    @State private var autoplayNext = false
+    @State private var showingGenerationWarnings = false
     @State private var page = ViewMode.stage
     @FocusState private var searching: Bool
     // 每个窗口自己记。系统在关窗口、切页时会往这个绑定里写值，放成全局的话会把下一个窗口的检查器也关掉
-    @SceneStorage("editorInspector") private var inspectorShown = false
+    @SceneStorage("editorInspector") private var inspectorShown = true
 
     init(document: BoardDocument) {
         self.document = document
@@ -98,7 +98,14 @@ struct ContentView: View {
         .preferredColorScheme(.dark)
         .focusedSceneValue(\.documentActions, actions)
         .sheet(isPresented: $exporting) {
-            ExportSheet(board: board, current: currentShot, visible: visibleRows, picked: tableSelection, names: templateNames)
+            ExportSheet(board: board, current: currentShot, visible: visibleRows, picked: tableSelection, names: templateNames, stage: stage) { id in
+                filter = .all
+                query = ""
+                tableSelection = []
+                selection = id
+                inspectorShown = true
+                setMode(.stage)
+            }
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: importTypes) { result in
             switch result {
@@ -115,20 +122,6 @@ struct ContentView: View {
         .onAppear {
             setUp()
             installHandlers()
-        }
-        .onChange(of: stage.playing) { now in
-            // 关了循环就接着播下一镜，时间线上看着是一条连续的片子
-            if !now, !stage.loop, stage.duration > 0, stage.time >= stage.duration - 0.2, let i = currentIndex, i + 1 < board.rows.count {
-                selection = board.rows[i + 1].id
-                autoplayNext = true
-            }
-        }
-        .onChange(of: stage.duration) { d in
-            if autoplayNext, d > 0 {
-                autoplayNext = false
-                stage.seek(0)
-                stage.playPause()
-            }
         }
         .onChange(of: undoManager) { _ in installHandlers() }
         .onChange(of: currentShot) { shot in stage.sync(shot) }
@@ -151,6 +144,9 @@ struct ContentView: View {
         .task(id: script) {
             try? await Task.sleep(for: .milliseconds(600))
             if !Task.isCancelled { persistScript() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: MotionPackLibrary.changed)) { _ in
+            Task { await stage.reloadMotionPack() }
         }
         .onReceive(NotificationCenter.default.publisher(for: .fontsChanged)) { _ in
             Task { await FontLibrary.shared.apply(to: stage) }
@@ -223,6 +219,9 @@ struct ContentView: View {
         }
         if !board.rows.isEmpty {
             ToolbarItemGroup(placement: .primaryAction) {
+                if mode != .script && !storyboarder.warnings.isEmpty {
+                    generationWarningButton
+                }
                 FilterMenu(board: board, filter: $filter)
                 Button {
                     exporting = true
@@ -249,6 +248,46 @@ struct ContentView: View {
         }
     }
 
+    private var generationWarningButton: some View {
+        Button { showingGenerationWarnings.toggle() } label: {
+            Label("生成提示", systemImage: "exclamationmark.triangle")
+        }
+        .named("生成提示")
+        .help("查看上次生成分镜的提示")
+        .popover(isPresented: $showingGenerationWarnings, arrowEdge: .bottom) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("上次生成提示").font(.headline)
+                ViewThatFits(in: .vertical) {
+                    generationWarningList
+                    ScrollView { generationWarningList }
+                }
+                .frame(maxHeight: 240)
+                if let shot = board.rows.first(where: ShotFilter.needsReview.includes) {
+                    Button("定位首个待复核镜头") {
+                        filter = .all
+                        query = ""
+                        tableSelection = []
+                        selection = shot.id
+                        inspectorShown = true
+                        showingGenerationWarnings = false
+                        setMode(.stage)
+                    }
+                    .buttonStyle(.pill(.inset))
+                    .named("定位首个待复核镜头")
+                }
+            }
+            .padding(14)
+            .frame(width: 360, alignment: .leading)
+        }
+    }
+
+    private var generationWarningList: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            GenerationWarnings(messages: storyboarder.warnings)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private var detail: some View {
         EditorStage(
             mode: mode,
@@ -260,6 +299,7 @@ struct ContentView: View {
             names: templateNames,
             previousDataTemplate: previousDataTemplate,
             onPick: replaceCurrent,
+            onOpenData: { inspectorShown = true },
             onUndo: { undoManager?.undo() },
             onRedo: { undoManager?.redo() },
             onAdd: addShot,
@@ -271,10 +311,11 @@ struct ContentView: View {
         }
     }
 
-    private func replaceCurrent(_ next: Shot) {
-        if let i = document.board.rows.firstIndex(where: { $0.id == next.id }) {
-            edit("换动效") { $0.rows[i] = next }
-        }
+    private func replaceCurrent(_ original: Shot, _ next: Shot) -> Bool {
+        guard let i = document.board.rows.firstIndex(where: { $0.id == original.id }),
+              document.board.rows[i] == original else { return false }
+        edit("换动效") { $0.rows[i] = next }
+        return true
     }
 
     // 三页的内容。渲染页一直在窗口里，只是不显示：空文档也要靠它生成分镜，切页不用重建画面
@@ -320,6 +361,7 @@ struct ContentView: View {
             focusSearch: { searching = true },
             hasShot: currentShot != nil,
             hasRows: !board.rows.isEmpty,
+            typing: stage.typing,
             hasAdjustments: (currentShot?.adjustedElementCount ?? 0) > 0,
             loops: stage.loop,
             mode: mode
@@ -343,21 +385,27 @@ struct ContentView: View {
             edit(label) { $0.rows[i].setLayers(layers, for: template) }
             if label == "还原这一镜" { showNotice("已还原") }
         }
-        stage.onMotionObject = { json in
-            guard let i = currentIndex, let value = try? JSONDecoder().decode(JSONValue.self, from: Data(json.utf8)) else { return }
-            edit("选择受访者") { $0.rows[i].fields["motion"] = value }
-        }
         stage.onNavigate = { dir in move(dir) }
+        stage.onPlaybackEnded = { id in
+            guard mode == .stage, selection == id, let i = currentIndex, i + 1 < board.rows.count else { return }
+            let next = board.rows[i + 1]
+            selection = next.id
+            stage.sync(next, autoplay: true)
+        }
+        stage.onEditRow = { id, fields, label in
+            guard let i = document.board.rows.firstIndex(where: { $0.id == id }) else { return }
+            edit(label) { board in
+                for (key, value) in fields { board.rows[i].fields[key] = value }
+            }
+        }
     }
 
     private func setUp() {
         // 示例分镜：停在第三镜播起来，一打开就看得到动效
-        if document.isSample, board.rows.count >= 3 {
-            selection = board.rows[2].id
-            autoplayNext = true
-        }
+        let autoplay = document.isSample && board.rows.count >= 3
+        if autoplay { selection = board.rows[2].id }
         if selection == nil { selection = board.rows.first?.id }
-        stage.sync(currentShot)
+        stage.sync(currentShot, autoplay: autoplay)
         // 窗口打开时焦点放在画面上，不放在搜索框里：空格能直接播放，方向键能直接切镜头
         Task {
             try? await Task.sleep(for: .milliseconds(300))
@@ -555,10 +603,16 @@ struct ContentView: View {
         if let title = output.title, next.title == Board.empty.title { next.title = title }
         document.update(next, undoManager: undoManager, action: "生成分镜")
         if script != output.source { script = output.source }
+        filter = .all
+        query = ""
+        tableSelection = []
         selection = next.rows.first?.id
-        showNotice("已生成 \(next.rows.count) 镜")
-        // 有要看的警告就留在文稿页，没有就直接去调画面
-        setMode(output.warnings.isEmpty ? .stage : .script)
+        let needsReview = next.rows.count(where: ShotFilter.needsReview.includes)
+        var message = "已生成 \(next.rows.count) 镜"
+        if needsReview > 0 { message += "，\(needsReview) 镜待复核" }
+        else if !output.warnings.isEmpty { message += "，可查看生成提示" }
+        showNotice(message)
+        setMode(.stage)
     }
 
     private func pickScript() {
@@ -664,17 +718,20 @@ struct SpaceToPlay: ViewModifier {
         content
             .onAppear {
                 monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-                    guard event.keyCode == 49 || event.keyCode == 11, event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty else { return event }
+                    let modifiers: NSEvent.ModifierFlags = [.command, .option, .control, .shift, .function]
+                    guard event.keyCode == 49 || event.keyCode == 11, event.modifierFlags.intersection(modifiers).isEmpty else { return event }
                     guard !stage.web.isHidden, let window = stage.web.window, event.window === window else { return event }
                     let responder = window.firstResponder
-                    // 脚本框打不了字，空格和 B 照常。别的文字框要打字
-                    if (responder is NSTextView && !(responder is ScriptTextView)) || responder is NSTextField { return event }
+                    let inStage = responder === stage.web || (responder as? NSView)?.isDescendant(of: stage.web) == true
+                    // 画面内的空格由 WebKit 判断是否在编辑；原生输入框保留打字。
+                    if inStage, event.keyCode == 49 || stage.typing { return event }
+                    if let text = responder as? NSTextView, text.isEditable, !(text is ScriptTextView) { return event }
+                    if let field = responder as? NSTextField, field.isEditable { return event }
                     if event.keyCode == 11 {
                         onSplit()
                         return nil
                     }
-                    if responder === stage.web { return event }
-                    stage.playPause()
+                    if !event.isARepeat { stage.playPause() }
                     return nil
                 }
             }

@@ -599,7 +599,7 @@ struct AppFlowTests {
         """
 
         // 菜单「生成分镜」：不在文稿页时先过去，在文稿页且有字就开始
-        func runScript(_ name: String) async throws {
+        func runScript(_ name: String, text: String? = nil) async throws {
             #expect(await d.menu("画面"))
             await d.wait(0.3)
             #expect(await d.menu("生成分镜"))
@@ -607,7 +607,7 @@ struct AppFlowTests {
             await d.wait(0.4)
             let tv = try #require(WindowDriver.find(NSTextView.self, in: d.window.contentView))
             d.window.makeFirstResponder(tv)
-            tv.string = script
+            tv.string = text ?? script
             tv.didChangeText()
             await d.wait(0.3)
             await d.snap("\(name)_文稿页")
@@ -654,10 +654,8 @@ struct AppFlowTests {
                 guard let rows = (await d.savedBoardQuick())?["rows"] as? [[String: Any]] else { return false }
                 return rows.count < 40
             })
-            // 有警告就留在文稿页给人看
-            await d.wait(0.5)
+            #expect(await d.until("有部分警告也进入画面页") { d.hasControl("生成提示") })
             await d.snap("10_AI\(label)_结果")
-            #expect(WindowDriver.find(NSTextView.self, in: d.window.contentView) != nil)
             let board = try #require(await d.savedBoard())
             let rows = try #require(board["rows"] as? [[String: Any]])
             print("\(label)：", rows.map { "\($0["no"] ?? "")/\($0["tpl"] ?? "")/\(($0["note"] as? String)?.prefix(24) ?? "")" })
@@ -669,10 +667,25 @@ struct AppFlowTests {
             // 文字一个不丢
             let joined = rows.compactMap { $0["line"] as? String }.joined()
             #expect(joined.contains("其中有86%的朋友说：喝。") && joined.contains("只有37%"))
-            settings.remove(profile)
+            try #require(await d.clickControl("生成提示"))
+            try #require(await d.until("画面页可以查看并定位生成提示") {
+                d.popover() != nil && d.hasControl("定位首个待复核镜头")
+            })
+            await d.wait(0.6)
+            let popover = try #require(d.popover())
+            try #require(await d.clickControl("定位首个待复核镜头", in: popover))
+            let firstFlagged = try #require(flagged.first?["no"] as? String)
+            #expect(await d.until("定位到首个待复核镜头") {
+                await d.jsString("return window.__dmState().row.no") == firstFlagged
+            })
+            try settings.remove(profile)
             d.document.undoManager?.undo()
             await d.wait(0.4)
         }
+        try await runScript("11_没有正文", text: "第一章")
+        #expect(await d.until("没有正文时保留原分镜") { d.hasControl("分镜生成错误") })
+        let preserved = try #require(await d.savedBoard())
+        #expect((preserved["rows"] as? [[String: Any]])?.count == 133)
         d.document.updateChangeCount(.changeCleared)
         d.document.close()
     }
@@ -934,6 +947,7 @@ struct AppFlowTests {
         let pop = try #require(d.popover())
         let picker = WindowDriver(document: d.document, window: pop, web: d.web, out: d.out)
         await picker.snap("动效库_适合")
+        #expect(d.hasControl("分类全部动效", in: pop))
 
         // WebKit 有没有 ctx.filter 决定模糊走哪条路
         print("WebKit 原生 filter：", await d.jsString("return String(Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'filter')?.get?.toString().includes('native code'))"))
@@ -978,15 +992,347 @@ struct AppFlowTests {
         await d.snap("动效库_样例数据")
         await d.closePopover("动效")
 
-        // 确认之后才能导出
-        #expect(await d.menu("显示或隐藏这一镜"))
+        // 导出面板直接定位到样例镜头，并打开检查器。
+        #expect(await d.clickControl("导出…"))
+        let repair = "处理第 \(board.rows[0].no) 镜"
+        #expect(await d.until("导出列出待处理镜头", timeout: 8) {
+            guard let sheet = d.window.attachedSheet else { return false }
+            return d.hasControl(repair, in: sheet)
+        })
+        let sheet = try #require(d.window.attachedSheet)
+        #expect(await d.clickControl(repair, in: sheet))
+        #expect(await d.until("确认按钮", timeout: 3) {
+            d.window.attachedSheet == nil && d.hasControl("标记为已确认")
+        })
         await d.wait(0.6)
-        #expect(await d.until("确认按钮", timeout: 3) { d.hasControl("标记为已确认") })
         #expect(await d.clickControl("标记为已确认"))
-        await d.wait(0.5)
+        #expect(await d.until("样例状态已解除", timeout: 5) {
+            await d.js("return !window.__dmState().row.sampleData") as? Bool == true
+        })
         let afterConfirm = (await rows())[0]
         #expect(afterConfirm["sampleData"] == nil)
 
+        d.document.updateChangeCount(.changeCleared)
+        d.document.close()
+    }
+
+    @Test("AI 按指定模板重做一镜，保留口播、镜号和时长")
+    func regenerateMotion() async throws {
+        let stage = StageController()
+        let shot = Shot(fields: [
+            "id": .number(12), "no": .string("012"), "tpl": .string("statement"),
+            "line": .string("手冲的风味清爽，拿铁的风味醇厚。"), "dur": .number(6),
+        ])
+        let item = MotionInfo(id: "split", name: "左右对比", category: "text", categoryName: "文字", desc: "", keywords: [], en: "")
+        let profile = AIProfile(name: "假服务", kind: .openAICompatible, baseURL: "http://127.0.0.1:18765/v1", model: "mock-model")
+        let local = await stage.adopt(shot, template: item.id)
+        #expect(local?.usesSampleData == true)
+        var feedback: [String] = []
+        let reply = try await stage.regenerateMotion(shot, item: item, profile: profile, key: "fake-key") { feedback.append($0) }
+        #expect(feedback.count == 1)
+        #expect(feedback.first?.contains("99") == true)
+        let next = try #require(reply.row)
+        #expect(next.template == item.id)
+        #expect(next.line == shot.line)
+        #expect(next.id == shot.id && next.no == shot.no && next.duration == shot.duration)
+        #expect(!next.isPending)
+        let issues = try await stage.exportIssues([next])
+        #expect(issues.isEmpty)
+    }
+
+    @Test("App 内生成动效预览，保存后保留外部模板和未修改的设置")
+    func designMotion() async throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "motion-design-\(UUID().uuidString)")
+        let external = folder.appending(path: "external")
+        let storage = folder.appending(path: "storage")
+        try FileManager.default.createDirectory(at: external, withIntermediateDirectories: true)
+        let suite = "motion-design-\(UUID().uuidString)"
+        let preferences = try #require(UserDefaults(suiteName: suite))
+        let library = MotionPackLibrary(preferences: preferences, directory: storage)
+        defer {
+            library.disconnect()
+            preferences.removePersistentDomain(forName: suite)
+            try? FileManager.default.removeItem(at: folder)
+        }
+        let profile = AIProfile(name: "假服务", kind: .openAICompatible, baseURL: "http://127.0.0.1:18765/v1", model: "mock-model")
+        let client = AIClient(profile: profile, apiKey: "fake-key")
+        let designer = MotionDesigner()
+        var feedback: [String] = []
+        let draft = try await designer.generate("做一张黑底绿字的标题卡", target: nil, client: client, library: library) { feedback.append($0) }
+        #expect(feedback.count == 1 && feedback[0].contains("elements[0].color"))
+        #expect(draft.clip.frames.count > 1 && draft.clip.sample)
+        #expect(library.json == MotionPackLibrary.empty)
+        try library.save(draft)
+        let created = try #require(try MotionPack(json: library.json).templates?.first)
+        #expect(created["name"]?.string == "绿字标题卡")
+        #expect(MotionPackLibrary(preferences: preferences, directory: storage).json == draft.effective)
+
+        let externalPack = ##"{"version":1,"templates":[{"id":"local.external","name":"外部标题卡","base":"statement"}],"overrides":[{"target":"comb","defaults":{"speed":1.5,"colors":{"bg":"#101014"}}}]}"##
+        let packFile = external.appending(path: MotionPackLibrary.fileName)
+        try Data(externalPack.utf8).write(to: packFile, options: .atomic)
+        try library.connect(to: external)
+        for _ in 0..<60 where library.externalJSON != externalPack {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        #expect(library.externalJSON == externalPack)
+        let comb = MotionDesigner.Target(id: "comb", name: "一百根")
+        let before = library.json
+        let edit = try await designer.generate("把主色改绿", target: comb, client: client, library: library)
+        #expect(library.json == before)
+        #expect(edit.clip.frames.count > 1)
+        try library.save(edit)
+        let saved = try MotionPack(json: library.json)
+        let defaults = try #require(saved.overrides?.first?["defaults"]?.object)
+        #expect(defaults["speed"]?.number == 1.5)
+        #expect(defaults["colors"]?.object == ["bg": .string("#101014"), "primary": .string("#84CC16")])
+        let followUp = try await designer.generate("再把速度改成两倍", target: comb, client: client, library: library)
+        try library.save(followUp)
+        let editedAgain = try MotionPack(json: library.json)
+        #expect(editedAgain.overrides?.count == 1)
+        #expect(editedAgain.overrides?.first?["defaults"]?.object == [
+            "speed": .number(2), "colors": .object(["bg": .string("#101014"), "primary": .string("#84CC16")]),
+        ])
+        let titled = try await designer.generate("在左上角加一句「总共5000人」", target: comb, client: client, library: library)
+        #expect(titled.clip.frames.count > 1)
+        let copy = try titled.reusableCopy()
+        try library.save(copy)
+        let withCopy = try MotionPack(json: library.json)
+        let reused = try #require(withCopy.templates?.first(where: { $0["id"]?.string == copy.target.id }))
+        #expect(reused["base"] == .string("comb"))
+        #expect(reused["overlays"]?.array?.first?.object?["text"] == .string("总共5000人"))
+        #expect(withCopy.overrides == editedAgain.overrides)
+
+        let titledAgain = try await designer.generate("在左上角加一句「总共5000人」", target: comb, client: client, library: library)
+        try library.save(titledAgain)
+        let bound = try await designer.generate("把这句标题绑定到每一镜的样本人数", target: copy.target, client: client, library: library)
+        try library.save(bound)
+        let stage = StageController()
+        let loaded = try await stage.callString("""
+            const installed = JSON.parse(DMBridge.installMotionPack(pack));
+            if (installed.error) return installed.error;
+            const label = async (row) => {
+                const scene = await DM.surveyElements({...DM.sampleOf(id), template: id, ...row});
+                return scene.elements.find(e => e.id === 'overlay:total-title')?.label ?? '';
+            };
+            return (await label({sampleSize: 5000})) + ' / ' + (await label({line: '我们调查了800人。'}));
+            """, arguments: ["pack": library.json, "id": copy.target.id])
+        #expect(loaded == "总共5000人 / 总共800人")
+        #expect(saved.templates?.count == 2)
+        #expect(try String(contentsOf: packFile, encoding: .utf8) == externalPack)
+        #expect(throws: MotionDesignError.self) { try library.save(draft) }
+        library.disconnect()
+        let retained = try MotionPack(json: library.json)
+        #expect(retained.templates?.count == 2)
+        #expect(retained.templates?.first == created)
+        #expect(retained.templates?.last?["id"] == reused["id"])
+        #expect(retained.templates?.last?["overlays"]?.array?.first?.object?["bind"] == .string("sampleSize"))
+        #expect(retained.overrides?.first?["target"]?.string == "comb")
+    }
+
+    @Test("从动效选择器打开 AI，输入一句话后看到预览和保存入口")
+    func designMotionInPicker() async throws {
+        ControlFrames.entries.removeAll()
+        let settings = AISettings.shared
+        let previousActive = settings.activeID
+        let profile = try settings.add(ImportedAIConfig(
+            name: "假服务-\(UUID().uuidString)", kind: .openAICompatible,
+            baseURL: "http://127.0.0.1:18765/v1", model: "mock-model", apiKey: "fake-key"
+        ))
+        settings.activeID = profile.id
+        defer {
+            try? settings.remove(profile)
+            settings.activeID = previousActive
+        }
+        let d = try await makeDriver(try outputFolder())
+        defer {
+            d.document.updateChangeCount(.changeCleared)
+            d.document.close()
+        }
+        let before = MotionPackLibrary.shared.json
+        #expect(await d.until("渲染页就绪") { (await d.js("return !!window.__dmReady") as? Bool) == true })
+        #expect(await d.clickControl("动效"))
+        #expect(await d.until("AI 做动效入口") { d.popover() != nil && d.hasControl("AI 做动效") })
+        await d.wait(1)
+        let pop = try #require(d.popover())
+        try #require(await d.clickControl("AI 做动效", in: pop))
+        try #require(await d.until("动效描述输入框", timeout: 4) { d.hasControl("描述想要的动效", in: pop) })
+        try #require(await d.clickControl("描述想要的动效", in: pop))
+        let editor = try #require(pop.firstResponder as? NSTextView)
+        editor.insertText("做一张绿字标题卡", replacementRange: NSRange(location: 0, length: 0))
+        #expect(await d.clickControl("生成预览", in: pop))
+        #expect(await d.until("动效预览完成", timeout: 20) { d.hasControl("保存到动效库", in: pop) })
+        #expect(d.hasControl("动效草稿预览", in: pop))
+        #expect(MotionPackLibrary.shared.json == before)
+        let picker = WindowDriver(document: d.document, window: pop, web: d.web, out: d.out)
+        await picker.snap("AI 做动效预览")
+        #expect(await d.clickControl("返回动效库", in: pop))
+        #expect(await d.until("回到动效库") { d.hasControl("AI 做动效", in: pop) })
+        await d.closePopover("动效")
+
+        // 用临时动效库走两次真实保存，避免把测试模板写进用户的动效库。
+        let storage = FileManager.default.temporaryDirectory.appending(path: "motion-designer-window-\(UUID().uuidString)")
+        let suite = storage.lastPathComponent
+        let preferences = try #require(UserDefaults(suiteName: suite))
+        let library = MotionPackLibrary(preferences: preferences, directory: storage)
+        defer {
+            preferences.removePersistentDomain(forName: suite)
+            try? FileManager.default.removeItem(at: storage)
+        }
+        let panel = await hostWindow(
+            MotionDesignerView(current: nil, library: library, onBack: {}, onSave: { _, _ in })
+                .frame(width: 660, height: 620),
+            size: NSSize(width: 660, height: 620), d: d
+        )
+        defer { panel.window.close() }
+        func describe(_ text: String) async throws {
+            try #require(await panel.until("描述输入框就绪") { panel.hasControl("描述想要的动效") })
+            try #require(await panel.clickControl("描述想要的动效"))
+            let input = try #require(panel.window.firstResponder as? NSTextView)
+            #expect(input.string.isEmpty)
+            input.insertText(text, replacementRange: NSRange(location: 0, length: 0))
+            try #require(await panel.clickControl("生成预览"))
+            try #require(await panel.until("新预览可保存", timeout: 12) { panel.hasControl("保存到动效库") })
+            try #require(await panel.clickControl("保存到动效库"))
+        }
+        try await describe("做一张绿字标题卡")
+        try #require(await panel.until("保存第一个版本") { library.json != MotionPackLibrary.empty })
+        let first = try #require(try MotionPack(json: library.json).templates?.first)
+        let previous = library.json
+        try await describe("再把标题字放大一点")
+        try #require(await panel.until("保存第二个版本") { library.json != previous })
+        let updated = try MotionPack(json: library.json)
+        #expect(updated.templates?.count == 1)
+        let second = try #require(updated.templates?.first)
+        #expect(second["id"] == first["id"])
+        let originalElements = try #require(first["elements"]?.array)
+        let editedElements = try #require(second["elements"]?.array)
+        #expect(editedElements.count == originalElements.count)
+        var larger = try #require(originalElements.first?.object)
+        larger["size"] = .number(150)
+        #expect(editedElements.first == .object(larger))
+        #expect(editedElements.last == originalElements.last)
+        let reopened = MotionPackLibrary(preferences: preferences, directory: storage)
+        let id = try #require(second["id"]?.string)
+        #expect(reopened.json == library.json)
+        #expect(reopened.hasSavedDesign(id))
+    }
+
+    @Test("本机动效包保存后热更新，校验失败保留上一版，导出也使用本机模板")
+    func motionPackWorkspace() async throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "motion-pack-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let library = MotionPackLibrary.shared
+        defer {
+            library.disconnect()
+            try? FileManager.default.removeItem(at: folder)
+        }
+        let file = folder.appending(path: MotionPackLibrary.fileName)
+        let pack = """
+        {"version":1,"templates":[{"id":"local.qa","name":"动效包测试","duration":0.6,
+        "elements":[{"id":"box","type":"rect","x":180,"y":180,"width":350,"height":240,"color":"#10F040","enter":"none"}]}],
+        "overrides":[{"target":"comb","overlays":[{"id":"total-title","type":"text","bind":"sampleSize","text":"总共{sampleSize}人","x":80,"y":60,"size":48,"color":"#32DF40"}]}]}
+        """
+        try Data(pack.utf8).write(to: file, options: .atomic)
+        try library.connect(to: folder)
+        for _ in 0..<60 where !library.status.contains("已加载 1") {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        #expect(library.status.contains("已加载 1"))
+        let stage = StageController()
+        let row = Shot(fields: ["id": .number(1), "tpl": .string("local.qa"), "line": .string("动效包测试")])
+        #expect(try await stage.exportIssues([row]).isEmpty)
+        let engine = ExportEngine()
+        await engine.prepare()
+
+        try Data(#"{"version":2}"#.utf8).write(to: file, options: .atomic)
+        for _ in 0..<60 where !library.status.contains("校验失败") {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        #expect(library.status.contains("校验失败"))
+        #expect(library.json == pack)
+
+        let updated = pack.replacingOccurrences(of: "#10F040", with: "#1040F0")
+            .replacingOccurrences(of: #""duration":0.6"#, with: #""duration":0.9"#)
+        try Data(updated.utf8).write(to: file, options: .atomic)
+        for _ in 0..<60 where library.json != updated {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        #expect(library.json == updated)
+        await stage.reloadMotionPack()
+        #expect(try await stage.exportIssues([row]).isEmpty)
+        await engine.refreshMotionPack()
+        let result = try await engine.export(row, to: folder.appending(path: "motion.mp4"), size: .hd, fps: 30) { _, _ in }
+        #expect(result.ok)
+        #expect(abs(result.duration - 0.9) < 0.07)
+
+        let sample = try #require(Bundle(for: WindowDriver.self).url(forResource: "窗口测试分镜", withExtension: "dmboard"))
+        let board = try BoardDocument.decode(try Data(contentsOf: sample))
+        var comb = try #require(board.rows.filter { $0.template == "comb" && !$0.isPending && $0.fields["groups"] != nil }.max { $0.line.count < $1.line.count })
+        comb.fields["sampleSize"] = .number(800)
+        let video = folder.appending(path: "comb-title.mp4")
+        let combResult = try await engine.export(comb, to: video, size: .hd, fps: 30) { _, _ in }
+        #expect(combResult.ok && combResult.dataChecked, "\(combResult.summary)")
+        let generator = AVAssetImageGenerator(asset: AVURLAsset(url: video))
+        let (image, _) = try await generator.image(at: CMTime(seconds: 0.6, preferredTimescale: 600))
+        let bitmap = NSBitmapImageRep(cgImage: image)
+        let greenTitle = (35...85).contains { y in
+            (80...350).contains { x in
+                guard let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB) else { return false }
+                return color.greenComponent > 0.55 && color.greenComponent > color.redComponent + 0.25
+            }
+        }
+        #expect(greenTitle)
+
+        // 模拟替换 App 后目录授权暂时无法恢复。副本仍有最终模板。
+        let suite = "motion-pack-restore-\(UUID().uuidString)"
+        let preferences = try #require(UserDefaults(suiteName: suite))
+        defer { preferences.removePersistentDomain(forName: suite) }
+        try FileManager.default.removeItem(at: file)
+        for _ in 0..<60 where !library.status.contains("等待文件") {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        #expect(library.status.contains("继续使用"))
+        let reopened = MotionPackLibrary(preferences: preferences)
+        #expect(reopened.folder == nil)
+        #expect(reopened.json == updated)
+        library.disconnect()
+        #expect(!MotionPackLibrary(preferences: preferences).hasBackup)
+    }
+
+    @Test("输入框退出后空格播放，关闭循环后连续播放同长镜头")
+    func playbackAfterEditing() async throws {
+        ControlFrames.entries.removeAll()
+        let out = FileManager.default.temporaryDirectory.appending(path: "flow-shots", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+        let d = try await makeDriver(out) { rows in
+            rows[0]["dur"] = 2.5
+            rows[1]["dur"] = 2.5
+        }
+        #expect(await d.until("第一镜就绪") {
+            await d.jsString("return window.__dmState()?.row?.no") == "001"
+        })
+        #expect(await d.until("右侧检查器默认展开") { d.hasControl("这一镜的秒数") })
+        #expect(await d.clickControl("这一镜的秒数"))
+        #expect(d.window.firstResponder is NSTextView)
+        await d.key(49, " ")
+        #expect((await d.js("return window.__dmState().playing") as? Bool) == false)
+        d.window.makeFirstResponder(nil)
+        await d.key(49, " ")
+        #expect(await d.until("退出输入框后空格播放", timeout: 3) {
+            (await d.js("return window.__dmState().playing") as? Bool) == true
+        })
+
+        #expect(await d.menu("循环播放"))
+        #expect(await d.until("已关循环", timeout: 3) {
+            (await d.js("return window.__dmState().loop") as? Bool) == false
+        })
+        _ = await d.js("DMBridge.seek(2.3); DMBridge.play(); DMBridge.pause()")
+        await d.wait(0.25)
+        #expect(await d.jsString("return window.__dmState().row.no") == "001")
+        _ = await d.js("DMBridge.play()")
+        #expect(await d.until("同长的下一镜自动续播", timeout: 3) {
+            (await d.js("const s = window.__dmState(); return s.row.no === '002' && s.playing && s.scene.duration === 2.5") as? Bool) == true
+        })
         d.document.updateChangeCount(.changeCleared)
         d.document.close()
     }
@@ -1096,10 +1442,7 @@ struct AppFlowTests {
         let allRows = (await d.savedBoardQuick())?["rows"] as? [[String: Any]] ?? []
         #expect(!allRows.contains { ($0["tpl"] as? String) == "aroll" })
 
-        // 右栏默认收起，点开才有；开关不影响画面
-        await d.snap("剪辑台_收起右栏")
-        #expect(await d.menu("显示或隐藏这一镜"))
-        await d.wait(0.6)
+        // 新窗口默认展开检查器，关掉后仍可随时打开。
         await d.snap("剪辑台_右栏")
         // 右栏有速率；一百根能换底色、主色、辅色
         #expect(await d.until("速率", timeout: 3) { d.hasControl("动效速率") })
@@ -1414,7 +1757,7 @@ struct AppFlowTests {
         await d.wait(0.3)
 
         // 这一镜：右栏改文字和数字
-        #expect(await d.menu("显示或隐藏这一镜"))
+        if !d.hasControl("这一镜的秒数") { #expect(await d.menu("显示或隐藏这一镜")) }
         await d.wait(0.8)
         await d.snap("11_这一镜")
         #expect(await d.menu("显示或隐藏这一镜"))
@@ -1636,7 +1979,7 @@ struct AppFlowTests {
             await shot.snap("11_设置_AI")
 
             // 真实点击：连本机假服务测连接、拿模型；不可恢复的删除要确认
-            for stale in AISettings.shared.profiles where stale.name.hasPrefix("假服务") { AISettings.shared.remove(stale) }
+            for stale in AISettings.shared.profiles where stale.name.hasPrefix("假服务") { try AISettings.shared.remove(stale) }
             let saved = (AISettings.shared.profiles, AISettings.shared.activeID)
             defer {
                 AISettings.shared.profiles = saved.0
@@ -1669,7 +2012,7 @@ struct AppFlowTests {
                 await s.wait(0.4)
                 #expect(AISettings.shared.profiles.count == countBefore)
                 #expect(await s.clickControl(name, settle: 0.5))
-                #expect(await s.clickControl("删除服务和 Key"))
+                #expect(await s.clickControl("确认删除服务"))
                 await s.wait(0.4)
                 #expect(AISettings.shared.profiles.count == countBefore - 1)
                 second.close()
@@ -2113,7 +2456,7 @@ extension AppFlowTests {
         if let noteIndex = start.firstIndex(where: { !(($0["note"] as? String) ?? "").isEmpty }) {
             let note = start[noteIndex]["note"] as? String
             for _ in 0..<noteIndex { await d.menu("下一镜") }
-            #expect(await d.menu("显示或隐藏这一镜"))
+            if !d.hasControl("标记为已确认") { #expect(await d.menu("显示或隐藏这一镜")) }
             await d.wait(0.5)
             #expect(await d.clickControl("标记为已确认"))
             await d.wait(0.4)

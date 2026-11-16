@@ -17,10 +17,12 @@ step "导入图表库" python3 tools/import_lieflat.py
 step "导入 Colorion" python3 tools/import_colorion.py
 step "打包" python3 tools/build.py
 step "界面规则" python3 tools/ui_lint.py
+step "调研动效与分镜集成" node --test tests/opus_bridge.mjs tests/opus_integration.mjs
 step "动效库" node tests/library.mjs
 step "动效库（WebKit 路径）" node tests/library.mjs --no-filter
 step "CSS 动效和组件（WebKit）" tests/webkit/run.sh
 step "画面内编辑" node tests/editor_pointer.mjs
+step "画面内改字、一百根行数" node tests/stage_text.mjs
 step "网页版（剪辑台、同步）" node tests/web_shell.mjs
 cd mac
 xcodegen generate >/dev/null

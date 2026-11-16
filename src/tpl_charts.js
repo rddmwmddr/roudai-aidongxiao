@@ -21,12 +21,17 @@
 
   const seriesOf = (row) => {
     if (row.series && row.series.length) return row.series;
-    const metrics = (row.groups || []).flatMap((g) => g.metrics || []).filter((m) => m.value != null);
-    return metrics.map((m) => ({label: m.caption || '', value: +m.value, find: m.find}));
+    const metrics = (row.groups || []).flatMap((g) => g.metrics || []);
+    return metrics.map((m) => ({label: m.caption || '', value: m.value == null || m.value === '' ? NaN : +m.value, find: m.find}));
   };
+  const numeric = (v) => (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '')) && Number.isFinite(+v);
   const pointsOf = (row) => {
-    if (row.points && row.points.length) return row.points.map((p) => ({label: p.label, v: +p.v}));
-    return seriesOf(row).map((s) => ({label: s.label, v: +s.value}));
+    if (Array.isArray(row.points) && row.points.length) return row.points.map((p) => {
+      // 有些分镜把折线的数值写成 value。它和 v 含义相同。
+      const value = p?.v === undefined ? p?.value : p.v;
+      return {label: p?.label, v: numeric(value) ? +value : NaN};
+    });
+    return seriesOf(row).map((s) => ({label: s.label, v: numeric(s.value) ? +s.value : NaN}));
   };
   const unitOf = (row) => (row.unit != null ? row.unit : row.groups && row.groups.length ? '%' : '');
 
@@ -60,8 +65,9 @@
     D.register(id, {
       name, family: '图表', cat: 'chart', custom: true, chart: true, desc, keywords, sample, colors: {},
       accepts,
+      dataProblem: accepts.problem,
       create(row, S) {
-        if (!accepts(row)) throw new Error('这一镜还缺数据');
+        if (!accepts(row)) throw new Error(accepts.problem?.(row) || '这一镜还缺数据');
         const T = themeOf(row);
         const sp = D.speechOf(row);
         const made = build(row, T);
@@ -84,10 +90,22 @@
   };
 
   const needsSeries = (min, max = 200) => (r) => {
-    const n = seriesOf(r).length;
-    return n >= min && n <= max;
+    const items = seriesOf(r);
+    return items.length >= min && items.length <= max && items.every((s) => numeric(s.value));
   };
-  const needsPoints = (min) => (r) => pointsOf(r).length >= min;
+  const needsPoints = (min) => {
+    const problem = (row) => {
+      if (row.points != null && !Array.isArray(row.points)) return '数据点的 points 字段需要是列表';
+      const items = pointsOf(row);
+      const invalid = items.flatMap((point, i) => Number.isFinite(point.v) ? [] : [i + 1]);
+      if (items.length >= min && !invalid.length) return '';
+      const count = `至少需要 ${min} 个数据点，本镜有 ${items.length} 个`;
+      return invalid.length
+        ? `${count}，其中第 ${invalid.slice(0, 5).join('、')}${invalid.length > 5 ? ' 等' : ''}个点缺少有效数值`
+        : count;
+    };
+    return Object.assign((row) => !problem(row), {problem});
+  };
   const REAL = ['甲', '乙', '丙', '丁', '戊', '己'];
   const SAMPLE_SERIES = {title: '', unit: '%', series: [{label: '拿铁', value: 62}, {label: '美式', value: 48}, {label: '手冲', value: 35}, {label: '冷萃', value: 22}, {label: '摩卡', value: 14}]};
   const SAMPLE_POINTS = {title: '', unit: '%', points: [{label: '2022', v: 8}, {label: '2023', v: 14}, {label: '2024', v: 31}, {label: '2025', v: 47}, {label: '2026', v: 88}]};
@@ -191,7 +209,7 @@
   });
 
   const pairedSample = {unit: '分', legend: ['去年', '今年'], series: [{label: '语文', value: 62, value2: 78}, {label: '数学', value: 71, value2: 66}, {label: '英语', value: 55, value2: 83}]};
-  chart('chPaired', '分组柱状图', '每个类目两根柱：今年和去年、A 组和 B 组。', ['今年和去年', '同比', '去年和今年'], pairedSample, (r) => seriesOf(r).length >= 2 && seriesOf(r).every((d) => d.value2 != null), (row, T) => {
+  chart('chPaired', '分组柱状图', '每个类目两根柱：今年和去年、A 组和 B 组。', ['今年和去年', '同比', '去年和今年'], pairedSample, (r) => seriesOf(r).length >= 2 && seriesOf(r).every((d) => numeric(d.value) && numeric(d.value2)), (row, T) => {
     const items = seriesOf(row);
     const unit = unitOf(row);
     const legend = row.legend || ['', ''];
@@ -266,7 +284,7 @@
     };
   });
 
-  chart('chDumbbell', '前后对比图', '同一类目前后两个点：一条线从之前走到之后。', ['之前和之后', '前后对比', '从原来的', '变成了'], {unit: '分', legend: ['之前', '之后'], series: [{label: '写作', value: 72, value2: 44}, {label: '检索', value: 81, value2: 52}, {label: '判断', value: 66, value2: 30}]}, (r) => seriesOf(r).length >= 1 && seriesOf(r).every((d) => d.value2 != null), (row, T) => {
+  chart('chDumbbell', '前后对比图', '同一类目前后两个点：一条线从之前走到之后。', ['之前和之后', '前后对比', '从原来的', '变成了'], {unit: '分', legend: ['之前', '之后'], series: [{label: '写作', value: 72, value2: 44}, {label: '检索', value: 81, value2: 52}, {label: '判断', value: 66, value2: 30}]}, (r) => seriesOf(r).length >= 1 && seriesOf(r).every((d) => numeric(d.value) && numeric(d.value2)), (row, T) => {
     const items = seriesOf(row);
     const unit = unitOf(row);
     const times = beats(row, items);

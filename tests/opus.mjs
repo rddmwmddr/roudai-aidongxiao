@@ -384,7 +384,7 @@ try {
   );
   // Exercise the actual existing editor and undo persistence rather than only the adapter.
   await page.evaluate(() => DMApp.select(5));
-  await page.locator("#btnInspector").click();
+  await page.locator("#inspector").waitFor({ state: "visible" });
   await page
     .locator('[data-motion="style.title"]')
     .fill("AI 与人工共同编辑的中文标题");

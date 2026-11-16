@@ -15,20 +15,31 @@ struct ExportSheet: View {
     let names: [String: String]
     /// 选保存位置。测试不弹系统面板，直接给一个地址
     let destination: ((_ singleFileName: String?) -> URL?)?
+    let stage: StageController?
+    let onFix: ((Shot.ID) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @AppStorage("export.size") private var sizeRaw = ExportSize.hd.rawValue
     @AppStorage("export.fps") private var fps = 60
     @State private var scope: Scope
+    @State private var issues: [Shot.ID: String]?
+    @State private var checkFailed = false
     @StateObject private var runner = BatchRunner()
 
-    init(board: Board, current: Shot?, visible: [Shot], picked: Set<Shot.ID>, names: [String: String], destination: ((String?) -> URL?)? = nil) {
+    init(board: Board, current: Shot?, visible: [Shot], picked: Set<Shot.ID>, names: [String: String], destination: ((String?) -> URL?)? = nil, stage: StageController? = nil, onFix: ((Shot.ID) -> Void)? = nil) {
         self.board = board
         self.current = current
         self.visible = visible
         self.picked = picked
         self.names = names
         self.destination = destination
+        self.stage = stage
+        self.onFix = onFix
         _scope = State(initialValue: picked.count >= 2 ? .picked : current != nil ? .current : .all)
+    }
+
+    private struct CheckKey: Hashable {
+        let rows: [Shot]
+        let revision: Int
     }
 
     private var size: ExportSize { ExportSize(rawValue: sizeRaw) ?? .uhd }
@@ -43,12 +54,19 @@ struct ExportSheet: View {
     }
 
     private func exportable(_ s: Scope) -> [Shot] {
-        base(s).filter { !$0.isPending }
+        base(s).filter { issue(for: $0) == nil }
     }
 
-    private var missingData: Int {
-        base(scope).filter(\.isPending).count
+    private func issue(for shot: Shot) -> String? {
+        if let reason = issues?[shot.id] { return reason }
+        if shot.usesSampleData { return "正在使用样例数据，请核对并确认当前数据" }
+        if shot.isPending { return "数据待确认，请核对并确认当前数据" }
+        return nil
     }
+
+    private var checking: Bool { stage != nil && issues == nil && !checkFailed }
+
+    private var blocked: [Shot] { base(scope).filter { issue(for: $0) != nil } }
 
     private var failedAlone: String? {
         if runner.items.count == 1, !runner.isRunning, case .failed(let text) = runner.items[0].status { return text }
@@ -68,11 +86,11 @@ struct ExportSheet: View {
                             Text("这一镜").tag(Scope.current)
                         }
                         if visible.count < board.rows.count {
-                            Text("当前列表 \(exportable(.visible).count)").tag(Scope.visible)
+                            Text("当前列表 \(base(.visible).count)").tag(Scope.visible)
                         }
-                        Text("全部 \(exportable(.all).count)").tag(Scope.all)
+                        Text("全部 \(base(.all).count)").tag(Scope.all)
                         if !picked.isEmpty {
-                            Text("选中的 \(exportable(.picked).count)").tag(Scope.picked)
+                            Text("选中的 \(base(.picked).count)").tag(Scope.picked)
                         }
                     }
                     if base(scope).contains(where: { $0.fields["motion"] != nil }) {
@@ -87,9 +105,36 @@ struct ExportSheet: View {
                     }
                 }
                 .formStyle(.columns)
-                if missingData > 0 {
-                    Text("\(missingData) 镜缺数据，不导出")
-                        .foregroundStyle(.secondary)
+                if checking {
+                    ProgressView("正在检查镜头…").controlSize(.small)
+                } else if checkFailed {
+                    Text("无法检查镜头，请关闭后重新打开导出。")
+                        .foregroundStyle(.red)
+                } else if !blocked.isEmpty {
+                    Text("可导出 \(exportable(scope).count) 镜 · \(blocked.count) 镜待处理")
+                        .fontWeight(.medium)
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(blocked) { shot in
+                                HStack(alignment: .top) {
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text("第 \(shot.no) 镜 · \(names[shot.template] ?? shot.template)")
+                                        Text(issue(for: shot) ?? "")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    if let onFix {
+                                        Button("去处理") {
+                                            dismiss()
+                                            onFix(shot.id)
+                                        }
+                                        .named("处理第 \(shot.no) 镜")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .frame(height: min(160, CGFloat(blocked.count) * 56))
                 }
                 if let failedAlone {
                     Label(failedAlone, systemImage: "exclamationmark.circle")
@@ -123,7 +168,7 @@ struct ExportSheet: View {
                     Button("取消") { dismiss() }
                         .keyboardShortcut(.cancelAction)
                 }
-                TaskButton(title: "导出", phase: phase, enabled: !exportable(scope).isEmpty, onStart: start, onStop: { runner.cancel() })
+                TaskButton(title: "导出", phase: phase, enabled: !checking && !checkFailed && !exportable(scope).isEmpty, onStart: start, onStop: { runner.cancel() })
                 if !showsForm, !runner.isRunning {
                     Button("完成") { dismiss() }
                         .keyboardShortcut(.cancelAction)
@@ -135,6 +180,17 @@ struct ExportSheet: View {
         .padding(20)
         .frame(width: runner.items.count > 1 ? 560 : 380)
         .interactiveDismissDisabled(runner.isRunning)
+        .task(id: CheckKey(rows: board.rows, revision: stage?.motionPackRevision ?? 0)) {
+            guard let stage else { return }
+            issues = nil
+            checkFailed = false
+            do {
+                let result = try await stage.exportIssues(board.rows)
+                if !Task.isCancelled { issues = result }
+            } catch {
+                if !Task.isCancelled { checkFailed = true }
+            }
+        }
         // 只导一镜时按了停止，回到开始前的样子
         .onChange(of: runner.isRunning) { running in
             if !running, runner.items.count == 1, runner.items[0].status == .cancelled { runner.reset() }

@@ -1,7 +1,7 @@
+import Darwin
 import Foundation
-import Security
 
-// AI 服务的配置。密钥只进钥匙串，配置文件和分镜表里都没有。
+// AI 服务配置写进偏好设置，Key 单独保存在本机的 App 数据目录。
 
 nonisolated enum AIKind: String, Codable, CaseIterable, Identifiable, Sendable {
     case anthropic
@@ -49,43 +49,6 @@ nonisolated struct AIPreset: Identifiable, Sendable {
 
     func makeProfile() -> AIProfile {
         AIProfile(name: name, kind: kind, baseURL: baseURL, model: model)
-    }
-}
-
-// ---------- 钥匙串 ----------
-nonisolated enum Keychain {
-    static let service = "com.ahuamiao.datamotion.ai"
-
-    enum KeychainError: LocalizedError {
-        case failed(OSStatus)
-        var errorDescription: String? {
-            switch self {
-            case .failed(let s): "钥匙串保存失败（\(s)）。请在「钥匙串访问」里确认登录钥匙串已解锁，然后再试。"
-            }
-        }
-    }
-
-    static func save(_ secret: String, account: String) throws {
-        let base: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: account]
-        SecItemDelete(base as CFDictionary)
-        guard !secret.isEmpty else { return }
-        var add = base
-        add[kSecValueData as String] = Data(secret.utf8)
-        add[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
-        let status = SecItemAdd(add as CFDictionary, nil)
-        if status != errSecSuccess { throw KeychainError.failed(status) }
-    }
-
-    static func read(account: String) -> String? {
-        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: account, kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne]
-        var item: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess, let data = item as? Data else { return nil }
-        return String(decoding: data, as: UTF8.self)
-    }
-
-    static func delete(account: String) {
-        let base: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: account]
-        SecItemDelete(base as CFDictionary)
     }
 }
 
@@ -190,12 +153,63 @@ nonisolated enum AIConfigImporter {
     }
 }
 
+// ---------- 本地 Key ----------
+nonisolated struct AIKeyFile {
+    let url: URL
+
+    private struct Contents: Codable {
+        let keys: [UUID: String]
+    }
+
+    static var current: AIKeyFile {
+        let directory = URL.applicationSupportDirectory.appending(path: "AI", directoryHint: .isDirectory)
+        return AIKeyFile(url: directory.appending(path: "credentials.json"))
+    }
+
+    func load() throws -> [UUID: String] {
+        if let saved = try read(url) { return saved }
+        // 旧版会删除与当前包不匹配的 keys.json。迁移到独立文件，避免切回旧版时清除新配置。
+        let legacy = url.deletingLastPathComponent().appending(path: "keys.json")
+        guard let keys = try read(legacy) else { return [:] }
+        if (try? save(keys)) != nil {
+            try? FileManager.default.removeItem(at: legacy)
+        }
+        return keys
+    }
+
+    private func read(_ file: URL) throws -> [UUID: String]? {
+        do {
+            let data = try Data(contentsOf: file)
+            return try JSONDecoder().decode(Contents.self, from: data).keys
+        } catch CocoaError.fileReadNoSuchFile {
+            return nil
+        }
+    }
+
+    func save(_ keys: [UUID: String]) throws {
+        let files = FileManager.default
+        let directory = url.deletingLastPathComponent()
+        try files.createDirectory(at: directory, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+        let draft = directory.appending(path: UUID().uuidString)
+        defer { try? files.removeItem(at: draft) }
+        let data = try JSONEncoder().encode(Contents(keys: keys))
+        try data.write(to: draft, options: .withoutOverwriting)
+        try files.setAttributes([.posixPermissions: 0o600], ofItemAtPath: draft.path)
+        // 同目录原子替换，写入失败时上一份文件仍可用。
+        guard rename(draft.path, url.path) == 0 else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+    }
+}
+
 // ---------- 配置存储 ----------
 final class AISettings: ObservableObject {
     static let shared = AISettings()
     private static let defaultsKey = "ai.profiles.v1"
     private static let activeKey = "ai.active.v1"
     private static let rulesKey = "ai.useRules.v1"
+    private let keyFile: AIKeyFile
+    @Published private var keys: [UUID: String]
 
     @Published var profiles: [AIProfile] {
         didSet { persist() }
@@ -209,7 +223,9 @@ final class AISettings: ObservableObject {
         didSet { UserDefaults.standard.set(useRules, forKey: Self.rulesKey) }
     }
 
-    init() {
+    init(keyFile: AIKeyFile = .current) {
+        self.keyFile = keyFile
+        keys = (try? keyFile.load()) ?? [:]
         useRules = UserDefaults.standard.bool(forKey: Self.rulesKey)
         if let data = UserDefaults.standard.data(forKey: Self.defaultsKey),
            let saved = try? JSONDecoder().decode([AIProfile].self, from: data) {
@@ -230,30 +246,43 @@ final class AISettings: ObservableObject {
         }
     }
 
-    func key(for profile: AIProfile) -> String? {
-        Keychain.read(account: profile.id.uuidString)
+    func hasKey(for profile: AIProfile) -> Bool {
+        keys[profile.id] != nil
+    }
+
+    func key(for profile: AIProfile) throws -> String {
+        guard let key = keys[profile.id] else {
+            throw AIError.missingKey(profile.name)
+        }
+        return key
     }
 
     func setKey(_ key: String, for profile: AIProfile) throws {
-        try Keychain.save(key, account: profile.id.uuidString)
+        let value = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        var updated = keys
+        updated[profile.id] = value.isEmpty ? nil : value
+        guard updated != keys else { return }
+        try keyFile.save(updated)
+        keys = updated
     }
 
     @discardableResult
     func add(_ config: ImportedAIConfig) throws -> AIProfile {
         var profile = AIProfile(name: config.name, kind: config.kind, baseURL: config.baseURL, model: config.model)
-        if let same = profiles.firstIndex(where: { $0.name == config.name && $0.baseURL == config.baseURL }) {
-            profile.id = profiles[same].id
-            profiles[same] = profile
+        let existing = profiles.firstIndex { $0.name == config.name && $0.baseURL == config.baseURL }
+        if let existing { profile.id = profiles[existing].id }
+        try setKey(config.apiKey, for: profile)
+        if let existing {
+            profiles[existing] = profile
         } else {
             profiles.append(profile)
         }
-        try setKey(config.apiKey, for: profile)
         if activeID == nil { activeID = profile.id }
         return profile
     }
 
-    func remove(_ profile: AIProfile) {
-        Keychain.delete(account: profile.id.uuidString)
+    func remove(_ profile: AIProfile) throws {
+        try setKey("", for: profile)
         profiles.removeAll { $0.id == profile.id }
         if activeID == profile.id { activeID = profiles.first?.id }
     }

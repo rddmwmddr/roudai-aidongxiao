@@ -17,7 +17,7 @@ nonisolated enum AIError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .missingKey(let name): "「\(name)」还没有 API Key。到「设置 > AI」填写后再试。"
+        case .missingKey(let name): "「\(name)」还没有配置 API Key。到「设置 > AI」填写后再试。"
         case .missingModel(let name): "「\(name)」还没有选模型。到「设置 > AI」填写模型名后再试。"
         case .badURL(let url): "接口地址「\(url)」不正确。地址要以 https:// 开头，比如 https://api.deepseek.com/v1。"
         case .unauthorized(let name): "「\(name)」拒绝了这把 API Key。到「设置 > AI」检查 Key 和接口地址是否对应。"
@@ -35,11 +35,13 @@ nonisolated struct AIClient: Sendable {
     let profile: AIProfile
     let apiKey: String
     let session: URLSession
+    let enableThinking: Bool
 
-    init(profile: AIProfile, apiKey: String, session: URLSession = .shared) {
+    init(profile: AIProfile, apiKey: String, session: URLSession = .shared, enableThinking: Bool = false) {
         self.profile = profile
         self.apiKey = apiKey
         self.session = session
+        self.enableThinking = enableThinking
     }
 
     private func url(_ path: String) throws -> URL {
@@ -53,6 +55,34 @@ nonisolated struct AIClient: Sendable {
 
     private var isOfficialClaude: Bool {
         profile.kind == .anthropic && profile.endpointHost == "api.anthropic.com"
+    }
+
+    var thinkingOptions: [String: Any] {
+        guard enableThinking else { return [:] }
+        let model = profile.model.lowercased()
+        switch (profile.kind, profile.endpointHost) {
+        case (.anthropic, "api.anthropic.com"):
+            if ["opus-5", "sonnet-5", "haiku-5", "fable-5", "mythos-5", "mythos-preview",
+                "opus-4-6", "opus-4-7", "opus-4-8", "sonnet-4-6"].contains(where: { model.hasPrefix("claude-\($0)") }) {
+                return ["thinking": ["type": "adaptive"]]
+            }
+        case (.openAICompatible, "api.deepseek.com"):
+            if model.hasPrefix("deepseek-v4") || model == "deepseek-flash" {
+                return ["thinking": ["type": "enabled"], "reasoning_effort": "high"]
+            }
+        case (.openAICompatible, "api.xiaomimimo.com"):
+            if model.hasPrefix("mimo-v2.5") {
+                return ["thinking": ["type": "enabled"]]
+            }
+        case (.openAICompatible, "api.openai.com"):
+            if ["gpt-5", "gpt-6", "o3", "o4-mini"].contains(where: model.hasPrefix),
+               !model.contains("-chat-"), !model.contains("-codex"), !model.contains("-search") {
+                return ["reasoning_effort": "high"]
+            }
+        default:
+            break
+        }
+        return [:]
     }
 
     // ---------- 生成 ----------
@@ -150,6 +180,7 @@ nonisolated struct AIClient: Sendable {
             r.setValue("server-side-fallback-2026-07-01", forHTTPHeaderField: "anthropic-beta")
             body["fallbacks"] = "default"
         }
+        body.merge(thinkingOptions) { _, value in value }
         r.httpBody = try JSONSerialization.data(withJSONObject: body)
         let bytes = try await start(r)
         var text = ""
@@ -198,8 +229,21 @@ nonisolated struct AIClient: Sendable {
             "messages": [["role": "system", "content": system], ["role": "user", "content": user]],
         ]
         if schema != nil { body["response_format"] = ["type": "json_object"] }
+        let thinking = thinkingOptions
+        body.merge(thinking) { _, value in value }
         r.httpBody = try JSONSerialization.data(withJSONObject: body)
-        let bytes = try await start(r)
+        let bytes: URLSession.AsyncBytes
+        do {
+            bytes = try await start(r)
+        } catch AIError.server(let code, let detail) where code == 400 || code == 422 {
+            // 兼容接口可能只实现部分可选参数。仅对明确被拒绝的参数降级一次。
+            let names = [String](thinking.keys) + ["response_format"]
+            let rejected = names.filter { body[$0] != nil && detail.localizedCaseInsensitiveContains($0) }
+            guard !rejected.isEmpty else { throw AIError.server(code, detail) }
+            for name in rejected { body[name] = nil }
+            r.httpBody = try JSONSerialization.data(withJSONObject: body)
+            bytes = try await start(r)
+        }
         var text = ""
         var finish: String?
         for try await line in bytes.lines {

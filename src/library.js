@@ -605,49 +605,284 @@
     return k ? scene.duration * k : Math.max(0, scene.duration - 0.05);
   };
 
-  const canDraw = (row, id) => {
-    try {
-      D.createScene(Object.assign({}, row, {template: id, tpl: id}), 64);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-  const OWN = new Set(['id', 'no', 'ch', 'kind', 'cat', 'line', 'visual', 'tpl', 'note', 'pending', 'sampleData', 'layers', 'speed', 'hold', 'dur', 'theme']);
-  const firstSentence = (text) => {
-    const s = String(text || '').split(/[。！？!?\n]/).map((x) => x.trim()).filter(Boolean)[0] || '';
-    return [...s].length <= 40 ? s : '';
-  };
-  // 给一镜换动效。数据够就直接换；不够就放样例，标要确认，改成真实数字之前不能导出
+  const OWN = new Set(['__proto__', 'constructor', 'prototype', 'id', 'no', 'ch', 'kind', 'cat', 'line', 'visual', 'tpl', 'template', 'note', 'pending', 'sampleData', 'sampleBackup', 'layers', 'overlayText', 'sampleSize', 'speed', 'hold', 'dur', 'theme', 'colors']);
   const SAMPLE_NOTE = '这是样例数据，改成真实的再导出';
-  D.adopt = (row, id) => {
-    const next = Object.assign({}, row, {tpl: id});
-    const tpl = D.TEMPLATES[id];
-    if (!tpl) return next;
-    delete next.template;
-    // 上一个动效放的样例不留到下一个：样例字段、标记和那句说明都拿掉，原来的备注还在
-    if (next.sampleData) {
-      Object.keys(D.sampleOf(row.tpl)).forEach((k) => {
-        if (!OWN.has(k)) delete next[k];
-      });
-      delete next.sampleData;
-      const rest = String(next.note || '').replace(SAMPLE_NOTE, '').replace(/^；/, '');
-      if (rest) next.note = rest;
-      else delete next.note;
-    }
-    if (tpl.takesText && !(next.lines && next.lines.length)) {
-      const s = firstSentence(next.line);
-      if (s) next.lines = [s];
-    }
-    const ready = tpl.custom ? !tpl.accepts || tpl.accepts(next) : canDraw(next, id);
-    if (ready) return next;
+  const isNumber = (v) => v != null && v !== '' && Number.isFinite(+v);
+
+  D.motionMinimum = (id) => {
     const sample = D.sampleOf(id);
+    const accepts = D.TEMPLATES[id]?.accepts;
+    const minimum = {};
+    for (const key of ['series', 'points']) {
+      if (!accepts || !sample[key]?.length) continue;
+      const index = sample[key].findIndex((_, i) => accepts({...sample, [key]: sample[key].slice(0, i + 1)}));
+      if (index >= 0) minimum[key] = index + 1;
+    }
+    return minimum;
+  };
+
+  D.motionError = (row, requireFit = false) => {
+    const tpl = D.TEMPLATES[row.tpl];
+    if (requireFit && !tpl) return '找不到这个动效';
+    try {
+      if (requireFit && tpl.custom && tpl.accepts && !tpl.accepts(row)) {
+        if (tpl.dataProblem) return tpl.dataProblem(row);
+        const {series, points} = D.motionMinimum(row.tpl);
+        if (points) return `需要至少 ${points} 个符合要求的数据点，请检查数量和字段`;
+        if (series) return `需要至少 ${series} 项符合要求的数值，请检查数量和字段`;
+        return '缺少该动效所需的字段，或字段内容不符合要求';
+      }
+      D.createScene(Object.assign({}, row, {template: row.tpl}), 64);
+      return '';
+    } catch (e) {
+      return e.message;
+    }
+  };
+
+  D.exportIssue = (row) => {
+    if (row.sampleData) return '正在使用样例数据，请核对并确认当前数据';
+    if (D.TEMPLATES[row.tpl]?.noExport) return '这个动效无法导出';
+    return D.motionError(row) || (row.pending ? '数据待确认，请核对并确认当前数据' : '');
+  };
+
+  D.confirmMotionData = (row) => {
+    const error = D.motionError(row, true);
+    if (error) return {error};
+    const next = Object.assign({}, row);
+    if ((row.sampleData || row.pending) && row.motion?.demo) next.motion = {...row.motion, demo: false};
+    delete next.pending;
+    delete next.sampleData;
+    delete next.sampleBackup;
+    const note = String(next.note || '').replace(SAMPLE_NOTE, '').replace(/^；/, '');
+    if (note) next.note = note;
+    else delete next.note;
+    return {row: next};
+  };
+
+  D.motionSource = (row) => {
+    const source = Object.assign({}, row);
+    if (source.sampleData) {
+      Object.keys(D.sampleOf(row.tpl)).forEach((k) => {
+        if (!OWN.has(k)) delete source[k];
+      });
+      Object.entries(source.sampleBackup || {}).forEach(([k, v]) => {
+        if (!OWN.has(k)) source[k] = v;
+      });
+      delete source.sampleData;
+      delete source.sampleBackup;
+      const note = String(source.note || '').replace(SAMPLE_NOTE, '').replace(/^；/, '');
+      if (note) source.note = note;
+      else delete source.note;
+    }
+    return source;
+  };
+
+  const motionBase = (row, id) => {
+    const tpl = D.TEMPLATES[id];
+    const category = tpl.sourceCategory || tpl.cat;
+    const cat = ['percent', 'chart', 'fine'].includes(category) ? '数据动效'
+      : ['text', 'texfx'].includes(category) ? '文字动效' : '屏幕动效';
+    const next = Object.assign({}, D.motionSource(row), {tpl: id, cat});
+    delete next.template;
+    if (row.tpl !== id) {
+      delete next.pending;
+      if (tpl.desc) next.visual = tpl.desc;
+    }
+    return next;
+  };
+
+  const localData = (row, tpl) => {
+    const sample = D.sampleOf(tpl.id);
+    const candidates = [];
+    const line = row.line || '';
+    if (tpl.takesText || sample.lines) {
+      const parts = line.split(/[。！？!?，,、；;\n]/).map((s) => s.trim()).filter(Boolean);
+      if (line.trim()) candidates.push({lines: [line.trim()]});
+      if (parts.length > 1) candidates.push({lines: parts});
+    }
+    if ((tpl.sourceCategory || tpl.cat) === 'percent') {
+      if (row.unit === '%' && row.series?.length && row.series.every((s) => isNumber(s.value) && s.value2 == null)) {
+        candidates.push({groups: row.series.map((s) => ({relation: 'single', metrics: [{caption: s.label, value: +s.value}]}))});
+      }
+      if (!row.groups?.length) {
+        const parsed = root.DMParser.parseCopy(line);
+        if (parsed.count) candidates.push({groups: parsed.groups});
+      }
+    }
+    if (tpl.chart) {
+      if (sample.series && row.points?.length && row.points.every((p) => isNumber(p.v))) {
+        candidates.push({series: row.points.map((p) => ({label: p.label, value: +p.v}))});
+      }
+      if (!row.series?.length && !row.points?.length && !row.groups?.length) {
+        const parsed = root.DMParser.parseCopy(line);
+        if (parsed.count) candidates.push({groups: parsed.groups, unit: '%'});
+        const series = D.parseSeries?.(line);
+        if (series) candidates.push(series);
+      }
+    }
+    if (sample.points && (tpl.id !== 'trend' || row.unit === '%') && row.series?.length && row.series.every((s) => isNumber(s.value) && s.value2 == null)) {
+      candidates.push({points: row.series.map((s) => ({label: s.label, v: +s.value}))});
+    }
+    return candidates;
+  };
+
+  // 用真实数据试目标动效。只有全部试不通才放样例，原字段留着供下次切换和 AI 使用。
+  D.adopt = (row, id) => {
+    const tpl = D.TEMPLATES[id];
+    if (!tpl) return row;
+    if (row.tpl === id && row.sampleData) return row;
+    const next = motionBase(row, id);
+    if (tpl.takesText && !next.lines?.length) {
+      const first = String(next.line || '').split(/[。！？!?\n]/).map((s) => s.trim()).find(Boolean);
+      if (first && [...first].length <= 40) next.lines = [first];
+    }
+    if (!D.motionError(next, true)) return next;
+    const candidates = localData(next, tpl).map((data) => Object.assign({}, next, data));
+    const ready = candidates.find((candidate) => !D.motionError(candidate, true));
+    if (ready) return ready;
+    const sample = D.sampleOf(id);
+    const backup = {};
     Object.keys(sample).forEach((k) => {
-      if (!OWN.has(k)) next[k] = sample[k];
+      if (OWN.has(k)) return;
+      if (Object.hasOwn(next, k)) backup[k] = next[k];
+      next[k] = sample[k];
     });
+    if (Object.keys(backup).length) next.sampleBackup = backup;
     next.sampleData = true;
     next.note = next.note ? `${SAMPLE_NOTE}；${next.note}` : SAMPLE_NOTE;
     return next;
+  };
+
+  D.motionData = (row) => Object.fromEntries(Object.entries(row).filter(([k]) => !OWN.has(k)));
+
+  D.normalizeGeneratedMotion = (row) => {
+    const next = {...row};
+    if (Object.hasOwn(next, 'motionInput')) {
+      const id = D.TEMPLATES[next.tpl]?.baseID || next.tpl;
+      next.motion = root.DMOpus.fromAI(id, next.motionInput, next.line);
+      delete next.motionInput;
+    }
+    if (Object.hasOwn(next, 'motion')) {
+      next.motion = D.Opus.configOf({tpl: next.tpl, motion: next.motion});
+      if (next.motion.demo) throw new Error('AI 返回了演示数据，请使用文稿中的真实数据');
+    }
+    return next;
+  };
+
+  // 图表索引、落点时间和视觉参数由模板决定，口播事实单独核对。
+  const displayKeys = new Set(['tpl', 'id', 'g', 'tier', 'ceil', 'sheets', 'each', 'land', 'sLand', 'sCap', 'sAt', 'sEnd']);
+  const scale = (unit) => ({百: 100, 千: 1000, 万: 10000, 十万: 1e5, 百万: 1e6, 千万: 1e7, 亿: 1e8, 万亿: 1e12})[unit] || 1;
+  const magnitude = '万亿|千万|百万|十万|亿|万|千|百';
+  const unitFactor = (unit) => scale(String(unit || '').trim().match(new RegExp(`^(${magnitude})(?!分比|分点)`))?.[0]);
+  const tidyNumber = (n) => Number(n.toPrecision(14));
+  const writtenNumbers = (input) => {
+    const text = String(input).replace(/，/g, '、').normalize('NFKC')
+      .replace(/−/g, '-')
+      .replace(/(\d{4})[-/]([01]?\d)(?:[-/]([0-3]?\d))?(?!\d)/g, (_, year, month, day) => [year, month, day].filter(Boolean).join('、'))
+      .replace(/(?<=\d),(?=\d{3}(?:[,\D]|$))/g, '')
+      .replace(/百分之\s*([零〇一二两三四五六七八九十百点]+)/g, (_, n) => `${root.DMParser.cnToNumber(n)}%`)
+      .replace(/([零〇一二两三四五六七八九十百千]+(?:点[零〇一二两三四五六七八九]+)?)(?=(?:亿|万|年|月|日|秒|分|个|位|人|元|台|次|成|%))/g, (n) => String(root.DMParser.cnToNumber(n)))
+      .replace(/负(?=\d)/g, '-');
+    return [...text.matchAll(new RegExp(`([+-]?\\d+(?:\\.\\d+)?)(?:\\s*(${magnitude}))?`, 'g'))].map(([, value, unit]) => ({
+      value: Number(value), factor: scale(unit),
+    }));
+  };
+
+  const graphField = (id) => ({chNetwork: 'links', chForce: 'links', chChord: 'chords'})[id];
+  const numericClaims = (data, template) => {
+    const claims = [];
+    const graph = graphField(template);
+    const visit = (value, path, key, factor) => {
+      if (value == null || displayKeys.has(key)) return;
+      if (path === 'motion' && root.DMOpus) {
+        let config;
+        try {
+          config = root.DMOpus.validate(value);
+        } catch (e) {
+          return; // 渲染校验单独报告配置错误。
+        }
+        for (const number of root.DMOpus.dataNumbers(config)) visit(number, 'motion.data', '', 1);
+        if (config.metadata.showSampleSize) visit(config.metadata.sampleSize, 'motion.metadata.sampleSize', '', 1);
+        return;
+      }
+      if (typeof value === 'number') {
+        if (Number.isFinite(value)) claims.push({value, factor, path});
+      } else if (typeof value === 'string') {
+        if (['label', 'caption', 'title', 'lines'].includes(key) && /^第\s*\d+\s*[项组步段点]$/.test(value.normalize('NFKC').trim())) return;
+        const numericString = /^[+-]?\d+(?:\.\d+)?$/.test(value.normalize('NFKC').trim());
+        for (const n of writtenNumbers(value)) {
+          claims.push({...n, factor: numericString && !['label', 'caption', 'title', 'lines', 'name', 'find'].includes(key) ? factor : n.factor, path});
+        }
+      } else if (Array.isArray(value)) {
+        value.forEach((item, i) => visit(item, `${path}[${i + 1}]`, key, factor));
+      } else if (typeof value === 'object') {
+        const nextFactor = value.unit == null ? factor : unitFactor(value.unit);
+        Object.entries(value).forEach(([k, v]) => {
+          if (k !== 'unit' && !(path === '' && k === graph)) visit(v, path ? `${path}.${k}` : k, k, nextFactor);
+        });
+      }
+    };
+    visit(data, '', '', 1);
+    return claims;
+  };
+
+  D.numberProblems = (data, template, source, existing) => {
+    const available = new Set();
+    for (const n of [...writtenNumbers(source), ...numericClaims(existing || {}, existing?.tpl)]) {
+      available.add(tidyNumber(n.value));
+      available.add(tidyNumber(n.value * n.factor));
+    }
+    const unknown = numericClaims(data, template).filter((n) => !available.has(tidyNumber(n.value * n.factor)));
+    if (!unknown.length) return [];
+    const locations = unknown.slice(0, 4).map((n) => `${n.path} = ${n.value}`);
+    return [`找不到这些数字的出处：${locations.join('、')}${unknown.length > 4 ? `等 ${unknown.length} 处` : ''}`];
+  };
+
+  D.motionRenderProblem = (row) => {
+    const field = graphField(row.tpl);
+    const links = field ? row[field] : undefined;
+    if (links != null && (!Array.isArray(links) || links.some((link) =>
+      !Array.isArray(link) || link.length !== 2 || link.some((i) => !Number.isInteger(i) || i < 0 || i >= (row.nodes?.length || 0))))) {
+      return `${field} 里的节点编号超出范围，编号从 0 开始`;
+    }
+    const error = D.motionError(row, true);
+    if (error) return error;
+    try {
+      const scene = D.createScene(Object.assign({}, row, {template: row.tpl}), 320);
+      const cv = document.createElement('canvas');
+      cv.width = 320;
+      cv.height = 180;
+      scene.draw(cv.getContext('2d', {alpha: false}), scene.duration * 0.6);
+      return '';
+    } catch (e) {
+      return e.message;
+    }
+  };
+
+  // 模型只给目标动效的数据，镜号、口播、时长和调整由当前镜头保留。
+  D.applyMotionData = (row, id, generated) => {
+    const tpl = D.TEMPLATES[id];
+    if (!tpl || generated.tpl !== id) return {error: `AI 返回了「${generated.tpl || '未指定'}」，需要「${id}」`};
+    if (generated.pending || generated.sampleData) {
+      return {error: generated.note || `原稿和当前分镜的数据不足以绘制「${tpl.name}」`};
+    }
+    const base = motionBase(row, id);
+    const source = D.motionSource(row);
+    let data;
+    try {
+      data = D.motionData(D.normalizeGeneratedMotion({...generated, line: source.line}));
+    } catch (e) {
+      return {error: e.message};
+    }
+    const problems = D.numberProblems(data, id, source.line || '', {...D.motionData(source), tpl: source.tpl});
+    if (problems.length) return {error: problems.join('；')};
+    const next = Object.assign(Object.fromEntries(Object.entries(base).filter(([k]) => OWN.has(k) && !['__proto__', 'constructor', 'prototype'].includes(k))), data);
+    delete next.pending;
+    const error = D.motionRenderProblem(next);
+    if (error) return {error: `「${tpl.name}」画不出来：${error}`};
+    if (generated.visual) next.visual = generated.visual;
+    if (generated.note) next.note = [next.note, generated.note].filter(Boolean).join('；');
+    return {row: next};
   };
 
   D.CATEGORIES = CATEGORIES;

@@ -53,6 +53,8 @@ struct DocumentActions {
     var focusSearch: () -> Void
     var hasShot: Bool
     var hasRows: Bool
+    /// 画面里正在改字：⌘← ⌘↑ ⌘↓ ⌘⌫ 是输入框的，不切镜头、不删镜头
+    var typing: Bool
     var hasAdjustments: Bool
     var loops: Bool
     var mode: ViewMode
@@ -146,7 +148,7 @@ struct AppCommands: Commands {
                 .disabled(actions?.hasShot != true)
             Button("回到开头") { actions?.rewind() }
                 .keyboardShortcut(.leftArrow, modifiers: .command)
-                .disabled(actions?.hasShot != true)
+                .disabled(actions?.hasShot != true || actions?.typing == true)
             Button {
                 actions?.toggleLoop()
             } label: {
@@ -160,17 +162,17 @@ struct AppCommands: Commands {
             Divider()
             Button("上一镜") { actions?.previous() }
                 .keyboardShortcut(.upArrow, modifiers: .command)
-                .disabled(actions?.hasRows != true)
+                .disabled(actions?.hasRows != true || actions?.typing == true)
             Button("下一镜") { actions?.next() }
                 .keyboardShortcut(.downArrow, modifiers: .command)
-                .disabled(actions?.hasRows != true)
+                .disabled(actions?.hasRows != true || actions?.typing == true)
             Divider()
             Button("新增一镜") { actions?.addShot() }
                 .keyboardShortcut("n", modifiers: [.command, .option])
                 .disabled(actions == nil)
             Button("删除这一镜") { actions?.deleteShot() }
                 .keyboardShortcut(.delete, modifiers: .command)
-                .disabled(actions?.hasShot != true)
+                .disabled(actions?.hasShot != true || actions?.typing == true)
             Divider()
             Button("还原这一镜的调整") { actions?.resetAdjustments() }
                 .disabled(actions?.hasAdjustments != true)

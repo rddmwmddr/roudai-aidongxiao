@@ -12,6 +12,7 @@ nonisolated struct StageElement: Identifiable, Hashable, Sendable, Decodable {
     let group: Bool
     let first: Double?
     let last: Double?
+    let templateHidden: Bool?
 }
 
 nonisolated struct TemplateInfo: Identifiable, Hashable, Sendable, Decodable {
@@ -74,6 +75,24 @@ struct MotionPreviewClip {
     let frames: [NSImage]
     let seconds: Double
     let sample: Bool
+
+    struct Reply: Decodable {
+        let frames: [String]?
+        let seconds: Double?
+        let sample: Bool?
+        let error: String?
+
+        var clip: MotionPreviewClip? {
+            guard let frames, let seconds, let sample else { return nil }
+            let images = frames.compactMap { url -> NSImage? in
+                guard let comma = url.firstIndex(of: ","),
+                      let data = Data(base64Encoded: String(url[url.index(after: comma)...])) else { return nil }
+                return NSImage(data: data)
+            }
+            guard !images.isEmpty else { return nil }
+            return MotionPreviewClip(frames: images, seconds: seconds, sample: sample)
+        }
+    }
 }
 
 // 播放时间一秒变 60 次，单独发布，只有进度线和播放头跟着刷新
@@ -97,19 +116,24 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
     @Published private(set) var templates: [TemplateInfo] = []
     @Published private(set) var catalog: [MotionInfo] = []
     @Published private(set) var categories: [MotionCategory] = []
+    @Published private(set) var motionPackRevision = 0
+    /// 画面里正在改字：空格、B 和镜头快捷键都让给输入框
+    @Published private(set) var typing = false
     @Published var loop = true {
         didSet { run("DMBridge.setLoop(\(loop))") }
     }
 
     var onCommit: ((_ template: String, _ layers: String, _ label: String) -> Void)?
-    var onMotionObject: ((String) -> Void)?
     var onNavigate: ((_ direction: Int) -> Void)?
+    var onPlaybackEnded: ((Shot.ID) -> Void)?
+    /// 画面编辑完成后，按传来的镜头 ID 更新字段。
+    var onEditRow: ((_ id: Int, _ fields: [String: JSONValue], _ label: String) -> Void)?
 
     private var loadedID: Int?
     private var loadedBody: String?
     private var loadedLayers: String?
     private var loadedTemplate: String?
-    private var queued: Shot?
+    private var queued: (shot: Shot, autoplay: Bool)?
     private var readyWaiters: [CheckedContinuation<Void, Never>] = []
     private var thumbnails: [String: NSImage] = [:]
     private var previews: [String: MotionPreviewClip] = [:]
@@ -153,6 +177,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         log.error("渲染进程退出，重新载入")
         ready = false
+        typing = false
         loadedID = nil
         loadedBody = nil
         webView.reload()
@@ -163,17 +188,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         guard let body = message.body as? [String: Any], let type = body["type"] as? String else { return }
         switch type {
         case "ready":
-            ready = true
-            readyWaiters.forEach { $0.resume() }
-            readyWaiters.removeAll()
-            Task {
-                await loadTemplates()
-                await FontLibrary.shared.apply(to: self)
-                if let q = queued {
-                    queued = nil
-                    sync(q)
-                }
-            }
+            Task { await finishLoading() }
         case "time":
             clock.time = body["t"] as? Double ?? (body["t"] as? NSNumber)?.doubleValue ?? 0
             // 每帧都来一条。值没变就不发布，不然整个窗口一秒刷新 60 次
@@ -182,6 +197,9 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
             let newPlaying = (body["playing"] as? NSNumber)?.boolValue ?? false
             if newPlaying != playing { playing = newPlaying }
             if duration > 0, sceneError != nil { sceneError = nil }
+        case "ended":
+            guard let id = (body["id"] as? NSNumber)?.intValue, id == loadedID, !loop else { return }
+            onPlaybackEnded?(id)
         case "elements":
             if let s = body["list"] as? String, let list = try? JSONDecoder().decode([StageElement].self, from: Data(s.utf8)) {
                 elements = list
@@ -193,10 +211,17 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
             let layers = body["layers"] as? String ?? "{}"
             loadedLayers = layers
             onCommit?(template, layers, body["label"] as? String ?? "调整元素")
-        case "motionObject":
-            if let json = body["json"] as? String { onMotionObject?(json) }
         case "nav":
             onNavigate?((body["dir"] as? NSNumber)?.intValue ?? 1)
+        case "editRow":
+            guard let s = body["fields"] as? String,
+                  let fields = (try? JSONDecoder().decode(JSONValue.self, from: Data(s.utf8)))?.object,
+                  !fields.isEmpty else { return }
+            let id = (body["id"] as? NSNumber)?.intValue ?? loadedID ?? 0
+            onEditRow?(id, fields, body["label"] as? String ?? "修改文字")
+        case "typing":
+            let on = (body["on"] as? NSNumber)?.boolValue ?? false
+            if on != typing { typing = on }
         case "sceneError":
             sceneError = body["message"] as? String
             elements = []
@@ -205,6 +230,40 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         default:
             break
         }
+    }
+
+    private func finishLoading() async {
+        repeat {
+            await applyMotionPack()
+        } while motionPackRevision != MotionPackLibrary.shared.revision
+        ready = true
+        readyWaiters.forEach { $0.resume() }
+        readyWaiters.removeAll()
+        run("DMBridge.setLoop(\(loop))")
+        if let q = queued {
+            queued = nil
+            sync(q.shot, autoplay: q.autoplay)
+        }
+        await loadTemplates()
+        await FontLibrary.shared.apply(to: self)
+    }
+
+    private func applyMotionPack() async {
+        let library = MotionPackLibrary.shared
+        let revision = library.revision
+        _ = try? await web.callAsyncJavaScript("return DMBridge.installMotionPack(json)", arguments: ["json": library.json], contentWorld: .page)
+        motionPackRevision = revision
+    }
+
+    func reloadMotionPack() async {
+        guard ready else { return }
+        thumbnails.removeAll()
+        previews.removeAll()
+        secondsByContent.removeAll()
+        naturalByContent.removeAll()
+        frames.removeAll()
+        await applyMotionPack()
+        await loadTemplates()
     }
 
     // ---------- 发命令 ----------
@@ -264,33 +323,22 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
 
     // 动效库的缩略图。第一次要才画，画过的留着
     func thumbnail(_ id: String) async -> NSImage? {
-        if let done = thumbnails[id] { return done }
+        let key = "\(motionPackRevision)|\(id)"
+        if let done = thumbnails[key] { return done }
         guard let url = try? await callString("return DMBridge.thumb(id)", arguments: ["id": id]),
               let comma = url.firstIndex(of: ","),
               let data = Data(base64Encoded: String(url[url.index(after: comma)...])),
               let image = NSImage(data: data) else { return nil }
-        thumbnails[id] = image
+        thumbnails[key] = image
         return image
     }
 
     // 挑动效时的预览：用这一镜自己的字演一遍。试过的留着，来回看不用重画
     func preview(_ shot: Shot, template: String) async -> MotionPreviewClip? {
-        let key = "\(template)|\(shot.json)"
+        let key = "\(motionPackRevision)|\(template)|\(shot.json)"
         if let done = previews[key] { return done }
-        struct Reply: Decodable {
-            let frames: [String]
-            let seconds: Double
-            let sample: Bool
-        }
         guard let json = try? await callString("return await DMBridge.preview(row, id)", arguments: ["row": shot.json, "id": template]),
-              let reply = try? JSONDecoder().decode(Reply.self, from: Data(json.utf8)) else { return nil }
-        let images = reply.frames.compactMap { url -> NSImage? in
-            guard let comma = url.firstIndex(of: ","),
-                  let data = Data(base64Encoded: String(url[url.index(after: comma)...])) else { return nil }
-            return NSImage(data: data)
-        }
-        guard !images.isEmpty else { return nil }
-        let clip = MotionPreviewClip(frames: images, seconds: reply.seconds, sample: reply.sample)
+              let clip = try? JSONDecoder().decode(MotionPreviewClip.Reply.self, from: Data(json.utf8)).clip else { return nil }
         if previews.count >= 24 { previews.removeAll() }
         previews[key] = clip
         return clip
@@ -298,7 +346,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
 
     // 时间线上的胶片。内容没变就用画过的
     func frames(of shot: Shot, count: Int) async -> [NSImage] {
-        let key = "\(count)|\(shot.json)"
+        let key = "\(motionPackRevision)|\(count)|\(shot.json)"
         if let done = frames[key] { return done }
         guard let urls = try? await call("return DMBridge.frames(row, n)", arguments: ["row": shot.json, "n": count]) as? [String] else { return [] }
         let images = urls.compactMap { url -> NSImage? in
@@ -313,41 +361,43 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
     // 每一镜的真实秒数。内容没变就不再算
     /// 不算手动时长时，每一镜动效本身有多长。速率 = 本身时长 ÷ 时长
     func naturals(_ rows: [Shot]) async -> [Shot.ID: Double] {
-        let missing = rows.filter { naturalByContent[naturalKey($0)] == nil }
+        let revision = motionPackRevision
+        let missing = rows.filter { naturalByContent[naturalKey($0, revision: revision)] == nil }
         if !missing.isEmpty,
            let data = try? JSONEncoder().encode(missing),
            let json = try? await callString("return DMBridge.naturals(rows)", arguments: ["rows": String(decoding: data, as: UTF8.self)]),
            let found = try? JSONDecoder().decode([String: Double].self, from: Data(json.utf8)) {
             for shot in missing {
-                if let value = found[String(shot.id)] { naturalByContent[naturalKey(shot)] = value }
+                if let value = found[String(shot.id)] { naturalByContent[naturalKey(shot, revision: revision)] = value }
             }
         }
         var out: [Shot.ID: Double] = [:]
         for shot in rows {
-            out[shot.id] = naturalByContent[naturalKey(shot)]
+            out[shot.id] = naturalByContent[naturalKey(shot, revision: revision)]
         }
         return out
     }
 
-    private func naturalKey(_ shot: Shot) -> String {
+    private func naturalKey(_ shot: Shot, revision: Int) -> String {
         var plain = shot
         plain.duration = nil
-        return plain.json
+        return "\(revision)|\(plain.json)"
     }
 
     func durations(_ rows: [Shot]) async -> [Shot.ID: Double] {
-        let missing = rows.filter { secondsByContent[$0.json] == nil }
+        let revision = motionPackRevision
+        let missing = rows.filter { secondsByContent["\(revision)|\($0.json)"] == nil }
         if !missing.isEmpty,
            let data = try? JSONEncoder().encode(missing),
            let json = try? await callString("return DMBridge.durations(rows)", arguments: ["rows": String(decoding: data, as: UTF8.self)]),
            let found = try? JSONDecoder().decode([String: Double].self, from: Data(json.utf8)) {
             for shot in missing {
-                if let value = found[String(shot.id)] { secondsByContent[shot.json] = value }
+                if let value = found[String(shot.id)] { secondsByContent["\(revision)|\(shot.json)"] = value }
             }
         }
         var out: [Shot.ID: Double] = [:]
         for shot in rows {
-            out[shot.id] = secondsByContent[shot.json]
+            out[shot.id] = secondsByContent["\(revision)|\(shot.json)"]
         }
         return out
     }
@@ -358,10 +408,85 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         return try? JSONDecoder().decode(Shot.self, from: Data(json.utf8))
     }
 
+    struct MotionDataReply: Decodable {
+        let row: Shot?
+        let error: String?
+    }
+
+    func confirmMotionData(_ shot: Shot) async throws -> MotionDataReply {
+        let json = try await callString("return DMBridge.confirmMotionData(row)", arguments: ["row": shot.json])
+        return try JSONDecoder().decode(MotionDataReply.self, from: Data(json.utf8))
+    }
+
+    func exportIssues(_ shots: [Shot]) async throws -> [Shot.ID: String] {
+        let rows = String(decoding: try JSONEncoder().encode(shots), as: UTF8.self)
+        let json = try await callString("return DMBridge.exportIssues(rows)", arguments: ["rows": rows])
+        return try JSONDecoder().decode([Shot.ID: String].self, from: Data(json.utf8))
+    }
+
+    func regenerateMotion(
+        _ shot: Shot, item: MotionInfo, profile: AIProfile, key: String, onRepair: (String) -> Void = { _ in }
+    ) async throws -> MotionDataReply {
+        let arguments = ["row": shot.json, "id": item.id]
+        let input = try await callString("return DMBridge.motionInput(row, id)", arguments: arguments)
+        let system = """
+        为当前镜头重做动效数据。只输出一个镜头，tpl 固定为指定编号，line 保留原口播。
+        data 必须是 JSON 字符串。根据 fields 的字段类型和 minimum 的数量要求重组 source 里的数据。
+        保留真实标签、单位和原值。百分比字段用 0 到 100，例如 86% 写 86。时间序列只使用原文支持的时间点。
+        关系图的连线引用 nodes 中从 0 开始的位置。索引由你分配，数据数值必须在 source 中有出处。
+        确实无法从 source 凑够数据时，在 data 里写 pending:true，并在 note 里说明缺哪些字段或几项数据。
+        模板放不下时，在 note 里说明省略了什么。只输出符合格式的 JSON。
+        """
+        let user = """
+        目标动效：\(item.id) \(item.name)（\(item.desc)）
+        fields 只展示字段类型。minimum 是列表至少需要的项数。
+        \(input)
+        输出格式：{"rows":[{"line":"原口播","kind":"B","cat":"","tpl":"\(item.id)","visual":"","note":"","data":"{}"}]}
+        """
+        let client = AIClient(profile: profile, apiKey: key, enableThinking: true)
+        var feedback: String?
+        for attempt in 0..<2 {
+            try Task.checkCancellation()
+            let prompt = feedback.map { "\(user)\n上次的校验结果：\($0)\n根据上述原始数据和校验结果重做。只返回修正后的 JSON。" } ?? user
+            let result: MotionDataReply
+            do {
+                let reply = try await client.generate(system: system, user: prompt, schema: StoryboardPrompt.schema) { _ in }
+                try Task.checkCancellation()
+                result = try await checkMotionReply(reply, chapter: shot.chapter, arguments: arguments)
+            } catch AIError.emptyResponse {
+                result = MotionDataReply(row: nil, error: "服务返回了空内容，请直接输出一镜的 JSON")
+            } catch AIError.truncated {
+                result = MotionDataReply(row: nil, error: "结果被截断，请缩短画面说明并输出完整的一镜 JSON")
+            }
+            if result.row != nil || attempt == 1 { return result }
+            let reason = result.error ?? "缺少目标动效的数据"
+            feedback = reason
+            onRepair(reason)
+        }
+        return MotionDataReply(row: nil, error: feedback)
+    }
+
+    private func checkMotionReply(_ text: String, chapter: String, arguments: [String: String]) async throws -> MotionDataReply {
+        let rows: [Shot]
+        do {
+            rows = try StoryboardPrompt.decodeRows(text, chapter: chapter)
+        } catch {
+            return MotionDataReply(row: nil, error: "返回的 JSON 无法读取，请用 rows 数组和有效的 data 字段")
+        }
+        guard rows.count == 1, let generated = rows.first else {
+            return MotionDataReply(row: nil, error: "需要恰好一镜，AI 返回了 \(rows.count) 镜")
+        }
+        var payload = arguments
+        payload["generated"] = generated.json
+        let json = try await callString("return DMBridge.applyMotionData(row, id, generated)", arguments: payload)
+        return try JSONDecoder().decode(MotionDataReply.self, from: Data(json.utf8))
+    }
+
     // 把文档里的这一镜同步到画面。只改了元素调整时不重建，保留选中状态和时间
-    func sync(_ shot: Shot?) {
+    func sync(_ shot: Shot?, autoplay: Bool = false) {
         guard ready else {
-            queued = shot
+            let keepAutoplay = queued?.shot.id == shot?.id && queued?.autoplay == true
+            queued = shot.map { ($0, autoplay || keepAutoplay) }
             return
         }
         guard let shot else {
@@ -400,7 +525,10 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         }
         sceneError = nil
         let json = shot.json
-        Task { _ = try? await call("return await DMBridge.load(json, keep)", arguments: ["json": json, "keep": keep]) }
+        Task {
+            guard loadedID == shot.id, loadedBody == body else { return }
+            _ = try? await call("return await DMBridge.load(json, keep, autoplay)", arguments: ["json": json, "keep": keep, "autoplay": autoplay])
+        }
     }
 
     func playPause() { run("DMBridge.toggle()") }
@@ -420,6 +548,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
     }
 
     func resetElements() { run("DMBridge.resetElements()") }
+    func selectAllElements() { run("DMBridge.selectAll()") }
 
     func focusStage() {
         web.window?.makeFirstResponder(web)

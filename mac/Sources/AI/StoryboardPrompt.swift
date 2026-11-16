@@ -93,26 +93,28 @@ nonisolated enum StoryboardPrompt {
     // 把模型的回答变成镜头。外层 rows 加上 data 里的字段
     static func decodeRows(_ text: String, chapter: String) throws -> [Shot] {
         let body = stripFence(text)
-        guard let data = body.data(using: .utf8), let any = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let rows = any["rows"] as? [[String: Any]] else {
+        guard let data = body.data(using: .utf8), let any = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let rows = any["rows"] as? [[String: Any]], !rows.isEmpty else {
             throw AIError.server(200, "返回的不是约定的 JSON")
         }
-        return rows.compactMap { row -> Shot? in
+        return try rows.map { row -> Shot in
             var fields: [String: Any] = [:]
             if let s = row["data"] as? String, let d = s.data(using: .utf8), let inner = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
                 fields = inner
             } else if let inner = row["data"] as? [String: Any] {
                 fields = inner
+            } else {
+                throw AIError.server(200, "分镜的 data 不是有效的 JSON 对象")
             }
             for key in ["line", "kind", "cat", "tpl", "visual", "note"] {
                 if let v = row[key] as? String, !v.isEmpty { fields[key] = v }
             }
             fields["ch"] = chapter
-            guard let d = try? JSONSerialization.data(withJSONObject: fields), let shot = try? JSONDecoder().decode(Shot.self, from: d) else { return nil }
-            return shot
+            let data = try JSONSerialization.data(withJSONObject: fields)
+            return try JSONDecoder().decode(Shot.self, from: data)
         }
     }
 
-    private static func stripFence(_ text: String) -> String {
+    static func stripFence(_ text: String) -> String {
         var s = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if s.hasPrefix("```") {
             if let nl = s.firstIndex(of: "\n") { s = String(s[s.index(after: nl)...]) }

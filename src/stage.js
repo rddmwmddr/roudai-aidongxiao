@@ -63,7 +63,7 @@
       this.layers = layers && Object.keys(layers).length ? layers : null;
     }
 
-    begin(ctx, t) {
+    begin(ctx, t, clear = true) {
       this.x = ctx;
       this.T = t;
       this.d = 0;
@@ -80,7 +80,7 @@
       this.clipStack.length = 0;
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1;
-      if (this.layers) {
+      if (clear && this.layers) {
         // 背景被移动或变透明时，露出来的地方是黑的，不留上一帧
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.fillStyle = '#000';

@@ -57,6 +57,13 @@
     report();
   };
 
+  const postEditRow = (patch, label, id) => post({type: 'editRow', id, fields: JSON.stringify(patch), label});
+  let editorRaw = null;
+  const bindEditor = (raw, keepSelection) => {
+    editorRaw = raw;
+    editor.bind(raw, keepSelection);
+  };
+
   const editor = new root.DMEditor({
     host: stageEl,
     dock: document.getElementById('dock'),
@@ -74,8 +81,9 @@
       setPlaying(false);
     },
     play: (from, to) => {
+      if (!S.scene) return;
       S.t = from;
-      S.until = to;
+      S.until = Math.min(to, S.scene.duration);
       setPlaying(true);
     },
     invalidate: () => {
@@ -90,15 +98,22 @@
       report();
       post({type: 'commit', template: S.raw && S.raw.template, layers: JSON.stringify(layers), label});
     },
+    // 双击改字：改到的字段交给原生那边写进文档（一步撤销），写完会重新载入这一镜
+    editRow: (patch, label, id) => postEditRow(patch, label, id ?? S.row?.id),
+    onTyping: (on) => post({type: 'typing', on: !!on}),
     onSelect: (ids) => {
       post({type: 'selection', ids});
-      const id = ids.find(id => id.startsWith('user:'));
-      if (id && S.raw?.motion?.templateId === 'cohort-regroup') {
-        const motion = root.DMOpus.validate(S.raw.motion);motion.options.selectedId = id.slice(5);
-        S.raw.motion = motion;S.dirty = true;post({type:'motionObject', json:JSON.stringify(motion)});
-      }
+      const selectedId = ids.find(id => id.startsWith('user:'))?.slice(5);
+      const raw = S.raw, current = raw?.motion;
+      // 新镜头素材还在加载时，编辑器可能还显示着上一镜的元素。
+      if (!selectedId || raw !== editorRaw || current?.templateId !== 'cohort-regroup' || !Number.isSafeInteger(raw.id)) return;
+      if (current.options.selectedId === selectedId || !current.data.users.some((user) => user[current.fieldMappings.id] === selectedId)) return;
+      const motion = root.DMOpus.validate({...current, options: {...current.options, selectedId}});
+      raw.motion = motion;
+      S.dirty = true;
+      postEditRow({motion}, '选择受访者', raw.id);
     },
-    onElements: (list) => post({type: 'elements', list: JSON.stringify(list.map((e) => ({id: e.id, label: e.label, parent: e.parent, kind: e.kind, group: e.group, first: e.first, last: e.last})))}),
+    onElements: (list) => post({type: 'elements', list: JSON.stringify(list.map((e) => ({id: e.id, label: e.label, parent: e.parent, kind: e.kind, group: e.group, first: e.first, last: e.last, templateHidden: !!D.motionLayerDefaults?.(S.raw?.template)?.[e.id]?.hidden})))}),
     list: false,
     undo: false,
   });
@@ -115,12 +130,12 @@
         if (S.until != null && S.t >= S.until) {
           S.until = null;
           setPlaying(false);
-        }
-        if (S.t >= S.scene.duration) {
+        } else if (S.t >= S.scene.duration) {
           if (S.loop) S.t = 0;
           else {
             S.t = S.scene.duration;
             setPlaying(false);
+            if (S.row) post({type: 'ended', id: S.row.id});
           }
         }
         if (now - lastReport > 100) {
@@ -154,10 +169,12 @@
   }).observe(stageEl);
 
   addEventListener('keydown', (e) => {
-    if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (e.defaultPrevented || e.isComposing || e.composedPath().some((node) =>
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(node.tagName) || node.isContentEditable)) return;
     if (e.code === 'Space') {
+      if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
       e.preventDefault();
-      api.toggle();
+      if (!e.repeat) api.toggle();
     } else if ((e.code === 'ArrowDown' || e.code === 'ArrowUp') && !editor.sel.length) {
       e.preventDefault();
       post({type: 'nav', dir: e.code === 'ArrowDown' ? 1 : -1});
@@ -169,6 +186,26 @@
     const u8 = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
     return u8.buffer;
+  };
+
+  const renderPreview = async (row, id) => {
+    const raw = {...row, template: id, tpl: id};
+    if (raw.motion) await D.Opus.prepareAssets(raw);
+    const canvas = document.createElement('canvas');
+    canvas.width = 480;
+    canvas.height = 270;
+    const g = canvas.getContext('2d', {alpha: false});
+    const scene = D.createScene(raw, 480);
+    if (!Number.isFinite(scene.duration) || scene.duration <= 0) throw new Error('无法计算动效时长');
+    const count = Math.max(12, Math.min(36, Math.round(scene.duration * 10)));
+    const frames = [];
+    for (let i = 0; i < count; i++) {
+      const t = (scene.duration * i) / (count - 1) * 0.995;
+      if (raw.motion) await D.Opus.prepareFrame(raw, t);
+      scene.draw(g, t);
+      frames.push(canvas.toDataURL('image/jpeg', 0.72));
+    }
+    return {frames, seconds: Math.min(scene.duration, 4), duration: scene.duration, sample: !!row.sampleData};
   };
   const bufToB64 = (u8) => new Promise((ok, no) => {
     const r = new FileReader();
@@ -184,25 +221,44 @@
     motionCSV(json) { return root.DMOpus.csv(JSON.parse(json)); },
     importMotionCSV(json, csv) { return JSON.stringify(root.DMOpus.importTable(JSON.parse(json), csv)); },
     // ---------- 预览 ----------
-    async load(rowJSON, keepTime) {
+    async load(rowJSON, keepTime, autoplay = false) {
       const row = JSON.parse(rowJSON);
+      keepTime = keepTime && S.row?.id === row.id;
       S.row = row;
       S.scene = null;
       S.raw = Object.assign({}, row, {template: row.tpl});
-      if (!keepTime) {
+      if (!keepTime || autoplay) {
         S.t = 0;
         S.until = null;
       }
       const raw = S.raw;
-      try { await D.Opus.prepareAssets(raw); } catch (e) { post({type: "sceneError", message: e.message}); throw e; }
-      if (raw !== S.raw) return 0;
+      if (raw.motion) {
+        try {
+          await D.Opus.prepareAssets(raw);
+        } catch (e) {
+          if (raw !== S.raw) return 0;
+          S.playing = false;
+          errEl.hidden = false;
+          errEl.textContent = e.message;
+          post({type: 'sceneError', message: e.message});
+          report();
+          return 0;
+        }
+        if (raw !== S.raw) return 0;
+      }
       build();
+      S.playing = !!S.scene && (autoplay || (keepTime && S.playing));
       if (S.scene) {
         // 切到一镜时停在最后一帧：所有元素都看得见，马上就能调。按空格从头播放
-        if (!keepTime) S.t = row.motion ? row.motion.timeline.currentTime : Math.max(0, S.scene.duration - 0.05);
+        if (!keepTime && !autoplay) {
+          S.t = row.motion?.timeline?.currentTime ?? Math.max(0, S.scene.duration - 0.05);
+        }
         S.t = Math.min(S.t, S.scene.duration);
-        await D.Opus.prepareFrame(S.raw, S.t);
-        editor.bind(S.raw);
+        if (raw.motion) {
+          await D.Opus.prepareFrame(raw, S.t);
+          if (raw !== S.raw) return 0;
+        }
+        bindEditor(raw);
         D.ensureGlyphs(rowJSON).then((loaded) => {
           if (loaded) build();
         }).catch(() => {});
@@ -214,6 +270,9 @@
       S.row = null;
       S.raw = null;
       S.scene = null;
+      S.playing = false;
+      S.t = 0;
+      S.until = null;
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, cv.width, cv.height);
       errEl.hidden = true;
@@ -238,7 +297,8 @@
       report();
     },
     play() {
-      if (S.scene && S.t >= S.scene.duration - 0.1) S.t = 0;
+      if (!S.scene) return;
+      if (S.t >= S.scene.duration - 0.1) S.t = 0;
       setPlaying(true);
     },
     pause() {
@@ -260,7 +320,7 @@
     },
     toggleHidden(id, hidden) {
       const o = editor.layers[id] || (editor.layers[id] = {});
-      if (hidden) o.hidden = true;
+      if (hidden || D.motionLayerDefaults(S.raw?.template)?.[id]?.hidden) o.hidden = hidden;
       else delete o.hidden;
       editor._apply();
       editor._commit(hidden ? '隐藏元素' : '显示元素');
@@ -285,6 +345,32 @@
     // ---------- 颜色：这一镜能换哪些颜色，现在是什么 ----------
     colorRoles(rowJSON) {
       return JSON.stringify(D.colorRoles(JSON.parse(rowJSON)));
+    },
+    sampleSizeInfo(id, line) {
+      const bound = D.motionUsesSampleSize(id);
+      return JSON.stringify({bound, detected: bound ? root.DMParser.sampleSize(line) : null});
+    },
+    installMotionPack(json) {
+      try {
+        const result = D.installMotionPack(JSON.parse(json));
+        if (S.raw) {
+          build();
+          if (S.scene) {
+            bindEditor(S.raw, true);
+            S.t = Math.min(S.t, S.scene.duration);
+          } else {
+            S.playing = false;
+            editor.select([]);
+          }
+          report();
+        }
+        return JSON.stringify(result);
+      } catch (e) {
+        return JSON.stringify({error: e.message});
+      }
+    },
+    selectAll() {
+      editor.selectAll();
     },
     // ---------- 模板 ----------
     templates() {
@@ -350,25 +436,40 @@
       return JSON.stringify(out);
     },
     // 挑动效时的预览：用这一镜自己的字把这个动效演一遍。缺数据的放样例，并说明是样例
-    async preview(rowJSON, id) {
-      const row = D.adopt(JSON.parse(rowJSON), id);
-      await D.Opus.prepareAssets(Object.assign({}, row, {template:id}));
-      const canvas = document.createElement('canvas');
-      canvas.width = 480;
-      canvas.height = 270;
-      const g = canvas.getContext('2d', {alpha: false});
+    async preview(rowJSON, id, exact = false) {
+      const source = JSON.parse(rowJSON);
       try {
-        const scene = D.createScene(Object.assign({}, row, {template: id, tpl: id}), 480);
-        const count = Math.max(12, Math.min(36, Math.round(scene.duration * 10)));
-        const frames = [];
-        for(let i=0;i<count;i++){const t=(scene.duration*i)/(count-1)*0.995;await D.Opus.prepareFrame(Object.assign({},row,{template:id}),t);scene.draw(g,t);frames.push(canvas.toDataURL('image/jpeg',0.72));}
-        return JSON.stringify({frames, seconds: Math.min(scene.duration, 4), sample: !!row.sampleData});
+        return JSON.stringify(await renderPreview(exact ? source : D.adopt(source, id), id));
       } catch (e) {
+        if (exact) return JSON.stringify({error: e.message});
         return JSON.stringify({frames: [], seconds: 0, sample: false});
       }
     },
     adopt(rowJSON, id) {
       return JSON.stringify(D.adopt(JSON.parse(rowJSON), id));
+    },
+    motionInput(rowJSON, id) {
+      const source = D.motionSource(JSON.parse(rowJSON));
+      // 只发当前镜头的内容，不发画面调整、内部编号和样例备份
+      for (const k of ['id', 'no', 'ch', 'layers', 'colors', 'theme', 'dur', 'speed', 'hold']) delete source[k];
+      delete source.note;
+      const sample = D.motionData(D.sampleOf(id));
+      const fieldShape = (value) => Array.isArray(value)
+        ? value.slice(0, Array.isArray(value[0]) ? 1 : 2).map(fieldShape)
+        : value && typeof value === 'object'
+          ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, fieldShape(v)]))
+          : typeof value;
+      return JSON.stringify({source, fields: fieldShape(sample), minimum: D.motionMinimum(id)});
+    },
+    applyMotionData(rowJSON, id, generatedJSON) {
+      return JSON.stringify(D.applyMotionData(JSON.parse(rowJSON), id, JSON.parse(generatedJSON)));
+    },
+    confirmMotionData(rowJSON) {
+      return JSON.stringify(D.confirmMotionData(JSON.parse(rowJSON)));
+    },
+    exportIssues(rowsJSON) {
+      const rows = JSON.parse(rowsJSON);
+      return JSON.stringify(Object.fromEntries(rows.map((row) => [row.id, D.exportIssue(row)]).filter(([, reason]) => reason)));
     },
     libraryPrompt() {
       return D.libraryPrompt();
@@ -417,11 +518,7 @@
       return JSON.stringify(row || null);
     },
     reviewRows(rowsJSON, source) {
-      const rows = JSON.parse(rowsJSON).map(row => {
-        if(row.motionInput) { row.motion=root.DMOpus.fromAI(row.tpl,row.motionInput,row.motionInput.style?.title||row.line);delete row.motionInput; }
-        return row;
-      });
-      return JSON.stringify(root.DMBoard.reviewRows(rows, source));
+      return JSON.stringify(root.DMBoard.reviewRows(JSON.parse(rowsJSON), source));
     },
     // ---------- 导出 ----------
     probes(rowJSON) {

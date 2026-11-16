@@ -68,8 +68,6 @@
       try {
         row.motion = O.validate(next);
         delete row.dur;
-        delete row.sampleData;
-        delete row.pending;
         rebuild(row, false);
         render();
       } catch (e) {

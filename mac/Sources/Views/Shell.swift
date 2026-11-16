@@ -144,6 +144,7 @@ struct SearchField: View {
                 .textFieldStyle(.plain)
                 .focused(focus)
                 .accessibilityLabel("搜索镜头")
+                .onSubmit { focus.wrappedValue = false }
             if !text.isEmpty {
                 Button {
                     text = ""

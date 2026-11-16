@@ -52,6 +52,7 @@ struct CommitField: View {
             }
             .onSubmit {
                 if draft != text { text = draft }
+                focused = false
             }
     }
 }
@@ -60,19 +61,20 @@ struct NumberField: View {
     let title: String
     @Binding var value: Double?
     var prompt: String?
+    var validate: (Double) -> Bool = { _ in true }
     @State private var draft = ""
     @FocusState private var focused: Bool
 
     private func show(_ v: Double?) -> String {
         guard let v else { return "" }
-        return v.rounded() == v ? String(Int(v)) : String(v)
+        return Int(exactly: v).map(String.init) ?? String(v)
     }
 
     private func commit() {
         let trimmed = draft.trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty {
             if value != nil { value = nil }
-        } else if let v = Double(trimmed) {
+        } else if let v = Double(trimmed), v.isFinite, validate(v) {
             if v != value { value = v }
         } else {
             draft = show(value)
@@ -91,7 +93,10 @@ struct NumberField: View {
             .onChange(of: focused) { f in
                 if !f { commit() }
             }
-            .onSubmit(commit)
+            .onSubmit {
+                commit()
+                focused = false
+            }
     }
 }
 
@@ -189,11 +194,23 @@ struct ShotForm: View {
     @ObservedObject var stage: StageController
     let onNotice: (String) -> Void
     @State private var natural: Double?
+    @State private var dataIssue: String?
+    @State private var checkingData = false
+    @State private var sampleSizeInfo: SampleSizeInfo?
+
+    private struct SampleSizeInfo: Decodable {
+        let bound: Bool
+        let detected: Int?
+    }
+
+    private var showsSampleSize: Bool {
+        sampleSizeInfo?.bound == true || shot.fields["sampleSize"] != nil
+    }
 
     private var naturalStamp: String {
         var plain = shot
         plain.duration = nil
-        return plain.json
+        return "\(stage.motionPackRevision)|\(plain.json)"
     }
 
     private var rate: Binding<Double?> {
@@ -213,29 +230,45 @@ struct ShotForm: View {
         Dictionary(uniqueKeysWithValues: stage.templates.map { ($0.id, $0.name) })
     }
 
-    private var hasContent: Bool {
-        shot.fields["groups"] != nil || shot.fields["series"] != nil || shot.fields["lines"] != nil
+    private var hasMotionConfig: Bool {
+        shot.fields["motion"] != nil
+    }
+
+    private var hasLegacyData: Bool {
+        !hasMotionConfig && ["groups", "series", "lines"].contains { shot.fields[$0] != nil }
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 6) {
-                if !shot.note.isEmpty {
-                    Card {
-                        noteRow.padding(12)
-                    }
+                if shot.isPending || dataIssue != nil {
+                    Card { dataStatus.padding(12) }
                 }
-                if shot.fields["motion"] != nil {
-                    MotionConfigEditor(shot: $shot, stage: stage)
+                if !shot.note.isEmpty && !shot.usesSampleData {
+                    Card { noteRow.padding(12) }
                 }
-                if hasContent && shot.fields["motion"] == nil {
+                if showsSampleSize || hasLegacyData {
                     SectionCard(title: "内容", symbol: "text.alignleft") {
                         VStack(alignment: .leading, spacing: 12) {
-                            if shot.fields["groups"] != nil { MetricsEditor(shot: $shot) }
-                            if shot.fields["series"] != nil { SeriesEditor(shot: $shot) }
-                            if shot.fields["lines"] != nil { LinesEditor(shot: $shot) }
+                            if showsSampleSize {
+                                PropertyRow("样本") {
+                                    NumberField(
+                                        title: "样本人数", value: number("sampleSize"),
+                                        prompt: sampleSizeInfo?.detected.map { "\($0)（口播识别）" } ?? "填写人数",
+                                        validate: { $0 >= 1 && $0 <= 9_007_199_254_740_991 && $0.rounded() == $0 }
+                                    )
+                                }
+                            }
+                            if hasLegacyData {
+                                if shot.fields["groups"] != nil { MetricsEditor(shot: $shot) }
+                                if shot.fields["series"] != nil { SeriesEditor(shot: $shot) }
+                                if shot.fields["lines"] != nil { LinesEditor(shot: $shot) }
+                            }
                         }
                     }
+                }
+                if hasMotionConfig {
+                    MotionConfigEditor(shot: $shot, stage: stage)
                 }
                 SectionCard(title: "口播", symbol: "waveform") {
                     CommitField(title: "口播", text: $shot.line, axis: .vertical, lineLimit: 1...12)
@@ -243,7 +276,7 @@ struct ShotForm: View {
                 SectionCard(title: "属性", symbol: "slider.horizontal.3") {
                     properties
                 }
-                if shot.fields["motion"] == nil {
+                if !hasMotionConfig {
                     ColorRows(shot: $shot, stage: stage)
                     ExtraFields(shot: $shot)
                 }
@@ -253,7 +286,63 @@ struct ShotForm: View {
         }
         .scrollIndicators(.never)
         .textFieldStyle(.plain)
-        .task(id: naturalStamp) { natural = (await stage.naturals([shot]))[shot.id] }
+        .task(id: naturalStamp) {
+            natural = (await stage.naturals([shot]))[shot.id]
+        }
+        .task(id: "\(stage.motionPackRevision)|\(shot.template)|\(shot.line)") {
+            let json = try? await stage.callString("return DMBridge.sampleSizeInfo(id, line)", arguments: [
+                "id": shot.template, "line": shot.line,
+            ])
+            if !Task.isCancelled {
+                sampleSizeInfo = json.flatMap { try? JSONDecoder().decode(SampleSizeInfo.self, from: Data($0.utf8)) }
+            }
+        }
+        .task(id: "\(stage.motionPackRevision)|\(shot.json)") {
+            dataIssue = nil
+            let original = shot
+            guard !original.usesSampleData else { return }
+            let issues = try? await stage.exportIssues([original])
+            if !Task.isCancelled { dataIssue = issues?[original.id] }
+        }
+    }
+
+    private var dataStatus: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(shot.usesSampleData ? "正在使用样例数据" : "第 \(shot.no) 镜的数据", systemImage: "exclamationmark.circle")
+                .foregroundStyle(.orange)
+            Text(dataIssue ?? (shot.usesSampleData
+                ? "把下方的样例换成这一镜的真实数据，再确认导出。"
+                : "补齐下方的动效数据，再确认导出。"))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if shot.isPending {
+                Button(checkingData ? "正在检查…" : "确认当前数据，可导出") {
+                    Task { await confirmData() }
+                }
+                .disabled(checkingData)
+                .named("标记为已确认")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func confirmData() async {
+        checkingData = true
+        defer { checkingData = false }
+        let original = shot
+        do {
+            let reply = try await stage.confirmMotionData(original)
+            guard shot == original else { return }
+            if let next = reply.row {
+                shot = next
+                dataIssue = nil
+                onNotice("数据已确认，可以导出")
+            } else {
+                dataIssue = reply.error
+            }
+        } catch {
+            if shot == original { dataIssue = "数据检查失败，请重试。" }
+        }
     }
 
     private var noteRow: some View {
@@ -265,7 +354,6 @@ struct ShotForm: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button {
                 shot.note = ""
-                shot.fields["sampleData"] = nil
                 onNotice("已确认")
             } label: {
                 Image(systemName: "checkmark")
@@ -316,7 +404,7 @@ private struct ExtraFields: View {
     @State private var problem: String?
     @FocusState private var focused: Bool
 
-    private static let knownKeys: Set<String> = ["id", "no", "ch", "kind", "cat", "line", "visual", "tpl", "note", "pending", "sampleData", "groups", "series", "lines", "layers", "speed", "hold", "dur", "theme"]
+    private static let knownKeys: Set<String> = ["id", "no", "ch", "kind", "cat", "line", "visual", "tpl", "note", "pending", "sampleData", "sampleBackup", "groups", "series", "lines", "layers", "overlayText", "sampleSize", "speed", "hold", "dur", "theme"]
 
     private var hasExtra: Bool {
         shot.fields.keys.contains { !Self.knownKeys.contains($0) }
@@ -324,7 +412,7 @@ private struct ExtraFields: View {
 
     var body: some View {
         if hasExtra {
-            SectionCard(title: "其他字段", symbol: "curlybraces", startsCollapsed: true) {
+            SectionCard(title: "其他字段", symbol: "curlybraces", startsCollapsed: !shot.isPending) {
                 VStack(alignment: .leading, spacing: 6) {
                     TextEditor(text: $draft)
                         .font(.system(.footnote, design: .monospaced))
@@ -625,7 +713,7 @@ private struct ColorRows: View {
                 }
             }
         }
-        .task(id: stamp) { roles = await stage.colorRoles(shot) }
+        .task(id: "\(stage.motionPackRevision)|\(stamp)") { roles = await stage.colorRoles(shot) }
         .task(id: pending) {
             guard !pending.isEmpty else { return }
             try? await Task.sleep(for: .milliseconds(350))

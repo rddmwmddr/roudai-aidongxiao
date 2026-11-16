@@ -8,17 +8,22 @@
   const CN = {零: 0, 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9};
 
   const cnToNumber = (s) => {
-    if (s.includes('点')) {
-      const [a, b] = s.split('点');
-      const dec = Array.from(b).map((c) => CN[c]).join('');
-      return `${cnToNumber(a)}.${dec}`;
-    }
-    if (s === '一百') return 100;
-    if (s.includes('十')) {
-      const [a, b] = s.split('十');
-      return (a ? CN[a] : 1) * 10 + (b ? CN[b] : 0);
-    }
-    return CN[s];
+    const [whole, fraction] = s.split('点');
+    const digits = (text) => Array.from(text, (c) => c === '〇' ? 0 : CN[c]).join('');
+    let number;
+    if (/[十百千]/.test(whole)) {
+      let total = 0;
+      let digit = 0;
+      for (const c of whole) {
+        const base = {十: 10, 百: 100, 千: 1000}[c];
+        if (base) {
+          total += (digit || 1) * base;
+          digit = 0;
+        } else digit = CN[c] || 0;
+      }
+      number = total + digit;
+    } else number = Number(digits(whole));
+    return fraction ? Number(`${number}.${digits(fraction)}`) : number;
   };
 
   const normalizeText = (input) =>
@@ -28,6 +33,49 @@
       .replace(/．/g, '.')
       .replace(/百分之([零一二两三四五六七八九十百点]+)/g, (_, n) => `${cnToNumber(n)}%`)
       .replace(/\s+/g, '');
+
+  // 只从明确的人数口径取数。同一镜出现多个不同的口径时留给用户确认。
+  const PEOPLE_NUMBER = '(?:\\d+(?:\\.\\d+)?[万亿]?|[零〇一二两三四五六七八九十百千万亿]+)';
+  const PEOPLE_UNIT = '(?:人|位|名)(?!左右|上下|以上|以下|到|至|[~～—–-])';
+  const samplePatterns = [
+    new RegExp('(?:总共|总计|一共|合计|共计|共|累计)(?:有|调查了|调研了|访问了|询问了)?(' + PEOPLE_NUMBER + ')' + PEOPLE_UNIT, 'g'),
+    new RegExp('(?:(?:调查|调研|访问|采访|询问)(?:了|到|的)?|问了)(' + PEOPLE_NUMBER + ')' + PEOPLE_UNIT, 'g'),
+    new RegExp('(?:样本人数|样本量|受访人数|调查人数|调研人数)(?:为|是|有|:)?(' + PEOPLE_NUMBER + ')(?=' + PEOPLE_UNIT + '|[，,。；;！!？?]|$)', 'g'),
+    new RegExp('(' + PEOPLE_NUMBER + ')' + PEOPLE_UNIT + '(?:受访者|用户|朋友)?(?:参加了?|参与了?|接受了?)(?:本次|这次)?(?:调查|调研|访问)', 'g'),
+    new RegExp('(?:^|[，,。；;])(?:在|这)?(' + PEOPLE_NUMBER + ')' + PEOPLE_UNIT + '(?:[^，,。；;0-9%]{0,16})[中里](?=[，,。；;]|$)', 'g'),
+    new RegExp('^(' + PEOPLE_NUMBER + ')人[。！？!?]?$', 'g'),
+  ];
+
+  const parsePeopleNumber = (token) => {
+    if (/^\d/.test(token)) {
+      const unit = token.slice(-1);
+      if (unit === '万' || unit === '亿') return Number(token.slice(0, -1) + (unit === '万' ? 'e4' : 'e8'));
+      return Number(token);
+    }
+    if (/[百千万亿][一二两三四五六七八九]$/.test(token)) return NaN;
+    const count = (text) => {
+      if (!text) return 0;
+      const parts = text.split('万');
+      return parts.length === 1 ? cnToNumber(text)
+        : parts.length === 2 && parts[0] ? cnToNumber(parts[0]) * 1e4 + cnToNumber(parts[1]) : NaN;
+    };
+    const parts = token.split('亿');
+    return parts.length === 1 ? count(token)
+      : parts.length === 2 && parts[0] ? count(parts[0]) * 1e8 + count(parts[1]) : NaN;
+  };
+
+  const sampleSize = (line) => {
+    if (!line) return null;
+    const text = normalizeText(String(line).normalize('NFKC')).replace(/(?<!\d)\d{1,3}(?:,\d{3})+(?!\d)/g, (n) => n.replaceAll(',', ''));
+    const sizes = new Set();
+    for (const pattern of samplePatterns) {
+      for (const [, token] of text.matchAll(pattern)) {
+        const value = parsePeopleNumber(token);
+        if (Number.isSafeInteger(value) && value > 0) sizes.add(value);
+      }
+    }
+    return sizes.size === 1 ? sizes.values().next().value : null;
+  };
 
   // 念出来有多少个音节，用来估时间
   const numberSyllables = (n) => {
@@ -271,6 +319,6 @@
     return {text, groups: merged, explain, count: metrics.length, duration: timeAt(text.length)};
   };
 
-  root.DMParser = {parseCopy, syllables, normalizeText, RATE};
+  root.DMParser = {parseCopy, syllables, normalizeText, cnToNumber, sampleSize, RATE};
   if (typeof module === 'object' && module.exports) module.exports = root.DMParser;
 })(typeof window !== 'undefined' ? window : globalThis);
