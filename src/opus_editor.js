@@ -40,7 +40,7 @@
             .join("")}</details>`,
       )
       .join("");
-    return `<div class="block" id="motionEditor"><h3>调研数据 · AI 共用配置</h3><div id="motionError" role="alert" style="color:#c43b50"></div>
+    return `${D.Audio.editorHTML(c)}<div class="block" id="motionEditor"><h3>调研数据 · AI 共用配置</h3><div id="motionError" role="alert" style="color:#c43b50"></div>
       <details open><summary>编辑数据表格 / 粘贴 CSV</summary><div style="overflow:auto;max-height:420px"><table id="motionTable">${O.table(
         c,
       )
@@ -51,6 +51,9 @@
         .join(
           "",
         )}</table></div><textarea id="motionCSV" rows="6">${esc(O.csv(c))}</textarea><button id="motionCSVApply">应用粘贴数据</button><label>导入 CSV <input id="motionCSVFile" type="file" accept=".csv,.tsv,.txt"></label></details>
+      ${c.templateId === "text-match-cut" ? c.data.pages.map((r,i)=>`<label>导入第${i+1}页报道截图（focusX/Y/Width/Height 在表格中编辑，0–1）<input data-media="article:${i}" type="file" accept="image/png,image/jpeg,image/webp"></label>`).join('') : ""}
+      ${c.templateId === "magazine-letters" ? `<label>剪字文案 <input id="paperText" value="${esc(c.data.letters.map(r=>r.text).join(''))}"></label><button id="paperLettersApply">按文字更新字片</button>` : ""}
+      ${c.templateId === "paper-cutout" ? '<label>导入或替换图片 / 透明 PNG <input data-media="paper" type="file" accept="image/png,image/jpeg,image/webp"></label>' : ""}
       ${c.templateId === "kinetic-narration" ? '<label>导入 SRT/VTT <input id="motionSRT" type="file" accept=".srt,.vtt,.txt"></label>' : ""}
       ${c.templateId === "split-compare" ? ["left", "right"].map((side) => `<label>${side === "left" ? "左侧" : "右侧"}图片或视频 <input data-media="${side}" type="file" accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"></label>`).join("") : ""}
       ${c.templateId === "product-scene-focus" ? '<label>场景本地图片 <input data-media="asset" type="file" accept="image/png,image/jpeg,image/webp"></label>' : ""}
@@ -66,16 +69,19 @@
       };
     const apply = (next) => {
       try {
+        const mediaOpen=document.getElementById("mediaEditor")?.open;
         row.motion = O.validate(next);
         delete row.dur;
         delete row.sampleData;
         delete row.pending;
         rebuild(row, false);
         render();
+        if(mediaOpen)document.getElementById("mediaEditor").open=true;
       } catch (e) {
         error(e);
       }
     };
+    D.Audio.bindEditor(row,apply,time,error);
     document.querySelectorAll("[data-motion]").forEach(
       (el) =>
         (el.onchange = () => {
@@ -156,6 +162,7 @@
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     };
+    if ($("paperLettersApply")) $("paperLettersApply").onclick=()=>{try{const c=D.Opus.configOf(row);c.data.letters=O.paperLetters($("paperText").value,c.data.letters);apply(c)}catch(e){error(e)}};
     if ($("motionSRT"))
       $("motionSRT").onchange = async (e) => {
         try {
@@ -174,15 +181,17 @@
         (el.onchange = () => {
           const f = el.files[0];
           if (!f) return;
-          if (f.size > 100 * 1024 * 1024) {
-            error(new Error("素材上限100MB"));
+          if (f.size > ((el.dataset.media === "paper" || el.dataset.media.startsWith("article:")) ? 12 : 100) * 1024 * 1024) {
+            error(new Error((el.dataset.media === "paper" || el.dataset.media.startsWith("article:")) ? "纸张图片上限12MB" : "素材上限100MB"));
             return;
           }
           const reader = new FileReader();
           reader.onload = () => {
             const c = D.Opus.configOf(row),
               side = el.dataset.media;
-            if (side === "asset") c.options.asset = reader.result;
+            if (side.startsWith("article:")) c.data.pages[Number(side.slice(8))].image=reader.result;
+            else if (side === "paper") c.data.items[0].src=reader.result;
+            else if (side === "asset") c.options.asset = reader.result;
             else if (side.startsWith("event:"))
               c.data.events[Number(side.slice(6))].image = reader.result;
             else

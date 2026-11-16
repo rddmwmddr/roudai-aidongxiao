@@ -4,9 +4,9 @@
 
 <p align="center">口播文稿变动效视频。导入文稿或 A-roll，生成分镜，拖片段，换效果，导出 MP4。</p>
 
-<p align="center"><b><a href="https://github.com/rddmwmddr/roudai-aidongxiao/releases/latest/download/RouDaiAiDongXiao.dmg">下载 dmg</a></b> · <a href="https://ahuamiao.com/sites/other/roudai-tools.html#motion">官网和图文教程</a></p>
+<p align="center"><b><a href="https://github.com/rddmwmddr/roudai-aidongxiao/releases/download/v1.6.0-preview.1/RouDaiAiDongXiao-Research-1.6.0-preview.1.dmg">下载 1.6 调研预览版</a></b> · <a href="https://github.com/rddmwmddr/roudai-aidongxiao/releases/tag/v1.3.0">1.3 公证正式版</a> · <a href="https://ahuamiao.com/sites/other/roudai-tools.html#motion">官网和图文教程</a></p>
 
-<p align="center">macOS 13 及以上 · A-roll 识别：macOS 26 及以上 · Apple 芯片和 Intel 通用 · Apple 公证</p>
+<p align="center">macOS 13 及以上 · A-roll 识别：macOS 26 及以上 · Apple 芯片和 Intel 通用 · 1.6 预览版为本地临时签名、未经公证；1.3 正式版已公证</p>
 
 ![剪辑台](docs/screenshots/board.jpg)
 
@@ -75,6 +75,12 @@
 ## 教程
 
 [官网教程](https://ahuamiao.com/sites/other/roudai-tools.html#m-tutorial)：十一步，一步一张图。
+
+## 纸张与拼贴（1.6 本地开发版）
+
+新增文字匹配剪辑、纸张剪贴、折纸展开、杂志剪字。在「动效 → 纸张与拼贴」选择，右上角「这一镜」编辑内容、素材及参数。支持中文、固定 seed、保存重开和逐帧导出。
+
+[参数与 AI 调用](docs/PAPER.md) · [文字、停顿与音效](docs/MOTION_MEDIA.md) · 示例工程 `examples/paper/可编辑文字-中途停顿-音效.dmboard`。暂停后双击纸面文字可复制、粘贴和修改；「这一镜 → 中途停顿与音效」支持输入或拖动停顿、音效导入编辑及数字自动节拍。
 
 ## 重构调研数据动效（1.4 预览版）
 

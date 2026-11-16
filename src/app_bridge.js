@@ -53,6 +53,8 @@
   const setPlaying = (on) => {
     if (S.playing === on) return;
     S.playing = on;
+    if(on && S.raw?.motion?.audio?.enabled)D.Audio.prepare().resume().catch(()=>{});
+    D.Audio?.sync(S.raw?.motion,S.t,on);
     S.dirty = true;
     report();
   };
@@ -103,6 +105,7 @@
     undo: false,
   });
 
+  D.PaperText.bind({surface:editor.root,canvas:cv,raw:()=>S.raw,time:()=>S.t,pause:()=>setPlaying(false),commit:motion=>{S.raw.motion=motion;post({type:'motionObject',json:JSON.stringify(motion)});build();S.dirty=true}});
   let lastNow = performance.now();
   let lastReport = 0;
   let frameBusy = false;
@@ -110,6 +113,7 @@
     const dt = Math.min(0.1, (now - lastNow) / 1000);
     lastNow = now;
     if (S.scene) {
+      D.Audio.sync(S.raw?.motion,S.t,S.playing);
       if (S.playing) {
         S.t += dt;
         if (S.until != null && S.t >= S.until) {

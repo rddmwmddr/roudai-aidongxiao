@@ -30,7 +30,7 @@ struct OpusTests {
         #expect(stage.catalog.filter { $0.category == "research" }.count == 20)
         #expect(stage.catalog.filter { $0.category == "research-presets" }.count == 3)
         let json = try await stage.callString("""
-            const configs=[...DMOpus.IDS.map(DMOpus.defaults),...Object.keys(DMOpus.PRESETS).map(DMOpus.preset)];
+            const configs=[...DMOpus.IDS.filter(id=>!DMOpus.PAPER_IDS.includes(id)).map(DMOpus.defaults),...Object.keys(DMOpus.PRESETS).map(DMOpus.preset)];
             configs.forEach(c=>{c.timeline.currentTime=1.25});
             return JSON.stringify({title:'原生验收 · 演示数据',rows:configs.map((c,i)=>DMOpus.row(c,i+1))});
             """)

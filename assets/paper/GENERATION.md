@@ -1,0 +1,7 @@
+# Original newsprint material
+
+Asset: `newsprint-relief-v1.png`. Generated with the built-in imagegen tool on 2026-11-16. No Paper Animator image, texture, article or source code was supplied or copied. The image contains no printed text; all App typography remains editable Canvas content. Runtime embedding supports fully offline use. Keep this provenance with the asset.
+
+Final prompt:
+
+Use case: photorealistic-natural. Asset type: original blank paper material texture for an editable editorial animation, landscape 16:9. Primary request: a realistic macro photograph of thin off-white uncoated newsprint that has been gently crumpled once and opened flat again. Full-bleed paper surface, the sheet fills the entire image with NO visible edges, no surrounding tabletop. Irregular broad shallow undulations, a few branching diagonal fold creases, soft natural raking light from upper left producing subtle broad grey shadows and narrow pale ridges; fine dense paper fibers and faint newsprint grain visible. Neutral warm grey-white, mostly light, no yellow aging. Wrinkles are tactile and varied, not evenly spaced and not a grid of folded rectangles. Centre area calm enough to overlay readable printed words. Camera directly overhead, orthographic, sharp surface detail across the frame. NO text, no letters, no symbols, no printed content, no logo, no borders, no watermark, no torn holes. Restrained contrast; shadows never black. This is a brand new original material, not a copy of any reference texture.

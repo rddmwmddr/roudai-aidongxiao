@@ -5,6 +5,8 @@
   else root.DMOpus = api;
 })(typeof window === "object" ? window : globalThis, function () {
   "use strict";
+  const PAPER = typeof module === "object" && module.exports ? require("./paper_specs.js") : globalThis.DMPaperSpec;
+  const MEDIA = typeof module === "object" && module.exports ? require("./motion_media_spec.js") : globalThis.DMMediaSpec;
   const VERSION = "8f1b78a25d0cf310c9bf904d434285046c4ed25a/canvas-1";
   const IDS = [
     "comparison-dumbbell",
@@ -27,6 +29,7 @@
     "research-map-journey",
     "decision-path-explainer",
     "product-scene-focus",
+    ...PAPER.ids,
   ];
   const clone = (v) => JSON.parse(JSON.stringify(v));
   const fail = (s) => {
@@ -313,6 +316,7 @@
       },
     },
   };
+  Object.assign(RESEARCH, PAPER.specs);
   for (const [id, x] of Object.entries(RESEARCH)) OPTIONS[id] = x.options;
 
   const ADVANCED = {
@@ -1071,13 +1075,13 @@
     const result = {
       schemaVersion: 1,
       templateId: id,
-      templateVersion: VERSION,
+      templateVersion: PAPER.ids.includes(id) ? PAPER.VERSION : VERSION,
       data,
       style: {
         title,
         subtitle: "重构调研 · 演示数据，非真实研究结论",
         background: "#F7F1E8",
-        ink: "#243449",
+        ink: id === "text-match-cut" ? "#25251F" : "#243449",
         accent: "#227F77",
         beforeColor: "#9AA7B7",
         afterColor: "#227F77",
@@ -1103,6 +1107,7 @@
           "#4B92A6",
         ],
       },
+      audio: MEDIA.defaults(),
       camera: ADVANCED_IDS.includes(id)
         ? { from: [0, 0], to: [0, 0], zoom: 2, route: "smooth" }
         : {},
@@ -1138,15 +1143,17 @@
       options: clone(OPTIONS[id]),
       timeline: {
         duration: ADVANCED_IDS.includes(id) ? 12 : 6,
-        entrance: 0.3,
+        entrance: id === "text-match-cut" ? 0 : 0.3,
         hold: 1,
         inPoint: 0,
         outPoint: 1,
         currentTime: 0,
+        pauses: [],
       },
       output: { width: 1920, height: 1080, fps: 60 },
       demo: true,
     };
+    if(id === "text-match-cut")result.audio.auto.sourceId="builtin:paper";
     result.metadata.sampleSize =
       {
         "cohort-regroup": 48,
@@ -1157,9 +1164,11 @@
     return result;
   }
   function validate(c) {
+    c = MEDIA.normalize(PAPER.migrate(c));
     keys(
       c,
       [
+        "audio",
         "schemaVersion",
         "templateId",
         "templateVersion",
@@ -1178,7 +1187,7 @@
     );
     if (c.schemaVersion !== 1) fail("schemaVersion 必须是 1");
     enumOf(c.templateId, IDS, "templateId");
-    if (c.templateVersion !== VERSION)
+    if (c.templateVersion !== (PAPER.ids.includes(c.templateId) ? PAPER.VERSION : VERSION))
       fail("templateVersion 不匹配，请显式迁移后再打开");
     const id = c.templateId,
       d = c.data,
@@ -1215,7 +1224,7 @@
     }
     keys(
       t,
-      ["duration", "entrance", "hold", "inPoint", "outPoint", "currentTime"],
+      ["duration", "entrance", "hold", "inPoint", "outPoint", "currentTime", "pauses"],
       "timeline",
     );
     num(t.entrance, "timeline.entrance", 0, 299);
@@ -1262,6 +1271,7 @@
     num(t.outPoint, "outPoint", 0, 1);
     if (t.outPoint <= t.inPoint) fail("outPoint 必须大于 inPoint");
     num(t.currentTime, "currentTime", 0, t.duration);
+    MEDIA.validate(c);
     keys(out, ["width", "height", "fps"], "output");
     for (const k of ["width", "height"]) {
       num(out[k], k, 240, 3840, true);
@@ -1335,8 +1345,10 @@
     else {
       keys(c.camera, [], "camera");
       arr(c.sequence, "sequence", 0, 0);
-      if (RESEARCH[id]) validateResearch(c);
+      if (PAPER.ids.includes(id)) PAPER.validate(c);
+      else if (RESEARCH[id]) validateResearch(c);
     }
+    if(t.pauses.length){const inner=MEDIA.inner(c);inner.audio=MEDIA.defaults();validate(inner);}
     return clone(c);
   }
   // RFC 4180 quoted cells, BOM, CRLF and spreadsheet tabs; no Number('') coercion.
@@ -1804,6 +1816,7 @@
     }
   }
   function researchTable(c) {
+    if (PAPER.ids.includes(c.templateId)) return PAPER.table(c);
     const d = c.data,
       id = c.templateId;
     if (ADVANCED_IDS.includes(id)) return advancedTable(c);
@@ -1848,6 +1861,7 @@
     return [spec[1], ...d[spec[0]].map((r) => spec[1].map((k) => r[k] ?? ""))];
   }
   function importResearch(c, head, rows, n) {
+    if (PAPER.ids.includes(c.templateId)) { if(c.templateId === "paper-unfold") c.options.segments=Math.max(c.options.segments,rows.length); return PAPER.importRows(c,head,rows); }
     const id = c.templateId;
     if (ADVANCED_IDS.includes(id)) return importAdvanced(c, head, rows, n);
     if (id === "split-compare") {
@@ -1991,6 +2005,7 @@
     keys(
       input,
       [
+        "audio",
         "data",
         "style",
         "options",
@@ -2029,6 +2044,7 @@
     if (c.templateId === "card-stack-cascade") c.options.focusIndex = 0;
     if (c.templateId === "poll-results-bars") c.options.totalVotes = 0;
     for (const key of [
+      "audio",
       "style",
       "options",
       "metadata",
@@ -2039,7 +2055,8 @@
     ])
       if (input[key] !== undefined) {
         obj(input[key], `motionInput.${key}`);
-        Object.assign(c[key], clone(input[key]));
+        if(key === "audio")c.audio={...c.audio,...clone(input.audio),auto:{...c.audio.auto,...clone(input.audio.auto || {})}};
+        else Object.assign(c[key], clone(input[key]));
       }
     if (input.sequence !== undefined) c.sequence = clone(input.sequence);
     return validate(c);
@@ -2101,6 +2118,10 @@
   }
   return {
     VERSION,
+    MEDIA,
+    PAPER_IDS: PAPER.ids,
+    paperLetters: PAPER.letters,
+    PAPER_NAMES: Object.fromEntries(PAPER.ids.map(id=>[id,PAPER.specs[id].name])),
     IDS,
     fromAI,
     dataNumbers,

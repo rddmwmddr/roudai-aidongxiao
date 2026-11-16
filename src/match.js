@@ -147,9 +147,11 @@
     const encoderConfig = {codec: cfg.codec[fps], width: cfg.w, height: cfg.h, bitrate: cfg.bitrate[fps], framerate: fps, latencyMode: 'quality', avc: {format: 'avc'}};
     const support = await VideoEncoder.isConfigSupported(encoderConfig);
     if (!support.supported) throw new Error(`这台电脑不支持 ${size} ${fps} 帧编码，请改用 1080p`);
+    const mixedAudio = motion && D.Audio ? await D.Audio.render(motion) : null;
+    const audioDelay=mixedAudio?await D.Audio.encoderDelay():0;
     const pending = [];
     const target = sink ? new root.Mp4Muxer.StreamTarget({onData: (data, position) => pending.push([data.slice(), position]), chunked: true, chunkSize: 4 * 1024 * 1024}) : new root.Mp4Muxer.ArrayBufferTarget();
-    const muxer = new root.Mp4Muxer.Muxer({target, video: {codec: 'avc', width: cfg.w, height: cfg.h, frameRate: fps}, fastStart: sink ? false : 'in-memory'});
+    const muxer = new root.Mp4Muxer.Muxer({target, video: {codec: 'avc', width: cfg.w, height: cfg.h, frameRate: fps}, ...(mixedAudio ? {audio:{codec:'aac',numberOfChannels:2,sampleRate:48000,encoderDelaySamples:audioDelay,presentationDuration:scene.duration}} : {}), fastStart: sink ? false : 'in-memory'});
     const drain = async () => {
       while (pending.length) {
         const [data, position] = pending.shift();
@@ -184,6 +186,7 @@
     await encoder.flush();
     encoder.close();
     if (failure) throw failure;
+    if(mixedAudio)await D.Audio.encode(mixedAudio,muxer,signal);
     muxer.finalize();
     await drain();
     if (onProgress) onProgress(1, (performance.now() - started) / 1000);

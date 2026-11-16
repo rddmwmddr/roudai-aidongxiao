@@ -34,7 +34,7 @@ struct MotionButton: View {
         .buttonStyle(.plain)
         .named("动效")
         .accessibilityValue(title)
-        .popover(isPresented: $showing, arrowEdge: .bottom) {
+        .popover(isPresented: $showing, arrowEdge: .leading) {
             MotionPicker(shot: shot, stage: stage, previousDataTemplate: previousDataTemplate, onPick: onPick)
         }
     }
@@ -76,7 +76,7 @@ struct MotionPicker: View {
         let q = query.trimmingCharacters(in: .whitespaces)
         if !q.isEmpty {
             return stage.catalog.filter { m in
-                m.name.localizedCaseInsensitiveContains(q) || m.en.localizedCaseInsensitiveContains(q) || m.desc.contains(q) || m.keywords.contains { $0.contains(q) }
+                m.name.localizedCaseInsensitiveContains(q) || m.en.localizedCaseInsensitiveContains(q) || m.desc.contains(q) || m.keywords.contains { $0.localizedCaseInsensitiveContains(q) }
             }
         }
         if category == Self.suggested {

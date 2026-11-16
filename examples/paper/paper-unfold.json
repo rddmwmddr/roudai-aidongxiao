@@ -1,0 +1,100 @@
+{
+  "camera": {},
+  "data": {
+    "panels": [
+      {
+        "body": "从用户原声开始。",
+        "heading": "01 / 听见"
+      },
+      {
+        "body": "梳理操作、场景和原因。",
+        "heading": "02 / 理解"
+      },
+      {
+        "body": "让证据连接成清晰结论。",
+        "heading": "03 / 发现"
+      },
+      {
+        "body": "把发现转化为改进方向。",
+        "heading": "04 / 行动"
+      }
+    ]
+  },
+  "demo": true,
+  "fieldMappings": {},
+  "metadata": {
+    "researchTime": "2026年10月",
+    "sampleSize": 200,
+    "showResearchTime": true,
+    "showSampleSize": true,
+    "showSource": true,
+    "showSubtitle": true,
+    "showTitle": true,
+    "source": "演示研究，非真实结论"
+  },
+  "options": {
+    "direction": "right",
+    "paperColor": "#FFF6DF",
+    "seed": 19,
+    "segments": 4,
+    "shadow": 0.5,
+    "texture": 0.35,
+    "unfoldSeconds": 2.8
+  },
+  "output": {
+    "fps": 60,
+    "height": 1080,
+    "width": 1920
+  },
+  "schemaVersion": 1,
+  "sequence": [],
+  "style": {
+    "accent": "#227F77",
+    "afterColor": "#227F77",
+    "background": "#F7F1E8",
+    "badColor": "#C65064",
+    "beforeColor": "#9AA7B7",
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ],
+    "decimals": 0,
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "goodColor": "#227F77",
+    "ink": "#243449",
+    "numberSize": 220,
+    "prefix": "",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "title": "一层一层，展开研究发现",
+    "titleSize": 58,
+    "unit": ""
+  },
+  "templateId": "paper-unfold",
+  "templateVersion": "paper-canvas-5",
+  "timeline": {
+    "currentTime": 1.5,
+    "duration": 6,
+    "entrance": 0.3,
+    "hold": 1,
+    "inPoint": 0,
+    "outPoint": 1,
+    "pauses": []
+  },
+  "audio": {
+    "enabled": false,
+    "gain": 0.7,
+    "auto": {
+      "enabled": false,
+      "sourceId": "builtin:tick",
+      "volume": 0.45,
+      "maxPerSecond": 12
+    },
+    "assets": [],
+    "clips": []
+  }
+}

@@ -121,6 +121,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         let config = WKWebViewConfiguration()
         if #available(macOS 14, *) { config.preferences.inactiveSchedulingPolicy = .none }
         config.suppressesIncrementalRendering = true
+        config.mediaTypesRequiringUserActionForPlayback = []
         let controller = WKUserContentController()
         config.userContentController = controller
         controller.addScriptMessageHandler(MotionMediaBridge(), contentWorld: .page, name: "motionMedia")

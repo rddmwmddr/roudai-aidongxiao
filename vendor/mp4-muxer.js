@@ -1,3 +1,4 @@
+// Local extension: optional audio priming edit list; see vendor/MP4-AUDIO-PATCH.md.
 "use strict";
 var Mp4Muxer = (() => {
   var __defProp = Object.defineProperty;
@@ -212,7 +213,7 @@ var Mp4Muxer = (() => {
       0,
       ...tracks.filter((x) => x.samples.length > 0).map((x) => {
         const lastSample = lastPresentedSample(x.samples);
-        return lastSample.presentationTimestamp + lastSample.duration;
+        return x.info.presentationDuration ?? (lastSample.presentationTimestamp + lastSample.duration);
       })
     ), GLOBAL_TIMESCALE);
     let nextTrackId = Math.max(...tracks.map((x) => x.id)) + 1;
@@ -243,12 +244,17 @@ var Mp4Muxer = (() => {
   };
   var trak = (track, creationTime) => box("trak", null, [
     tkhd(track, creationTime),
+    // Audio encoder priming is media time, not an audible delay on the movie timeline.
+    track.info.encoderDelaySamples ? box("edts", null, [fullBox("elst", 0, 0, [
+      u32(1), u32(intoTimescale(track.info.presentationDuration, GLOBAL_TIMESCALE)),
+      u32(track.info.encoderDelaySamples), u16(1), u16(0)
+    ])]) : null,
     mdia(track, creationTime)
   ]);
   var tkhd = (track, creationTime) => {
     let lastSample = lastPresentedSample(track.samples);
     let durationInGlobalTimescale = intoTimescale(
-      lastSample ? lastSample.presentationTimestamp + lastSample.duration : 0,
+      track.info.presentationDuration ?? (lastSample ? lastSample.presentationTimestamp + lastSample.duration : 0),
       GLOBAL_TIMESCALE
     );
     let needsU64 = !isU32(creationTime) || !isU32(durationInGlobalTimescale);
@@ -1614,6 +1620,8 @@ var Mp4Muxer = (() => {
         id: __privateGet(this, _options).video ? 2 : 1,
         info: {
           type: "audio",
+          encoderDelaySamples: __privateGet(this, _options).audio.encoderDelaySamples || 0,
+          presentationDuration: __privateGet(this, _options).audio.presentationDuration,
           codec: __privateGet(this, _options).audio.codec,
           numberOfChannels: __privateGet(this, _options).audio.numberOfChannels,
           sampleRate: __privateGet(this, _options).audio.sampleRate,

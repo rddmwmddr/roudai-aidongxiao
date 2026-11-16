@@ -1,0 +1,125 @@
+{
+  "camera": {},
+  "data": {
+    "letters": [
+      {
+        "font": "local-gothic",
+        "ink": "#202B35",
+        "paper": "#E5B63E",
+        "text": "重",
+        "tilt": -8
+      },
+      {
+        "font": "system-serif",
+        "ink": "#202B35",
+        "paper": "#E76145",
+        "text": "构",
+        "tilt": 5
+      },
+      {
+        "font": "system-sans",
+        "ink": "#202B35",
+        "paper": "#EEE8D9",
+        "text": "真",
+        "tilt": -3
+      },
+      {
+        "font": "local-gothic",
+        "ink": "#FFF8EA",
+        "paper": "#243449",
+        "text": "实",
+        "tilt": 9
+      },
+      {
+        "font": "system-serif",
+        "ink": "#202B35",
+        "paper": "#E5B63E",
+        "text": "体",
+        "tilt": -8
+      },
+      {
+        "font": "system-sans",
+        "ink": "#202B35",
+        "paper": "#E76145",
+        "text": "验",
+        "tilt": 5
+      }
+    ]
+  },
+  "demo": true,
+  "fieldMappings": {},
+  "metadata": {
+    "researchTime": "2026年10月",
+    "sampleSize": 200,
+    "showResearchTime": true,
+    "showSampleSize": true,
+    "showSource": true,
+    "showSubtitle": true,
+    "showTitle": true,
+    "source": "演示研究，非真实结论"
+  },
+  "options": {
+    "entrySeconds": 0.8,
+    "seed": 73,
+    "spread": 0.8,
+    "stagger": 0.12,
+    "tear": 7,
+    "texture": 0.5
+  },
+  "output": {
+    "fps": 60,
+    "height": 1080,
+    "width": 1920
+  },
+  "schemaVersion": 1,
+  "sequence": [],
+  "style": {
+    "accent": "#227F77",
+    "afterColor": "#227F77",
+    "background": "#F7F1E8",
+    "badColor": "#C65064",
+    "beforeColor": "#9AA7B7",
+    "colors": [
+      "#227F77",
+      "#5A7DBC",
+      "#B58458",
+      "#9E77B4",
+      "#C65064",
+      "#4B92A6"
+    ],
+    "decimals": 0,
+    "fontFamily": "local-gothic",
+    "fontSize": 30,
+    "goodColor": "#227F77",
+    "ink": "#243449",
+    "numberSize": 220,
+    "prefix": "",
+    "subtitle": "重构调研 · 演示数据，非真实研究结论",
+    "title": "让用户的声音被看见",
+    "titleSize": 58,
+    "unit": ""
+  },
+  "templateId": "magazine-letters",
+  "templateVersion": "paper-canvas-5",
+  "timeline": {
+    "currentTime": 1.5,
+    "duration": 6,
+    "entrance": 0.3,
+    "hold": 1,
+    "inPoint": 0,
+    "outPoint": 1,
+    "pauses": []
+  },
+  "audio": {
+    "enabled": false,
+    "gain": 0.7,
+    "auto": {
+      "enabled": false,
+      "sourceId": "builtin:tick",
+      "volume": 0.45,
+      "maxPerSecond": 12
+    },
+    "assets": [],
+    "clips": []
+  }
+}

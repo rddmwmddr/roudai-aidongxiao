@@ -551,6 +551,8 @@
   const ICON_PAUSE = '<svg class="solid" viewBox="0 0 20 20"><path d="M5 3.500h3.500v13H5zM11.500 3.500H15v13h-3.500z"/></svg>';
   const setPlaying = (on) => {
     S.playing = on;
+    if(on && rows[S.sel]?.motion?.audio?.enabled)D.Audio.prepare().resume().catch(()=>{});
+    D.Audio?.sync(rows[S.sel]?.motion,S.t,on);
     $('play').innerHTML = on ? ICON_PAUSE : ICON_PLAY;
     $('play').setAttribute('aria-label', on ? '暂停' : '播放');
     $('play').title = on ? '暂停' : '播放';
@@ -586,6 +588,7 @@
     },
     list: true,
   });
+  D.PaperText.bind({surface:editor.root,canvas:cv,raw:()=>rawOf(rows[S.sel]),time:()=>S.t,pause:()=>setPlaying(false),commit:motion=>{const row=rows[S.sel];row.motion=motion;rebuild(row,false);renderShot()}});
   const buildScene = (reset, keepSelection = false) => {
     const row = rows[S.sel];
     try {
@@ -1288,7 +1291,7 @@
   const pkItems = () => {
     const all = D.catalog();
     const q = pk.query.trim();
-    if (q) return all.filter((m) => m.name.includes(q) || (m.en || '').toLowerCase().includes(q.toLowerCase()) || (m.desc || '').includes(q) || (m.keywords || []).some((k) => k.includes(q)));
+    if (q) return all.filter((m) => m.name.includes(q) || (m.en || '').toLowerCase().includes(q.toLowerCase()) || (m.desc || '').includes(q) || (m.keywords || []).some((k) => k.toLowerCase().includes(q.toLowerCase())));
     if (pk.cat === SUGGESTED) {
       const top = D.rankTemplates(rows[S.sel], previousDataTpl()).slice(0, 9).map((t) => t.id);
       return top.map((id) => all.find((m) => m.id === id)).filter(Boolean);
@@ -1616,7 +1619,7 @@
         try {
           const raw = rawOf(rows[S.sel]);
           await D.Opus.prepareFrame(raw,t);
-          editor.draw(ctx, t);
+          D.Audio.sync(rows[S.sel]?.motion,S.t,S.playing);editor.draw(ctx, t);
         } catch (err) {
           $('err').style.display = 'grid';
           $('err').textContent = `这个模板画不了这一镜：${err.message}`;

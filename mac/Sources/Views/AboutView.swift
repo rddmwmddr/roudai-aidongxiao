@@ -12,6 +12,7 @@ struct AboutView: View {
     }
 
     private let motion = [
+        Credit(name: "Paper Animator", author: "Paper Animator", use: "纸张、匹配剪辑与剪字的视觉研究；四个模板独立实现", license: "仅参考公开演示，未使用其代码或素材", url: "https://app.paperanimator.com/"),
         Credit(name: "Opus Motion Library", author: "Govindu Sasanka", use: "14 种数据组件的 Canvas 适配", license: "MIT", url: "https://github.com/GovinduSasanka/opus-motion-library"),
         Credit(name: "Motion Prompt", author: "Shohei Ohtaki", use: "14 个文字动效", license: "MIT", url: "https://github.com/showheyohtaki/motion-prompt"),
         Credit(name: "Lieflat Charts", author: "躺在废墟里", use: "编辑部风格图表", license: "PolyForm Noncommercial", url: "https://github.com/larashero3-dotcom/lieflat-charts"),

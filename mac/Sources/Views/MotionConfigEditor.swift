@@ -10,6 +10,7 @@ struct MotionConfigEditor: View {
     @State private var problem: String?
     @State private var revision = 0
     @State private var csvDraft = ""
+    @State private var paperText = ""
     @State private var lastWritten: JSONValue?
     @State private var table: [[String]] = []
 
@@ -29,6 +30,38 @@ struct MotionConfigEditor: View {
                     .accessibilityLabel("数据动效参数错误")
             }
             if !draft.isEmpty {
+                MotionMediaEditor(config: draft, stage: stage, apply: apply)
+                if shot.template == "magazine-letters" {
+                    SectionCard(title: "整句生成字片", symbol: "textformat") {
+                        CommitField(title: "剪字文案", text: $paperText, axis: .vertical, lineLimit: 1...4)
+                        Button("按文字更新字片") { updateLetters() }.buttonStyle(.pill(size: .small))
+                        Text("下方表格可逐字编辑文字、字体、底色、文字色及倾斜角度。font 可填 local-gothic / system-serif / system-sans。")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
+                if shot.template == "text-match-cut" {
+                    SectionCard(title: "报道截图与词句对齐", symbol: "doc.text.viewfinder") {
+                        Text("可导入自己的报道截图，再拖动框选原文中的词句。图片文字由素材保留，框选区域会在切换时居中匹配；未导入截图的页使用下方文字排版。")
+                            .font(.footnote).foregroundStyle(.secondary)
+                        ForEach((draft["data"]?.object?["pages"]?.array ?? []).indices, id: \.self) { i in
+                            Button("导入第\(i+1)页报道截图") { importMedia(side: "article:\(i)") }.buttonStyle(.pill(size: .small))
+                            if let page = draft["data"]?.object?["pages"]?.array?[i].object, let src = page["image"]?.string, !src.isEmpty {
+                                PaperArticleCropView(source: src, focus: ["focusX", "focusY", "focusWidth", "focusHeight"].map { page[$0]?.number ?? 0.1 }) { values in
+                                    var next = draft, data = next["data"]?.object ?? [:], pages = data["pages"]?.array ?? [], page = pages[i].object ?? [:]
+                                    for (j,key) in ["focusX", "focusY", "focusWidth", "focusHeight"].enumerated() { page[key] = .number(values[j]) }
+                                    pages[i] = .object(page); data["pages"] = .array(pages); next["data"] = .object(data); apply(next)
+                                }
+                            }
+                        }
+                    }
+                }
+                if shot.template == "paper-cutout" {
+                    SectionCard(title: "可替换的剪贴素材", symbol: "photo") {
+                        Button("导入或替换图片 / 透明 PNG") { importMedia(side: "paper") }.buttonStyle(.pill(size: .small))
+                        Text("素材内嵌到工程；支持 PNG / JPEG / WebP，透明通道保留。关闭纸张衬底可展示透明素材。")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
                 SectionCard(title: "数据表格", symbol: "tablecells") {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("表头决定字段；数字只填数值，单位在样式中设置。")
@@ -63,6 +96,11 @@ struct MotionConfigEditor: View {
                         HStack {
                             Button("添加一行") {
                                 guard let header = table.first else { return }
+                                if ["text-match-cut", "paper-cutout", "paper-unfold", "magazine-letters"].contains(shot.template), let last = table.last, table.count > 1 {
+                                    table.append(last.enumerated().map { j, value in ["text", "heading", "before", "after", "body", "label", "caption"].contains(header[j]) ? (header[j] == "text" ? "字" : "新内容") : value })
+                                    applyTable()
+                                    return
+                                }
                                 table.append(header.map { ["value", "before", "after", "count", "marked", "progress"].contains($0) ? "0" : "" })
                             }
                             Button("导入 CSV") { importCSV() }
@@ -165,6 +203,7 @@ struct MotionConfigEditor: View {
         do {
             let text = try await stage.callString("return DMBridge.motionConfig(json)", arguments: ["json": shot.json])
             draft = try JSONDecoder().decode([String: JSONValue].self, from: Data(text.utf8))
+            if shot.template == "magazine-letters" { paperText = (draft["data"]?.object?["letters"]?.array ?? []).compactMap { $0.object?["text"]?.string }.joined() }
             lastWritten = shot.fields["motion"]
             await refreshTable()
         } catch { problem = BatchRunner.describe(error) }
@@ -227,17 +266,23 @@ struct MotionConfigEditor: View {
     }
 
     private func importMedia(side: String) {
-        let panel = NSOpenPanel(); panel.allowedContentTypes = (side.hasPrefix("event:") || side == "asset") ? [.png, .jpeg, .webP] : [.png, .jpeg, .webP, .mpeg4Movie, .quickTimeMovie, .movie]
+        let panel = NSOpenPanel(); panel.allowedContentTypes = (side.hasPrefix("event:") || side == "asset" || side == "paper" || side.hasPrefix("article:")) ? [.png, .jpeg, .webP] : [.png, .jpeg, .webP, .mpeg4Movie, .quickTimeMovie, .movie]
         guard panel.runModal() == .OK, let url = panel.url else { return }
         let scoped = url.startAccessingSecurityScopedResource(); defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         do {
             let bytes = try Data(contentsOf: url)
-            guard bytes.count <= 100 * 1024 * 1024 else { problem = "素材上限为100MB，请先压缩视频"; return }
+            guard bytes.count <= (side == "paper" || side.hasPrefix("article:") ? 12 : 100) * 1024 * 1024 else { problem = (side == "paper" || side.hasPrefix("article:")) ? "纸张图片上限12MB" : "素材上限为100MB，请先压缩视频"; return }
             let ext = url.pathExtension.lowercased(), video = ["mp4", "mov", "webm"].contains(ext)
             let mime = ["png":"image/png", "jpg":"image/jpeg", "jpeg":"image/jpeg", "webp":"image/webp", "mp4":"video/mp4", "mov":"video/quicktime", "webm":"video/webm"][ext] ?? "application/octet-stream"
             let uri = "data:\(mime);base64," + bytes.base64EncodedString()
             var next = draft, data = next["data"]?.object ?? [:]
-            if side == "asset" {
+            if side.hasPrefix("article:"), let i = Int(side.dropFirst(8)), var pages = data["pages"]?.array, pages.indices.contains(i) {
+                var page = pages[i].object ?? [:]; page["image"] = .string(uri); pages[i] = .object(page); data["pages"] = .array(pages)
+            } else if side == "paper" {
+                var items = data["items"]?.array ?? [], item = items.first?.object ?? [:]
+                item["src"] = .string(uri)
+                if !items.isEmpty { items[0] = .object(item) }; data["items"] = .array(items)
+            } else if side == "asset" {
                 var options = next["options"]?.object ?? [:]; options["asset"] = .string(uri); next["options"] = .object(options)
             } else if side.hasPrefix("event:"), let i = Int(side.dropFirst(6)), var events = data["events"]?.array, events.indices.contains(i) {
                 var event = events[i].object ?? [:]; event["image"] = .string(uri); events[i] = .object(event); data["events"] = .array(events)
@@ -246,6 +291,16 @@ struct MotionConfigEditor: View {
             }
             next["data"] = .object(data); apply(next)
         } catch { problem = error.localizedDescription }
+    }
+
+    private func updateLetters() {
+        let payload = json(draft), text = paperText
+        Task {
+            do {
+                let result = try await stage.callString("const c=JSON.parse(json); c.data.letters=DMOpus.paperLetters(text,c.data.letters); return JSON.stringify(DMOpus.validate(c))", arguments: ["json": payload, "text": text])
+                apply(try JSONDecoder().decode([String: JSONValue].self, from: Data(result.utf8)))
+            } catch { problem = BatchRunner.describe(error) }
+        }
     }
 
     private func importSubtitles() {
@@ -269,9 +324,12 @@ struct MotionConfigEditor: View {
 private struct MotionObjectFields: View {
     let values: [String: JSONValue]
     let update: (String, JSONValue) -> Void
-    private let labels = ["title":"标题", "subtitle":"说明", "background":"背景", "ink":"文字色", "accent":"强调色", "fontFamily":"字体", "fontSize":"字号", "titleSize":"标题字号", "numberSize":"数字字号", "unit":"单位", "prefix":"前缀", "decimals":"小数位", "source":"数据来源", "sampleSize":"样本量", "researchTime":"研究时间", "showSource":"显示来源", "showSampleSize":"显示样本量", "showResearchTime":"显示研究时间", "showTitle":"显示标题", "showSubtitle":"显示说明", "duration":"持续时间", "entrance":"入场时间", "hold":"结束停留", "currentTime":"保存的位置", "inPoint":"起始进度", "outPoint":"结束进度", "width":"画面宽度", "height":"画面高度", "fps":"帧率", "rateMode":"漏斗口径", "questionType":"题型", "inputMode":"输入口径", "totalVotes":"有效样本", "winnerLabel":"最高项标签（空为关闭）", "highlight":"强调对象", "stackMode":"堆叠方式", "denominator":"分母说明", "focusAt":"聚焦时刻", "focusHold":"聚焦停留", "focusIndex":"聚焦卡片（从0起）", "holdSeconds":"每条原声停留", "moveSeconds":"原声切换时间", "showAvatar":"显示头像", "showRating":"显示星级", "scale":"排列或坐标模式", "divider":"分隔位置", "syncStart":"视频同步起点", "startDate":"开始日期", "endDate":"结束日期", "layout":"排列", "seed":"固定随机种子"]
+    private let labels = ["title":"标题", "subtitle":"说明", "background":"背景", "ink":"文字色", "accent":"强调色", "fontFamily":"字体", "fontSize":"字号", "titleSize":"标题字号", "numberSize":"数字字号", "unit":"单位", "prefix":"前缀", "decimals":"小数位", "source":"数据来源", "sampleSize":"样本量", "researchTime":"研究时间", "showSource":"显示来源", "showSampleSize":"显示样本量", "showResearchTime":"显示研究时间", "showTitle":"显示标题", "showSubtitle":"显示说明", "duration":"持续时间", "entrance":"入场时间", "hold":"结束停留", "currentTime":"保存的位置", "inPoint":"起始进度", "outPoint":"结束进度", "width":"画面宽度", "height":"画面高度", "fps":"帧率", "rateMode":"漏斗口径", "questionType":"题型", "inputMode":"输入口径", "totalVotes":"有效样本", "winnerLabel":"最高项标签（空为关闭）", "highlight":"强调对象", "stackMode":"堆叠方式", "denominator":"分母说明", "focusAt":"聚焦时刻", "focusHold":"聚焦停留", "focusIndex":"聚焦卡片（从0起）", "holdSeconds":"每条原声停留", "moveSeconds":"原声切换时间", "showAvatar":"显示头像", "showRating":"显示星级", "scale":"排列或坐标模式", "divider":"分隔位置", "syncStart":"视频同步起点", "startDate":"开始日期", "endDate":"结束日期", "layout":"排列", "seed":"固定随机种子", "keyword":"固定关键词", "paperCount":"纸张数量", "articleScale":"报道阅读倍率", "wrinkleStrength":"纸张褶皱光影 0–1", "inkWear":"油墨颗粒 0–1", "contextBlur":"焦外纵向虚化", "focusPadding":"清晰范围留白", "contextDimming":"焦外淡化强度", "cutSeconds":"每次切换秒数", "fontPair":"字体组合", "highlightColor":"高亮色", "paperColor":"纸张颜色", "texture":"纸纹强度 0–1", "tear":"撕边幅度", "thickness":"纸张厚度", "shadow":"投影强度 0–1", "backing":"显示纸张衬底", "entry":"入场动作", "entrySeconds":"入场秒数", "tilt":"倾斜角度", "direction":"折叠方向", "segments":"折纸分段数量", "unfoldSeconds":"展开秒数", "stagger":"逐字间隔秒数", "spread":"字片入场分散程度"]
     private func choices(_ key: String, _ current: String) -> [(String, String)]? {
         let options: [String: [(String, String)]] = [
+            "direction": [("right", "向右展开"), ("left", "向左展开"), ("down", "向下展开"), ("up", "向上展开")],
+            "fontPair": [("gothic-serif", "内置黑体 + 宋体"), ("sans-gothic", "系统黑体 + 内置黑体"), ("serif-sans", "宋体 + 系统黑体")],
+            "entry": [("slide", "滑入"), ("pop", "弹出"), ("drop", "落下")],
             "fontFamily": [("local-gothic", "内置中文字体"), ("system-sans", "系统黑体"), ("system-serif", "系统宋体")],
             "questionType": [("single", "单选题"), ("multiple", "多选题")],
             "inputMode": [("count", "人数 ÷ 有效样本"), ("percent", "已输入百分比")],

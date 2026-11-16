@@ -345,7 +345,7 @@ struct ContentView: View {
         }
         stage.onMotionObject = { json in
             guard let i = currentIndex, let value = try? JSONDecoder().decode(JSONValue.self, from: Data(json.utf8)) else { return }
-            edit("选择受访者") { $0.rows[i].fields["motion"] = value }
+            edit("编辑动效内容") { $0.rows[i].fields["motion"] = value }
         }
         stage.onNavigate = { dir in move(dir) }
     }

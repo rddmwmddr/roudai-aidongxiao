@@ -16,6 +16,7 @@
   const prog = (f, a, b, e = out) =>
     e(clamp((f - a) / Math.max(0.000001, b - a)));
   const NAMES = {
+    ...O.PAPER_NAMES,
     "comparison-dumbbell": "前后数据对比",
     "dot-tally": "人群占比点阵",
     "bar-race": "动态条形排名",
@@ -3118,6 +3119,7 @@
       .some((a) => a.length === 0);
   }
   function create(row) {
+    if (O.PAPER_IDS.includes(row.motion?.templateId)) return D.Paper.create(configOf(row));
     const c = configOf(row),
       id = c.templateId;
     return {
@@ -3201,16 +3203,17 @@
     };
   }
   D.CATEGORIES.unshift({ id: "research", name: "调研数据 · Opus" });
+  D.CATEGORIES.unshift({id:"paper", name:"纸张与拼贴"});
   O.IDS.forEach((id) =>
     D.register(id, {
       name: NAMES[id],
       en: id,
       family: "数据动效",
-      cat: "research",
-      desc: `${NAMES[id]} · 可编辑数据、中文样式、时间线和输出`,
+      cat: O.PAPER_IDS.includes(id) ? "paper" : "research",
+      desc: `${NAMES[id]} · 可编辑内容、样式、时间线和输出`,
       custom: true,
       library: true,
-      keywords: [NAMES[id], "调研", "数据", "品牌", "满意度"],
+      keywords: O.PAPER_IDS.includes(id) ? [NAMES[id], "纸张", "拼贴", "剪贴", "匹配剪辑", "Paper", "Match Cut", "paper", "match cut"] : [NAMES[id], "调研", "数据", "品牌", "满意度"],
       accepts: (row) => {
         try {
           return row.motion?.templateId === id && !!O.validate(row.motion);
@@ -3268,6 +3271,7 @@
   const libraryPrompt = D.libraryPrompt;
   D.libraryPrompt = () =>
     libraryPrompt() +
+    `\n纸张与拼贴 paper 分类：text-match-cut data={pages:[{heading,before,after,body}]} options.keyword 固定词、paperCount、cutSeconds、fontPair；paper-cutout data={items:[{label,src,caption}]} src为本地内嵌图片；paper-unfold data={panels:[{heading,body}]} options.direction/segments/unfoldSeconds；magazine-letters data={letters:[{text:单字,font:local-gothic或system-serif或system-sans,paper:颜色,ink:颜色,tilt:角度}]}。这四个模板版本为paper-canvas-5，沿用motion/motionInput配置和参数校验，不能使用Opus上游版本号。\n` +
     `\nOpus 调研模板：以上 research 分类模板统一写 data:{"motion":完整配置}。配置由 DMOpus.defaults(id) 创建并经 DMOpus.validate 校验；包含 schemaVersion:1、templateId、templateVersion:${O.VERSION}、data、fieldMappings、metadata、style、options、timeline(秒)、output。数据、标签只能来自文稿；不要编造样本数、来源、配对流向。也可输出精简的 data:{"motionInput":{"data":真实原始数据,"style":{"title":"标题"},"options":{按需参数}}}，引擎会补齐样式与版本并校验，不能省略data。来源与样本量未知时不显示，不填演示数字。
 数据结构：comparison-dumbbell {rows:[{label,before,after}]}；dot-tally {groups:[{label,count,marked}]}；bar-race {names:[],frames:[{label,values:[]}]}；number-counter {keyframes:[[0,起点数值],[1,终点数值]]}；card-stack-cascade {cards:[{title,body,value}]}；poll-results-bars {options:[{label,value}]}，options.questionType=single/multiple，inputMode=percent/count，count时必填totalVotes；sankey-flow {links:[{from,to,value}]}仅配对记录；funnel-conversion {stages:[{label,value}]}，rateMode=previous/first；bubble-scatter-grow {records:[{name,importance,satisfaction,people}]}，自定义字段则用fieldMappings；heatmap-calendar {records:[{date:"YYYY-MM-DD",value}]}，options.startDate/endDate/maxValue；testimonial-card-carousel {testimonials:[{quote,name,role}]}；timeline-ruler {events:[{date,title,body}]}；stacked-area-flow {xLabels:[],series:[{name,values:[]}]}。
 进阶组件须完整记录与对象ID；cohort-regroup 不得从汇总比例生成关联个体。配置说明见 docs/OPUS.md。`;

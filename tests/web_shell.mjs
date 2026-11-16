@@ -55,7 +55,7 @@ const dragTrim = async (page, i, dx) => {
   const count = await page.evaluate(() => ({clips: document.querySelectorAll('.clip').length, rows: DMApp.rows.length, sel: document.querySelectorAll('.clip.sel').length, total: Object.keys(DM.TEMPLATES).length}));
   check('一镜一个片段', count.clips === count.rows && count.rows >= 10, JSON.stringify(count));
   check('只有一个选中', count.sel === 1);
-  check('733 个原有动效与 23 个调研入口', count.total === 756, String(count.total));
+  check('733 个原有动效、23 个调研入口与4个纸张模板', count.total === 760, String(count.total));
   await page.evaluate(() => DMApp.select(5));
   await page.waitForTimeout(600);
   await snap(page, '网页_画面');
