@@ -21,6 +21,33 @@ struct BoardFileTests {
         #expect(board.rows[1].template == "statement")
     }
 
+    @Test("编导分镜字段：A-roll 景别、实拍指导、素材说明完整读写，切轨道自动同步属性")
+    func directorFieldsRoundTrip() throws {
+        let json = """
+        {"title":"编导测试","rows":[
+          {"id":1,"no":"001","ch":"第一章","track":"aroll","kind":"A","cat":"A-roll","shotSize":"中近景","cameraMove":"跳切推近","subject":"主讲人","shootGuide":"裁切放大1.2倍","postGuide":"卡重音硬切","line":"那我换个问法。","tpl":"statement"},
+          {"id":2,"no":"002","ch":"第一章","track":"shoot","kind":"B","cat":"实拍","shotSize":"微距细节","cameraMove":"横移滑轨","subject":"手机边框","shootGuide":"侧逆光勾边","postGuide":"留半秒质感","line":"机身磨砂边框手感细腻。","tpl":"statement"}
+        ]}
+        """
+        let board = try BoardDocument.decode(Data(json.utf8))
+        #expect(board.rows[0].track == "aroll")
+        #expect(board.rows[0].kind == "A")
+        #expect(!board.rows[0].isMotion)
+        #expect(board.rows[0].shotSize == "中近景")
+        #expect(board.rows[0].cameraMove == "跳切推近")
+        #expect(board.rows[0].timelineCaption(names: [:]) == "A-roll · 中近景")
+        #expect(board.rows[1].track == "shoot")
+        #expect(board.rows[1].shootGuide == "侧逆光勾边")
+
+        var switched = board.rows[0]
+        switched.track = "footage"
+        #expect(switched.kind == "B")
+        #expect(switched.category == "素材")
+
+        let again = try BoardDocument.decode(try BoardDocument.encode(board))
+        #expect(again == board)
+    }
+
     @Test("手动时长写进文件，可以清掉")
     func duration() throws {
         var shot = Shot(fields: ["id": .number(1), "line": .string("一句话"), "tpl": .string("statement")])
@@ -291,6 +318,37 @@ struct ChunkTests {
         #expect(rows[0].chapter == "第一章")
         #expect(rows[0].groups[0].metrics[0].value == 45)
         #expect(rows[0].note.isEmpty)
+
+        let directorReply = """
+        {"rows":[{"line":"机身边框很轻","track":"shoot","kind":"B","cat":"实拍","shotSize":"微距细节","cameraMove":"横移滑轨","subject":"机身中框","shootGuide":"侧逆光微距","postGuide":"卡名词切入","tpl":"statement","visual":"微距拍边框","note":"","data":"{}"}]}
+        """
+        let dirRows = try StoryboardPrompt.decodeRows(directorReply, chapter: "第二章")
+        #expect(dirRows[0].track == "shoot")
+        #expect(dirRows[0].shotSize == "微距细节")
+        #expect(dirRows[0].cameraMove == "横移滑轨")
+        #expect(dirRows[0].shootGuide == "侧逆光微距")
+        #expect(dirRows[0].postGuide == "卡名词切入")
+    }
+
+    @Test("流式进度：按已出镜头与原文落点算百分比，单段无换行长文按句切分")
+    func streamProgressAndSentenceSplit() {
+        let src = "第一句开场问好。第二句展示产品边框细节。第三句给出调研结论收尾。"
+        let partial = #"{"rows":[{"line":"第一句开场问好。","tpl":"statement"},{"line":"第二句展示产品边框细节。"#
+        let st = StoryboardPrompt.streamStatus(partial: partial, source: src)
+        #expect(st.shots == 1)
+        #expect(st.fraction > 0.2 && st.fraction < 0.8)
+        #expect(st.trailingChars < 60)
+
+        let oneBlock = Array(repeating: "这是一句二十字左右的连续口播内容没有换行。", count: 80).joined()
+        let parts = StoryboardPrompt.chunks(of: oneBlock, limit: 600)
+        #expect(parts.count >= 3)
+        #expect(parts.allSatisfy { $0.text.hasSuffix("。") })
+
+        // 2000 字以内的完整单篇评测文稿默认不拆碎，保持全局通盘编导视角
+        let mediumEssay = Array(repeating: "这是一段约五十个字的评测口播段落，用来验证两千字以内的单篇文稿保持整篇一次编导不分段。\n", count: 36).joined()
+        #expect(StoryboardPrompt.chunks(of: mediumEssay).count == 1)
+        let msg = StoryboardPrompt.userMessage(chapter: "第二章", text: "正文", previousSummary: "前段收尾镜头：动效(chFunnel)")
+        #expect(msg.contains("前文镜头衔接信息") && msg.contains("chFunnel"))
     }
 }
 

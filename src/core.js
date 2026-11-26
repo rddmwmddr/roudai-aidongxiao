@@ -201,6 +201,7 @@
     return out;
   };
   const colorRoles = (row) => {
+    if (root.DM && root.DM.isSketchShot && root.DM.isSketchShot(row)) return root.DM.sketchColorRoles(row);
     row = root.DM.motionDefaults?.(row, row.tpl || row.template) || row;
     const t = TEMPLATES[row.tpl || row.template];
     if (!t) return [];
@@ -691,6 +692,12 @@
     return out;
   };
   const createScene = (raw1, width = 1920) => {
+    const S0 = width / 1920;
+    if (root.DM && root.DM.isSketchShot && root.DM.isSketchShot(raw1)) {
+      const made = root.DM.createSketchScene(raw1, S0);
+      const key = `sketch:${root.DM.shotTrack(raw1)}`;
+      return staged({spec: raw1, duration: made.duration, beats: [], draw: made.draw, probes: null, palette: null, custom: true, sketch: true}, raw1, key, S0);
+    }
     // 文件里写的动效已经删了（旧的出镜镜头、删掉的分类）：按重音字幕画，字不丢
     if (typeof raw1.template === 'string' && raw1.template.startsWith('local.') && !Object.hasOwn(TEMPLATES, raw1.template)) {
       throw new Error('这一镜的本机模板未加载，请连接对应的动效包');
@@ -698,7 +705,6 @@
     const source = TEMPLATES[raw1.template] || !TEMPLATES.statement ? raw1 : Object.assign({}, raw1, {template: 'statement'});
     const raw0 = root.DM.motionDefaults?.(source, source.template) || source;
     const tplDef = TEMPLATES[raw0.template];
-    const S0 = width / 1920;
     if (tplDef && tplDef.custom) {
       const made = tplDef.create(raw0, S0);
       return staged({spec: raw0, duration: made.duration, beats: [], draw: made.draw, probes: null, palette: null, custom: true}, raw0, raw0.template, S0);

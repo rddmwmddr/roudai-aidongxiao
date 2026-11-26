@@ -2,11 +2,11 @@
 
 <h1 align="center">肉呆爱动效</h1>
 
-<p align="center">口播文稿变动效视频。导入文稿或 A-roll，生成分镜，拖片段，换效果，导出 MP4。</p>
+<p align="center">口播文稿变分镜与动效视频。导入文稿或 A-roll，生成四轨编导分镜，拖片段，换效果，导出 MP4 与拍摄清单。</p>
 
-<p align="center"><b><a href="https://github.com/rddmwmddr/roudai-aidongxiao/releases/download/v1.7.0/RouDaiAiDongXiao.dmg">下载 1.7 正式版</a></b> · <a href="https://github.com/rddmwmddr/roudai-aidongxiao/releases/tag/v1.3.0">1.3 历史正式版</a> · <a href="https://ahuamiao.com/sites/other/roudai-tools.html#motion">官网和图文教程</a></p>
+<p align="center"><b><a href="https://github.com/rddmwmddr/roudai-aidongxiao/releases/download/v1.8.0/RouDaiAiDongXiao.dmg">下载 1.8 正式版</a></b> · <a href="https://github.com/rddmwmddr/roudai-aidongxiao/releases/tag/v1.7.0">1.7 正式版</a> · <a href="https://github.com/rddmwmddr/roudai-aidongxiao/releases/tag/v1.3.0">1.3 历史正式版</a> · <a href="https://ahuamiao.com/sites/other/roudai-tools.html#motion">官网和图文教程</a></p>
 
-<p align="center">macOS 13 及以上 · A-roll 识别：macOS 26 及以上 · Apple 芯片和 Intel 通用 · 1.7 正式 App 已通过 Developer ID 签名与 Apple 公证</p>
+<p align="center">macOS 13 及以上 · A-roll 识别：macOS 26 及以上 · Apple 芯片和 Intel 通用 · 1.8 正式 App 已通过 Developer ID 签名与 Apple 公证</p>
 
 ![剪辑台](docs/screenshots/board.jpg)
 
@@ -77,6 +77,10 @@
 ## 教程
 
 [官网教程](https://ahuamiao.com/sites/other/roudai-tools.html#m-tutorial)：十一步，一步一张图。
+
+## 编导分镜与拍摄清单（1.8 正式版）
+
+导入口播文稿自动拆解四条轨道：A-roll 主讲出镜（含景别跳切与双机位调度）、B-roll 动效、B-roll 产品与场景实拍、B-roll 外部资料素材。顶栏新增「分镜板」宫格视图，动效镜渲染关键帧，实拍与出镜镜绘制构图线框示意，标注景别、运镜、主体、拍摄说明与后期卡点；支持导出离线单文件《分镜与拍摄清单 HTML》。
 
 ## 纸张与拼贴（1.7 正式版）
 

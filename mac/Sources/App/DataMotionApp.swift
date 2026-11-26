@@ -40,6 +40,7 @@ struct DocumentActions {
     var loadSample: () -> Void
     var generate: () -> Void
     var export: () -> Void
+    var exportStoryboard: () -> Void
     var previous: () -> Void
     var next: () -> Void
     var playPause: () -> Void
@@ -64,10 +65,11 @@ extension FocusedValues {
     @Entry var documentActions: DocumentActions?
 }
 
-// 一个窗口只有三页：写文稿、调画面、看全表
+// 一个窗口四页：写文稿、调画面、看分镜板、看全表
 enum ViewMode: CaseIterable, Identifiable {
     case script
     case stage
+    case board
     case table
 
     var id: Self { self }
@@ -76,6 +78,7 @@ enum ViewMode: CaseIterable, Identifiable {
         switch self {
         case .script: "文稿"
         case .stage: "画面"
+        case .board: "分镜板"
         case .table: "分镜表"
         }
     }
@@ -84,6 +87,7 @@ enum ViewMode: CaseIterable, Identifiable {
         switch self {
         case .script: "doc.text"
         case .stage: "play.rectangle"
+        case .board: "square.grid.2x2"
         case .table: "tablecells"
         }
     }
@@ -117,6 +121,9 @@ struct AppCommands: Commands {
             Divider()
             Button("导出…") { actions?.export() }
                 .keyboardShortcut("e", modifiers: .command)
+                .disabled(actions?.hasRows != true)
+            Button("导出分镜拍摄单…") { actions?.exportStoryboard() }
+                .keyboardShortcut("e", modifiers: [.command, .shift])
                 .disabled(actions?.hasRows != true)
         }
 

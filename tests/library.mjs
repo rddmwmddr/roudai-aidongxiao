@@ -251,6 +251,43 @@ const result = await page.evaluate(async () => {
   }).filter(Boolean);
   out.adoptText = D.adopt({line: '这个系统彻底崩溃了。后面的话', tpl: 'statement'}, 'mp006').lines;
   out.rankPlain = rankTop({line: '这个系统彻底崩溃了', tpl: 'statement', lines: ['这个系统彻底崩溃了']});
+  // 编导分镜与构图线框示意：自动拆出 A-roll（含景别跳切）、B-roll 动效、B-roll 实拍、B-roll 素材，且 9 种示意图都能画且幂等
+  const sampleScript = [
+    '第一章 开场',
+    '遇到一个问题，你会问AI吗？我会。',
+    '那我换个问法：有哪件事，你不问AI？',
+    '买手机的时候，两款手机放在桌面上对比，机身磨砂边框和镜头模组手感完全不同。',
+    '你拿在手里点开相机拍张照片，滑动屏幕看看样张。',
+    '我们调查了1000位朋友，其中有66%的朋友每周使用，每天使用的有37%。',
+    '今年7月，人民日报报道了一起误信建议导致住院的事件。',
+  ].join('\n');
+  const planned = window.DMBoard.generate(sampleScript);
+  const tracks = new Set(planned.rows.map((r) => r.track));
+  const arollSizes = new Set(planned.rows.filter((r) => r.track === 'aroll').map((r) => r.shotSize));
+  const sketchErrors = [];
+  ['host_ms', 'host_mcu', 'host_cu', 'host_side', 'product_cu', 'topdown_hands', 'versus_two', 'person_scene', 'footage_doc'].forEach((sk) => {
+    const row = {
+      id: 1, no: '001', ch: '第一章',
+      track: sk === 'footage_doc' ? 'footage' : sk.startsWith('host_') ? 'aroll' : 'shoot',
+      shotSize: '中近景', cameraMove: '跳切推近', subject: '测试主体',
+      shootGuide: '侧逆光勾勒边框轮廓', postGuide: '卡重音词硬切',
+      sketchKind: sk, line: '这是一句用于检验构图线框示意图的口播台词。', tpl: 'statement', template: 'statement',
+    };
+    const sc = D.createScene(row, W);
+    sc.draw(g, sc.duration * 0.5);
+    const snap1 = grab();
+    if (variety(snap1) < 3) sketchErrors.push(`${sk}: 空白`);
+    sc.draw(g, 0.2);
+    sc.draw(g, sc.duration * 0.5);
+    if (differ(snap1, grab()) > 50) sketchErrors.push(`${sk}: 不幂等`);
+  });
+  out.director = {
+    hasAllFourTracks: ['aroll', 'motion', 'shoot', 'footage'].every((k) => tracks.has(k)),
+    arollVariesShotSize: arollSizes.size >= 2,
+    noMetricCardSpam: !D.libraryPrompt().includes('arc_metric_card'),
+    pendingSlotStaysMotion: window.DMBoard.generate('具体几类用途的占比，我直接放屏幕上。').rows[0].track === 'motion' && window.DMBoard.generate('具体几类用途的占比，我直接放屏幕上。').rows[0].pending === true,
+    sketchErrors,
+  };
   return out;
 });
 
@@ -304,6 +341,7 @@ if (errs.length) console.log('页面错误', errs);
 const widget = result.widget;
 const timedBad = Object.values(result.timed).filter((v) => !v).length + result.pagedAllChars.length;
 const widgetBad = timedBad + (widget.short === null ? 1 : 0) + (widget.long === null ? 0 : 1) + (widget.noNumber ? 1 : 0) + (widget.percent ? 0 : 1) + (widget.notPercent ? 1 : 0) + (widget.adopted ? 0 : 1) + widget.stockWords.length + (result.filmInherit === 'rgb(0, 0, 0)' ? 0 : 1);
-const bad = Object.values(result.switchChecks).filter((v) => !v).length + result.colors.length + widgetBad + result.lfEnglish.length + result.lfNoData.length + (result.adopt.sample && result.adopt.canDraw ? 0 : 1) + (result.adoptKeepsData ? 0 : 1) + (result.adoptBack ? 0 : 1) + result.noCategory.length + result.failed.length + result.impure.length + result.blank.length + result.noKeywords.length + result.textFailed.length + errs.length;
+const directorBad = (result.director.hasAllFourTracks ? 0 : 1) + (result.director.arollVariesShotSize ? 0 : 1) + (result.director.noMetricCardSpam ? 0 : 1) + (result.director.pendingSlotStaysMotion ? 0 : 1) + result.director.sketchErrors.length;
+const bad = Object.values(result.switchChecks).filter((v) => !v).length + directorBad + result.colors.length + widgetBad + result.lfEnglish.length + result.lfNoData.length + (result.adopt.sample && result.adopt.canDraw ? 0 : 1) + (result.adoptKeepsData ? 0 : 1) + (result.adoptBack ? 0 : 1) + result.noCategory.length + result.failed.length + result.impure.length + result.blank.length + result.noKeywords.length + result.textFailed.length + errs.length;
 console.log(bad ? `有 ${bad} 处问题` : '全部通过');
 process.exit(bad ? 1 : 0);

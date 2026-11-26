@@ -86,15 +86,21 @@ nonisolated struct AIClient: Sendable {
     }
 
     // ---------- 生成 ----------
-    // 返回完整文本。onText 收到目前累计的字符数，界面用来显示进度
+    // 返回完整文本。onStream 收到目前累计的文本，可抛错提前熔断异常长输出
     func generate(system: String, user: String, schema: [String: Any]?, onProgress: @Sendable @escaping (Int) -> Void) async throws -> String {
+        try await generateStream(system: system, user: user, schema: schema) { partial in
+            onProgress(partial.count)
+        }
+    }
+
+    func generateStream(system: String, user: String, schema: [String: Any]?, onStream: @Sendable @escaping (String) throws -> Void) async throws -> String {
         guard !profile.model.isEmpty else { throw AIError.missingModel(profile.name) }
         var attempt = 0
         while true {
             do {
-                return try await once(system: system, user: user, schema: schema, onProgress: onProgress)
+                return try await once(system: system, user: user, schema: schema, onStream: onStream)
             } catch let e as AIError {
-                // 只重试限流和服务端错误，4xx 重试没有用
+                // 只重试限流和服务端错误，4xx 与截断不盲目重试
                 let retryable: Bool
                 switch e {
                 case .rateLimited: retryable = true
@@ -109,10 +115,10 @@ nonisolated struct AIClient: Sendable {
         }
     }
 
-    private func once(system: String, user: String, schema: [String: Any]?, onProgress: @Sendable @escaping (Int) -> Void) async throws -> String {
+    private func once(system: String, user: String, schema: [String: Any]?, onStream: @Sendable @escaping (String) throws -> Void) async throws -> String {
         switch profile.kind {
-        case .anthropic: try await claude(system: system, user: user, schema: schema, onProgress: onProgress)
-        case .openAICompatible: try await openAI(system: system, user: user, schema: schema, onProgress: onProgress)
+        case .anthropic: try await claude(system: system, user: user, schema: schema, onStream: onStream)
+        case .openAICompatible: try await openAI(system: system, user: user, schema: schema, onStream: onStream)
         }
     }
 
@@ -158,7 +164,7 @@ nonisolated struct AIClient: Sendable {
         r.setValue("2026-10-21", forHTTPHeaderField: "anthropic-version")
     }
 
-    private func claude(system: String, user: String, schema: [String: Any]?, onProgress: @Sendable @escaping (Int) -> Void) async throws -> String {
+    private func claude(system: String, user: String, schema: [String: Any]?, onStream: @Sendable @escaping (String) throws -> Void) async throws -> String {
         var r = URLRequest(url: try url("/v1/messages"))
         r.httpMethod = "POST"
         r.timeoutInterval = 600
@@ -194,7 +200,7 @@ nonisolated struct AIClient: Sendable {
             case "content_block_delta":
                 if let d = event["delta"] as? [String: Any], d["type"] as? String == "text_delta", let t = d["text"] as? String {
                     text += t
-                    onProgress(text.count)
+                    try onStream(text)
                 }
             case "message_delta":
                 if let d = event["delta"] as? [String: Any], let s = d["stop_reason"] as? String { stop = s }
@@ -218,7 +224,7 @@ nonisolated struct AIClient: Sendable {
         r.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
     }
 
-    private func openAI(system: String, user: String, schema: [String: Any]?, onProgress: @Sendable @escaping (Int) -> Void) async throws -> String {
+    private func openAI(system: String, user: String, schema: [String: Any]?, onStream: @Sendable @escaping (String) throws -> Void) async throws -> String {
         var r = URLRequest(url: try url("/chat/completions"))
         r.httpMethod = "POST"
         r.timeoutInterval = 600
@@ -256,7 +262,7 @@ nonisolated struct AIClient: Sendable {
             guard let choice = (event["choices"] as? [[String: Any]])?.first else { continue }
             if let delta = choice["delta"] as? [String: Any], let t = delta["content"] as? String {
                 text += t
-                onProgress(text.count)
+                try onStream(text)
             }
             if let f = choice["finish_reason"] as? String { finish = f }
         }
@@ -288,7 +294,7 @@ nonisolated struct AIClient: Sendable {
 
     // 发一条很短的消息，确认地址、Key、模型三样都对
     func testConnection() async throws -> String {
-        let reply = try await once(system: "只回答「好」。", user: "连接测试", schema: nil, onProgress: { _ in })
+        let reply = try await once(system: "只回答「好」。", user: "连接测试", schema: nil, onStream: { _ in })
         return String(reply.prefix(30))
     }
 }

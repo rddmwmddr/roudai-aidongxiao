@@ -11,7 +11,9 @@ struct MotionButton: View {
     let onPick: (Shot, Shot) -> Bool
     @State private var showing = false
 
-    private var title: String { names[shot.template] ?? (shot.template.hasPrefix("local.") ? "本机模板未加载" : "重音字幕") }
+    private var title: String {
+        shot.isMotion ? (names[shot.template] ?? (shot.template.hasPrefix("local.") ? "本机模板未加载" : "重音字幕")) : "换成动效"
+    }
 
     var body: some View {
         Button {

@@ -37,7 +37,16 @@ struct EditorStage<Center: View>: View {
         VStack(spacing: 0) {
             if mode == .stage, let current {
                 HStack(spacing: 8) {
+                    TrackButton(shot: current, floating: true) { _ = onPick(current, $0) }
                     MotionButton(shot: current, stage: stage, names: names, previousDataTemplate: previousDataTemplate, floating: true, onPick: onPick)
+                    if !current.isMotion, !current.shotSize.isEmpty {
+                        Text([current.shotSize, current.cameraMove].filter { !$0.isEmpty }.joined(separator: " · "))
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 10)
+                            .frame(height: 30)
+                            .glass(in: Capsule())
+                    }
                     Button {
                         showingElements.toggle()
                     } label: {
@@ -250,7 +259,7 @@ struct ShotTimeline: View {
                             seconds: duration(shot),
                             natural: naturals[shot.id],
                             chapterStart: isChapterStart(shot),
-                            motionName: names[shot.template] ?? "重音字幕",
+                            motionName: shot.timelineCaption(names: names),
                             selected: selection == shot.id,
                             picked: picked.contains(shot.id),
                             group: picked.contains(shot.id) && picked.count >= 2 ? picked : [shot.id],

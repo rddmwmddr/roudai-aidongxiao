@@ -1655,14 +1655,15 @@
 
   // ---------- 从文案里读出一串数：拿铁有3万杯，美式有12万杯。两个以上同单位才算 ----------
   const UNIT = '(万亿|亿|万|千|百|元|块|人|个|家|款|次|分钟|小时|分|秒|天|周|%|％)';
+  const BAD_SERIES_LABEL = /^(翻完|看完|试机|别光|找把|真动心|其实|而且|后来|前面|回头|顺着|如果|就算|哪怕|中途|平时|在家|刚戴)/;
   D.parseSeries = (text) => {
     const clauses = String(text).split(/[，,。；;、！!？?\n]/).map((s) => s.trim()).filter(Boolean);
     const found = [];
     clauses.forEach((clause) => {
-      const m = clause.match(new RegExp(`^(.*?)(?:有|是|为|达到|达|约|超过|占|增长到|涨到|跌到|降到|到了|卖了|花了|赚了)?\\s*(\\d+(?:\\.\\d+)?)\\s*${UNIT}`));
+      const m = clause.match(new RegExp(`^(.*?)(?:有|是|为|达到|达|约|超过|占|增长到|涨到|跌到|降到|到了|卖了|花了|赚了|用时)\\s*(\\d+(?:\\.\\d+)?)\\s*${UNIT}(?![月星礼周代])`));
       if (!m) return;
       const label = m[1].replace(/^(其中|而|但|还有|以及|和|与|到了|到|在|今天|今年|如今)/, '').replace(/(有|是|为|的)$/, '').trim();
-      if (!label || [...label].length > 12) return;
+      if (!label || [...label].length > 10 || BAD_SERIES_LABEL.test(label)) return;
       found.push({label, value: +m[2], unit: m[3] === '％' ? '%' : m[3]});
     });
     if (found.length < 2) return null;

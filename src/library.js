@@ -605,7 +605,7 @@
     return k ? scene.duration * k : Math.max(0, scene.duration - 0.05);
   };
 
-  const OWN = new Set(['__proto__', 'constructor', 'prototype', 'id', 'no', 'ch', 'kind', 'cat', 'line', 'visual', 'tpl', 'template', 'note', 'pending', 'sampleData', 'sampleBackup', 'layers', 'overlayText', 'sampleSize', 'speed', 'hold', 'dur', 'theme', 'colors']);
+  const OWN = new Set(['__proto__', 'constructor', 'prototype', 'id', 'no', 'ch', 'kind', 'cat', 'track', 'shotSize', 'cameraMove', 'subject', 'shootGuide', 'postGuide', 'sketchKind', 'line', 'visual', 'tpl', 'template', 'note', 'pending', 'sampleData', 'sampleBackup', 'layers', 'overlayText', 'sampleSize', 'speed', 'hold', 'dur', 'theme', 'colors']);
   const SAMPLE_NOTE = '这是样例数据，改成真实的再导出';
   const isNumber = (v) => v != null && v !== '' && Number.isFinite(+v);
 
@@ -622,6 +622,14 @@
   };
 
   D.motionError = (row, requireFit = false) => {
+    if (D.isSketchShot?.(row)) {
+      try {
+        D.createScene(Object.assign({}, row, {template: row.tpl || 'statement'}), 64);
+        return '';
+      } catch (e) {
+        return e.message;
+      }
+    }
     const tpl = D.TEMPLATES[row.tpl];
     if (requireFit && !tpl) return '找不到这个动效';
     try {
@@ -640,6 +648,7 @@
   };
 
   D.exportIssue = (row) => {
+    if (D.isSketchShot?.(row)) return D.motionError(row) || (row.pending ? '数据待确认，请核对并确认当前数据' : '');
     if (row.sampleData) return '正在使用样例数据，请核对并确认当前数据';
     if (D.TEMPLATES[row.tpl]?.noExport) return '这个动效无法导出';
     return D.motionError(row) || (row.pending ? '数据待确认，请核对并确认当前数据' : '');
@@ -682,7 +691,7 @@
     const category = tpl.sourceCategory || tpl.cat;
     const cat = ['percent', 'chart', 'fine'].includes(category) ? '数据动效'
       : ['text', 'texfx'].includes(category) ? '文字动效' : '屏幕动效';
-    const next = Object.assign({}, D.motionSource(row), {tpl: id, cat});
+    const next = Object.assign({}, D.motionSource(row), {tpl: id, track: 'motion', kind: 'B', cat});
     delete next.template;
     if (row.tpl !== id) {
       delete next.pending;
@@ -781,7 +790,7 @@
       .replace(/(\d{4})[-/]([01]?\d)(?:[-/]([0-3]?\d))?(?!\d)/g, (_, year, month, day) => [year, month, day].filter(Boolean).join('、'))
       .replace(/(?<=\d),(?=\d{3}(?:[,\D]|$))/g, '')
       .replace(/百分之\s*([零〇一二两三四五六七八九十百点]+)/g, (_, n) => `${root.DMParser.cnToNumber(n)}%`)
-      .replace(/([零〇一二两三四五六七八九十百千]+(?:点[零〇一二两三四五六七八九]+)?)(?=(?:亿|万|年|月|日|秒|分|个|位|人|元|台|次|成|%))/g, (n) => String(root.DMParser.cnToNumber(n)))
+      .replace(/([零〇一二两三四五六七八九十百千]+(?:点[零〇一二两三四五六七八九]+)?)(?=(?:亿|万|年|月|日|秒|分|个|位|人|元|台|次|成|步|天|周|代|倍|款|种|条|项|集|部|克|%))/g, (n) => String(root.DMParser.cnToNumber(n)))
       .replace(/负(?=\d)/g, '-');
     return [...text.matchAll(new RegExp(`([+-]?\\d+(?:\\.\\d+)?)(?:\\s*(${magnitude}))?`, 'g'))].map(([, value, unit]) => ({
       value: Number(value), factor: scale(unit),
@@ -893,15 +902,26 @@
       .sort((a, b) => order[a.category] - order[b.category]);
   };
 
-  // 给 AI 的动效清单：写进分镜提示词
+  // 给 AI 编导的高表现力动效子集：过滤掉后台仪表盘指标卡与网页装饰控件，只把有叙事张力的电影感模板交给 AI
+  const AI_LIBRARY_ALLOW = new Set([
+    // 电影感文字动作与重音标记
+    'mp005', 'mp006', 'mp007', 'mp080', 'mp086', 'mp094', 'mp129', 'mp130', 'mp146',
+    'arc_text_reveal',
+    // 具象隐喻文字特效（文案意象与字形动作一致时用）
+    'cot08', 'cot12', 'cot19', 'cot27', 'cot44', 'cot68', 'cot88', 'cot122',
+    // 质感重章（独立短句点题、揭露、盖章、聚光）
+    'kxm_emboss', 'kxm_spotlight', 'kxm_stamp', 'kxm_redact', 'kxm_xray',
+    // 叙事状态与交互隐喻（步骤拆解、倒计时、置信度、单选抉择、搜索提问）
+    'kxs_steps', 'kxs_countdown', 'kxs_confidence', 'kxs_ring',
+    'kxi_prompt', 'kxi_togglepills', 'arc_expanding_search', 'arc_chat_thread',
+  ]);
   D.libraryPrompt = () => {
     const by = {};
     Object.values(D.TEMPLATES).forEach((t) => {
-      // 加载、按钮、开关几十个样子只差细节，靠人手选，不进提示词
-      if (!t.library || ['loader', 'button', 'toggle'].includes(t.cat)) return;
-      (by[t.cat] = by[t.cat] || []).push(`${t.id} ${t.name}${t.takesText ? '*' : ''}`);
+      if (!t.library || !AI_LIBRARY_ALLOW.has(t.id)) return;
+      (by[t.cat] = by[t.cat] || []).push(`${t.id} ${t.name}${t.takesText ? '*' : ''}（${t.desc}）`);
     });
-    const list = CATEGORIES.filter((c) => by[c.id]).map((c) => `${c.name}：${by[c.id].join('，')}`).join('\n');
-    return `\n\n动效库（文案确实说到才用，tpl 写编号；带 * 的动效，data 里写 lines 就把文字放进动作，其余 lines 是字幕，可省略）：\n${list}`;
+    const list = CATEGORIES.filter((c) => by[c.id]).map((c) => `${c.name}：${by[c.id].join('；')}`).join('\n');
+    return `\n\n精选视觉隐喻与交互动效（仅当文案意象或动作与画面一致时选用，严禁拿 UI 卡片硬塞普通报数；带 * 的动效在 data 里填简洁 lines，不超 16 字）：\n${list}`;
   };
 })(window);

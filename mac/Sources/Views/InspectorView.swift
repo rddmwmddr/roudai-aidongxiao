@@ -270,6 +270,9 @@ struct ShotForm: View {
                 if hasMotionConfig {
                     MotionConfigEditor(shot: $shot, stage: stage)
                 }
+                SectionCard(title: "编导与拍摄", symbol: "video") {
+                    directorProperties
+                }
                 SectionCard(title: "口播", symbol: "waveform") {
                     CommitField(title: "口播", text: $shot.line, axis: .vertical, lineLimit: 1...12)
                 }
@@ -364,6 +367,68 @@ struct ShotForm: View {
         }
     }
 
+    private static let trackOptions: [(String, String)] = [
+        ("aroll", "A-roll 出镜"),
+        ("motion", "B-roll 动效"),
+        ("shoot", "B-roll 实拍"),
+        ("footage", "B-roll 素材"),
+    ]
+    private static let sizePresets = ["中景", "中近景", "近景", "特写", "侧机位中近", "产品特写", "微距细节", "桌面俯拍", "过肩操作", "双机同框", "中景实拍", "全景空镜", "全屏资料", "录屏特写"]
+    private static let movePresets = ["固定", "跳切推近", "双机位切B机", "缓慢推轨", "缓慢拉远", "横移滑轨", "俯仰摇镜", "跟焦切换", "手持呼吸感", "局部放大"]
+
+    private var directorProperties: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            PropertyRow("轨道") {
+                ValueMenu(name: "轨道", value: Binding(get: { shot.track }, set: { shot.track = $0 }), options: Self.trackOptions)
+            }
+            PropertyRow("景别") {
+                HStack(spacing: 6) {
+                    CommitField(title: "景别", text: $shot.shotSize)
+                    Menu {
+                        ForEach(Self.sizePresets, id: \.self) { preset in
+                            Button(preset) { shot.shotSize = preset }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .menuIndicator(.hidden)
+                    .fixedSize()
+                    .named("景别预设")
+                }
+            }
+            PropertyRow("运镜") {
+                HStack(spacing: 6) {
+                    CommitField(title: "运镜", text: $shot.cameraMove)
+                    Menu {
+                        ForEach(Self.movePresets, id: \.self) { preset in
+                            Button(preset) { shot.cameraMove = preset }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .menuIndicator(.hidden)
+                    .fixedSize()
+                    .named("运镜预设")
+                }
+            }
+            PropertyRow("主体") {
+                CommitField(title: "拍摄主体", text: $shot.subject)
+            }
+            PropertyRow("拍摄") {
+                CommitField(title: "拍摄或素材指导", text: $shot.shootGuide, axis: .vertical, lineLimit: 1...5)
+            }
+            PropertyRow("后期") {
+                CommitField(title: "后期导演说明", text: $shot.postGuide, axis: .vertical, lineLimit: 1...5)
+            }
+        }
+    }
+
     private var properties: some View {
         VStack(alignment: .leading, spacing: 0) {
             PropertyRow("章节") {
@@ -404,7 +469,7 @@ private struct ExtraFields: View {
     @State private var problem: String?
     @FocusState private var focused: Bool
 
-    private static let knownKeys: Set<String> = ["id", "no", "ch", "kind", "cat", "line", "visual", "tpl", "note", "pending", "sampleData", "sampleBackup", "groups", "series", "lines", "layers", "overlayText", "sampleSize", "speed", "hold", "dur", "theme"]
+    private static let knownKeys: Set<String> = ["id", "no", "ch", "kind", "cat", "track", "shotSize", "cameraMove", "subject", "shootGuide", "postGuide", "sketchKind", "line", "visual", "tpl", "note", "pending", "sampleData", "sampleBackup", "groups", "series", "lines", "layers", "overlayText", "sampleSize", "speed", "hold", "dur", "theme"]
 
     private var hasExtra: Bool {
         shot.fields.keys.contains { !Self.knownKeys.contains($0) }

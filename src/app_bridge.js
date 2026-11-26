@@ -65,6 +65,7 @@
     editorRaw = raw;
     editor.bind(raw, keepSelection);
   };
+  const layerKeyOf = (raw) => (raw && D.isSketchShot && D.isSketchShot(raw) ? `sketch:${D.shotTrack(raw)}` : (raw && raw.template) || '');
 
   const editor = new root.DMEditor({
     host: stageEl,
@@ -92,13 +93,14 @@
       S.dirty = true;
     },
     commit: (layers, label) => {
-      if (S.raw) {
+      const lkey = layerKeyOf(S.raw);
+      if (S.raw && lkey) {
         S.raw.layers = S.raw.layers || {};
-        if (Object.keys(layers).length) S.raw.layers[S.raw.template] = layers;
-        else delete S.raw.layers[S.raw.template];
+        if (Object.keys(layers).length) S.raw.layers[lkey] = layers;
+        else delete S.raw.layers[lkey];
       }
       report();
-      post({type: 'commit', template: S.raw && S.raw.template, layers: JSON.stringify(layers), label});
+      post({type: 'commit', template: lkey, layers: JSON.stringify(layers), label});
     },
     // 双击改字：改到的字段交给原生那边写进文档（一步撤销），写完会重新载入这一镜
     editRow: (patch, label, id) => postEditRow(patch, label, id ?? S.row?.id),
@@ -382,6 +384,29 @@
     },
     catalog() {
       return JSON.stringify({categories: D.CATEGORIES, items: D.catalog()});
+    },
+    // 分镜板卡片与导出分镜单的高清帧：动效镜画关键帧，A-roll / 实拍 / 素材画构图线框示意图
+    async shotFrame(rowJSON, width) {
+      const row = JSON.parse(rowJSON);
+      const w = width || 480;
+      const h = Math.round((w * 9) / 16);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const g = canvas.getContext('2d', {alpha: false});
+      g.fillStyle = '#101114';
+      g.fillRect(0, 0, w, h);
+      try {
+        const raw = Object.assign({}, row, {template: row.tpl || 'statement'});
+        if (raw.motion && D.Opus) await D.Opus.prepareAssets(raw);
+        const scene = D.createScene(raw, w);
+        const at = D.isSketchShot && D.isSketchShot(row) ? scene.duration * 0.55 : D.thumbTime(row.tpl, scene);
+        if (raw.motion && D.Opus) await D.Opus.prepareFrame(raw, at);
+        scene.draw(g, at);
+      } catch (e) {
+        return '';
+      }
+      return canvas.toDataURL('image/jpeg', 0.84);
     },
     // 时间线上的胶片：这一镜从出来到结束的几个瞬间
     async frames(rowJSON, count) {

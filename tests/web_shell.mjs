@@ -132,7 +132,10 @@ const dragTrim = async (page, i, dx) => {
   await page.waitForTimeout(150);
   check('换效果能撤销', (await page.evaluate(() => DMApp.rows[5].tpl)) === tpl0);
 
-  // 三页
+  // 四页：分镜板与分镜表
+  await page.locator('.seg button[data-p="board"]').click();
+  await page.waitForTimeout(200);
+  check('分镜板每镜一张卡片', (await page.locator('.bcard').count()) === count.rows);
   await page.locator('.seg button[data-p="table"]').click();
   await page.waitForTimeout(200);
   check('分镜表每镜一行', (await page.locator('.row').count()) === count.rows);

@@ -42,17 +42,22 @@
   const asc=descriptor(0,original.length);if(!asc?.length)throw new Error('AAC 编码头缺少可用音频配置');return {...meta,decoderConfig:{...config,description:asc.buffer}};
  }
  let delayPromise;
+ async function measureDelay(config,chunks,impulse){
+  let failure;const decoded=[];
+  const decoder=new AudioDecoder({output:a=>{const d=new Float32Array(a.numberOfFrames);a.copyTo(d,{planeIndex:0,format:'f32-planar'});decoded.push({start:Math.round(a.timestamp*RATE/1e6),data:d});a.close()},error:e=>failure=e});
+  decoder.configure(config);chunks.forEach(c=>decoder.decode(c));await decoder.flush();decoder.close();if(failure)throw failure;
+  let peak=0,position=0;for(const part of decoded)for(let i=0;i<part.data.length;i++)if(Math.abs(part.data[i])>peak){peak=Math.abs(part.data[i]);position=part.start+i}
+  const delay=position-impulse;if(peak<.05||delay<0||delay>4096)throw new Error('无法确定 AAC 编码延迟，请更换系统编码器');return delay;
+ }
  async function encoderDelay(){
   return delayPromise??=(async()=>{
-   const cfg=await codecConfig(),chunks=[],decoded=[];let meta,failure;
+   const cfg=await codecConfig(),chunks=[];let meta,failure;
    const encoder=new AudioEncoder({output:(c,m)=>{chunks.push(c);if(m?.decoderConfig)meta=m.decoderConfig},error:e=>failure=e});encoder.configure(cfg);
    const size=12000,impulse=4096,data=new Float32Array(size*2);data[impulse]=.8;data[size+impulse]=.8;
    const input=new AudioData({format:'f32-planar',sampleRate:RATE,numberOfFrames:size,numberOfChannels:2,timestamp:0,data});encoder.encode(input);input.close();await encoder.flush();encoder.close();if(failure)throw failure;
-   if(typeof AudioDecoder==='undefined')throw new Error('当前系统无法校准音效编码延迟');
-   const decoder=new AudioDecoder({output:a=>{const d=new Float32Array(a.numberOfFrames);a.copyTo(d,{planeIndex:0,format:'f32-planar'});decoded.push({start:Math.round(a.timestamp*RATE/1e6),data:d});a.close()},error:e=>failure=e});
-   decoder.configure(meta);chunks.forEach(c=>decoder.decode(c));await decoder.flush();decoder.close();if(failure)throw failure;
-   let peak=0,position=0;for(const part of decoded)for(let i=0;i<part.data.length;i++)if(Math.abs(part.data[i])>peak){peak=Math.abs(part.data[i]);position=part.start+i}
-   const delay=position-impulse;if(peak<.05||delay<0||delay>4096)throw new Error('无法确定 AAC 编码延迟，请更换系统编码器');return delay;
+   if(typeof AudioDecoder==='undefined')return 2112;
+   const asc=aacMetadata({decoderConfig:meta}).decoderConfig;
+   try{return await measureDelay(asc,chunks,impulse)}catch{try{return await measureDelay(meta,chunks,impulse)}catch(e){if(e?.name==='EncodingError')return 2112;throw e}}
   })();
  }
  async function encode(buffer,muxer,signal){const cfg=await codecConfig();let failure;const encoder=new AudioEncoder({output:(chunk,meta)=>muxer.addAudioChunk(chunk,aacMetadata(meta)),error:e=>failure=e});try{encoder.configure(cfg);for(let pos=0;pos<buffer.length;pos+=1024){if(signal?.aborted)throw new DOMException('已取消','AbortError');if(failure)throw failure;const n=Math.min(1024,buffer.length-pos),data=new Float32Array(n*2);for(let ch=0;ch<2;ch++)data.set(buffer.getChannelData(ch).subarray(pos,pos+n),ch*n);const audio=new AudioData({format:'f32-planar',sampleRate:RATE,numberOfFrames:n,numberOfChannels:2,timestamp:Math.round(pos/RATE*1e6),data});encoder.encode(audio);audio.close();while(encoder.encodeQueueSize>24)await Promise.race([new Promise(r=>encoder.addEventListener('dequeue',r,{once:true})),new Promise(r=>setTimeout(r,100))])}await encoder.flush();if(failure)throw failure}finally{encoder.close()}}
