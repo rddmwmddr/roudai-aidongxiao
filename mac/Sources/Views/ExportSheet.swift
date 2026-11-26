@@ -1,11 +1,17 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
-// 导出只有这一个面板：选范围、分辨率、帧率，按导出。
-// 一镜存成一个文件，多镜选一个文件夹（已有的跳过，写一份输出清单）
+// 导出面板：默认只导出动效镜 MP4（可勾选连构图示意一起导出全片动态预演），也支持一键导出离线《分镜板与拍摄清单 HTML》
 struct ExportSheet: View {
     enum Scope: Hashable {
         case current, visible, all, picked
+    }
+
+    enum Format: String, CaseIterable, Identifiable {
+        case mp4
+        case storyboardHTML
+        var id: String { rawValue }
     }
 
     let board: Board
@@ -13,22 +19,33 @@ struct ExportSheet: View {
     let visible: [Shot]
     let picked: Set<Shot.ID>
     let names: [String: String]
+    let stage: StageController?
+    let initialFormat: Format
     /// 选保存位置。测试不弹系统面板，直接给一个地址
     let destination: ((_ singleFileName: String?) -> URL?)?
     @Environment(\.dismiss) private var dismiss
     @AppStorage("export.size") private var sizeRaw = ExportSize.uhd.rawValue
     @AppStorage("export.fps") private var fps = 60
     @State private var scope: Scope
+    @State private var format: Format
+    @State private var includeSketch = false
+    @State private var htmlWriting = false
+    @State private var htmlFraction = 0.0
+    @State private var htmlDoneURL: URL?
+    @State private var htmlError: String?
     @StateObject private var runner = BatchRunner()
 
-    init(board: Board, current: Shot?, visible: [Shot], picked: Set<Shot.ID>, names: [String: String], destination: ((String?) -> URL?)? = nil) {
+    init(board: Board, current: Shot?, visible: [Shot], picked: Set<Shot.ID>, names: [String: String], stage: StageController? = nil, initialFormat: Format = .mp4, destination: ((String?) -> URL?)? = nil) {
         self.board = board
         self.current = current
         self.visible = visible
         self.picked = picked
         self.names = names
+        self.stage = stage
+        self.initialFormat = initialFormat
         self.destination = destination
-        _scope = State(initialValue: picked.count >= 2 ? .picked : current != nil ? .current : .all)
+        _format = State(initialValue: initialFormat)
+        _scope = State(initialValue: initialFormat == .storyboardHTML ? .all : (picked.count >= 2 ? .picked : current != nil ? .current : .all))
     }
 
     private var size: ExportSize { ExportSize(rawValue: sizeRaw) ?? .uhd }
@@ -43,26 +60,50 @@ struct ExportSheet: View {
     }
 
     private func exportable(_ s: Scope) -> [Shot] {
-        base(s).filter { !$0.isPending }
+        let pool = base(s)
+        if format == .storyboardHTML { return pool }
+        return pool.filter { shot in
+            guard !shot.isPending else { return false }
+            // 单导当前这一镜时，即便是示意图镜也允许直接导出预演；多镜批量时默认只导动效镜，勾选开关才连示意图一起导
+            if s == .current { return true }
+            return shot.isMotion || includeSketch
+        }
+    }
+
+    private var nonMotionCount: Int {
+        guard format == .mp4, scope != .current else { return 0 }
+        return base(scope).filter { !$0.isMotion && !$0.isPending }.count
     }
 
     private var missingData: Int {
-        base(scope).filter(\.isPending).count
+        guard format == .mp4 else { return 0 }
+        return base(scope).filter { ($0.isMotion || includeSketch || scope == .current) && $0.isPending }.count
     }
 
     private var failedAlone: String? {
+        if let htmlError { return htmlError }
         if runner.items.count == 1, !runner.isRunning, case .failed(let text) = runner.items[0].status { return text }
         return nil
     }
 
     private var showsForm: Bool {
-        runner.items.isEmpty || failedAlone != nil
+        (runner.items.isEmpty && htmlDoneURL == nil && !htmlWriting) || failedAlone != nil
+    }
+
+    private var isBusy: Bool {
+        runner.isRunning || htmlWriting
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if showsForm {
                 Form {
+                    if stage != nil {
+                        Picker("类型", selection: $format) {
+                            Text("视频素材（MP4）").tag(Format.mp4)
+                            Text("分镜与拍摄清单（HTML）").tag(Format.storyboardHTML)
+                        }
+                    }
                     Picker("范围", selection: $scope) {
                         if current != nil {
                             Text("这一镜").tag(Scope.current)
@@ -75,15 +116,21 @@ struct ExportSheet: View {
                             Text("选中的 \(exportable(.picked).count)").tag(Scope.picked)
                         }
                     }
-                    Picker("分辨率", selection: $sizeRaw) {
-                        ForEach(ExportSize.allCases) { s in Text(s.label).tag(s.rawValue) }
-                    }
-                    Picker("帧率", selection: $fps) {
-                        Text("60").tag(60)
-                        Text("30").tag(30)
+                    if format == .mp4 {
+                        Picker("分辨率", selection: $sizeRaw) {
+                            ForEach(ExportSize.allCases) { s in Text(s.label).tag(s.rawValue) }
+                        }
+                        Picker("帧率", selection: $fps) {
+                            Text("60").tag(60)
+                            Text("30").tag(30)
+                        }
                     }
                 }
                 .formStyle(.columns)
+                if format == .mp4, scope != .current, base(scope).contains(where: { !$0.isMotion }) {
+                    Toggle("连 A-roll / 实拍 / 素材构图示意一起导成动态预演（\(nonMotionCount) 镜）", isOn: $includeSketch)
+                        .named("包含构图示意")
+                }
                 if missingData > 0 {
                     Text("\(missingData) 镜缺数据，不导出")
                         .foregroundStyle(.secondary)
@@ -93,6 +140,15 @@ struct ExportSheet: View {
                         .foregroundStyle(.red)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+            } else if let doneURL = htmlDoneURL {
+                Text(doneURL.lastPathComponent).lineLimit(1).truncationMode(.middle).help(doneURL.path(percentEncoded: false))
+                Text("已生成单文件分镜板、现场拍摄打勾单与后期顺片表")
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if htmlWriting {
+                Text("正在绘制各镜构图示意与分镜卡 \(Int(htmlFraction * 100))%")
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
             } else if runner.items.count > 1 {
                 List(runner.items) { item in
                     HStack(spacing: 8) {
@@ -112,7 +168,7 @@ struct ExportSheet: View {
                 }
             }
             HStack(spacing: 8) {
-                if runner.finished, !showsForm, let target = runner.file ?? runner.folder {
+                if let target = htmlDoneURL ?? (runner.finished && !showsForm ? (runner.file ?? runner.folder) : nil) {
                     Button("在访达中显示") { NSWorkspace.shared.activateFileViewerSelecting([target]) }
                 }
                 Spacer()
@@ -121,7 +177,7 @@ struct ExportSheet: View {
                         .keyboardShortcut(.cancelAction)
                 }
                 TaskButton(title: "导出", phase: phase, enabled: !exportable(scope).isEmpty, onStart: start, onStop: { runner.cancel() })
-                if !showsForm, !runner.isRunning {
+                if !showsForm, !isBusy {
                     Button("完成") { dismiss() }
                         .keyboardShortcut(.cancelAction)
                 }
@@ -130,15 +186,20 @@ struct ExportSheet: View {
             .followsMorph(phase.stage)
         }
         .padding(20)
-        .frame(width: runner.items.count > 1 ? 560 : 380)
-        .interactiveDismissDisabled(runner.isRunning)
-        // 只导一镜时按了停止，回到开始前的样子
+        .frame(width: runner.items.count > 1 ? 560 : 420)
+        .interactiveDismissDisabled(isBusy)
         .onChange(of: runner.isRunning) { running in
             if !running, runner.items.count == 1, runner.items[0].status == .cancelled { runner.reset() }
         }
     }
 
     private var phase: TaskPhase {
+        if htmlWriting {
+            return .running(htmlFraction, "正在生成分镜单")
+        }
+        if htmlDoneURL != nil {
+            return .finished("已导出", ok: true)
+        }
         if runner.isRunning {
             return .running(runner.fraction, runner.items.count > 1 ? runner.progressLine : "正在导出")
         }
@@ -166,16 +227,55 @@ struct ExportSheet: View {
             .help(text)
     }
 
+    private func label(for shot: Shot) -> String {
+        shot.isMotion ? (names[shot.template] ?? shot.template) : shot.timelineCaption(names: names)
+    }
+
     private func start() {
+        htmlError = nil
         let shots = exportable(scope)
+        if format == .storyboardHTML {
+            guard let stage else { return }
+            let cleanTitle = board.title.isEmpty ? "分镜与拍摄清单" : board.title
+            let fileName = "\(cleanTitle)_分镜与拍摄清单.html"
+            guard let file = (destination ?? Self.askHTMLWhere)(fileName) else { return }
+            htmlWriting = true
+            htmlFraction = 0
+            Task {
+                let html = await StoryboardExporter.buildHTML(board: board, shots: shots, stage: stage, names: names) { p in
+                    Task { @MainActor in self.htmlFraction = p }
+                }
+                do {
+                    try Data(html.utf8).write(to: file, options: .atomic)
+                    htmlDoneURL = file
+                } catch {
+                    htmlError = error.localizedDescription
+                }
+                htmlWriting = false
+            }
+            return
+        }
+        var labelMap = names
+        for s in shots where !s.isMotion {
+            labelMap[s.template] = label(for: s)
+        }
         if scope == .current, let shot = shots.first {
-            let name = BatchRunner.fileName(for: shot, templateName: names[shot.template] ?? shot.template, size: size, fps: fps)
+            let name = BatchRunner.fileName(for: shot, templateName: label(for: shot), size: size, fps: fps)
             guard let file = (destination ?? Self.askWhere)(name) else { return }
             runner.start(shot: shot, file: file, size: size, fps: fps)
         } else {
             guard let folder = (destination ?? Self.askWhere)(nil) else { return }
-            runner.start(shots: shots, names: names, folder: folder, size: size, fps: fps)
+            // 按镜头各自名称生成文件名（非动效镜写明 A-roll/实拍/素材与景别）
+            runner.startCustom(shots: shots, labeler: { label(for: $0) }, folder: folder, size: size, fps: fps)
         }
+    }
+
+    private static func askHTMLWhere(_ fileName: String?) -> URL? {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.html]
+        panel.nameFieldStringValue = fileName ?? "分镜与拍摄清单.html"
+        panel.prompt = "导出"
+        return panel.runModal() == .OK ? panel.url : nil
     }
 
     private static func askWhere(_ fileName: String?) -> URL? {

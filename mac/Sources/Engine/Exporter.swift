@@ -287,9 +287,13 @@ final class BatchRunner: ObservableObject {
     }
 
     func start(shots: [Shot], names: [String: String], folder: URL, size: ExportSize, fps: Int) {
+        startCustom(shots: shots, labeler: { names[$0.template] ?? $0.template }, folder: folder, size: size, fps: fps)
+    }
+
+    func startCustom(shots: [Shot], labeler: (Shot) -> String, folder: URL, size: ExportSize, fps: Int) {
         guard !isRunning else { return }
         self.folder = folder
-        items = shots.map { Item(shot: $0, fileName: Self.fileName(for: $0, templateName: names[$0.template] ?? $0.template, size: size, fps: fps)) }
+        items = shots.map { Item(shot: $0, fileName: Self.fileName(for: $0, templateName: labeler($0), size: size, fps: fps)) }
         finished = false
         isRunning = true
         task = Task { await run(folder: folder, size: size, fps: fps) }

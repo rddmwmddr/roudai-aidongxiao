@@ -193,6 +193,7 @@
     return out;
   };
   const colorRoles = (row) => {
+    if (root.DM && root.DM.isSketchShot && root.DM.isSketchShot(row)) return root.DM.sketchColorRoles(row);
     const t = TEMPLATES[row.tpl || row.template];
     if (!t) return [];
     if (t.colorRoles) {
@@ -668,10 +669,15 @@
     return out;
   };
   const createScene = (raw1, width = 1920) => {
+    const S0 = width / 1920;
+    if (root.DM && root.DM.isSketchShot && root.DM.isSketchShot(raw1)) {
+      const made = root.DM.createSketchScene(raw1, S0);
+      const key = `sketch:${root.DM.shotTrack(raw1)}`;
+      return staged({spec: raw1, duration: made.duration, beats: [], draw: made.draw, probes: null, palette: null, custom: true, sketch: true}, raw1, key, S0);
+    }
     // 文件里写的动效已经删了（旧的出镜镜头、删掉的分类）：按重音字幕画，字不丢
     const raw0 = TEMPLATES[raw1.template] || !TEMPLATES.statement ? raw1 : Object.assign({}, raw1, {template: 'statement'});
     const tplDef = TEMPLATES[raw0.template];
-    const S0 = width / 1920;
     if (tplDef && tplDef.custom) {
       const made = tplDef.create(raw0, S0);
       return staged({spec: raw0, duration: made.duration, beats: [], draw: made.draw, probes: null, palette: null, custom: true}, raw0, raw0.template, S0);

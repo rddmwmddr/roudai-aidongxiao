@@ -36,8 +36,12 @@
     r.cat = r.cat || '数据动效';
     r.ch = r.ch || '正片';
   });
-  // 「出镜」和删掉的动效都不在了：这种镜头按重音字幕，口播不动，点胶囊换掉
+  // 旧版没有 track 字段且 tpl 已经删掉的镜头转成重音字幕；新版编导分镜保留 aroll / shoot / footage 轨道
   const normalize = (r) => {
+    if (r.track && D.isSketchShot && D.isSketchShot(r)) {
+      if (!D.TEMPLATES[r.tpl]) r.tpl = 'statement';
+      return;
+    }
     if (D.TEMPLATES[r.tpl]) return;
     r.tpl = 'statement';
     r.kind = 'B';
@@ -90,16 +94,29 @@
   let fontsReady = Promise.resolve();
   const S = {sel: Math.max(0, rows.findIndex((r) => r.id === store.get('dm_sel', 1))), playing: true, t: 0, scene: null, filter: 'all', query: '', exporting: null, picked: new Set(), page: 'stage', loop: true};
 
-  const rawOf = (row) => Object.assign({}, row, {template: row.tpl});
+  const rawOf = (row) => Object.assign({}, row, {template: row.tpl || 'statement'});
+  const trackOf = (row) => (D.shotTrack ? D.shotTrack(row) : (row.track || 'motion'));
   const estDur = (row) => {
     const s = P.syllables(row.line || '') / (P.RATE * (row.speed || 1));
+    if (trackOf(row) !== 'motion') return Math.max(2, s + 0.8);
     if (row.tpl === 'titleV') return 7.5;
     if (row.tpl === 'titleH') return 6.5;
     if (row.tpl === 'lucy') return 1.9;
     return s + 2.4;
   };
-  const outputable = (r) => !r.sampleData && !!D.TEMPLATES[r.tpl] && !D.TEMPLATES[r.tpl].noExport;
-  const nameOf = (row) => (D.TEMPLATES[row.tpl] ? D.TEMPLATES[row.tpl].name : '重音字幕');
+  const outputable = (r, includeSketch = false) => {
+    if (r.sampleData || r.pending) return false;
+    if (trackOf(r) !== 'motion') return !!includeSketch;
+    return !!D.TEMPLATES[r.tpl] && !D.TEMPLATES[r.tpl].noExport;
+  };
+  const nameOf = (row) => {
+    const tr = trackOf(row);
+    if (tr !== 'motion') {
+      const meta = (D.TRACKS && D.TRACKS[tr]) || {short: tr};
+      return row.shotSize ? `${meta.short} · ${row.shotSize}` : meta.short;
+    }
+    return D.TEMPLATES[row.tpl] ? D.TEMPLATES[row.tpl].name : '重音字幕';
+  };
   const fmt = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
 
   const setSync = (text, cls = '') => {
@@ -172,18 +189,31 @@
     if (S.filter === 'all') return true;
     if (S.filter === 'note') return !!r.note;
     if (S.filter === 'adjusted') return !!(r.layers && Object.keys(r.layers).length);
+    if (S.filter.startsWith('track:')) return trackOf(r) === S.filter.slice(6);
     if (S.filter.startsWith('ch:')) return r.ch === S.filter.slice(3);
     return r.cat === S.filter;
   };
   const renderFilter = () => {
     const count = (fn) => rows.filter(fn).length;
     const chapters = [...new Set(rows.map((r) => r.ch))];
-    const opts = [['all', '全部', rows.length], ['数据动效', '数据动效', count((r) => r.cat === '数据动效')], ['文字动效', '文字动效', count((r) => r.cat === '文字动效')], ['屏幕动效', '屏幕动效', count((r) => r.cat === '屏幕动效')], ['note', '要确认', count((r) => r.note)], ['adjusted', '调整过', count((r) => r.layers && Object.keys(r.layers).length)]].filter((o) => o[2] || o[0] === 'all');
+    const opts = [
+      ['all', '全部', rows.length],
+      ['track:aroll', 'A-roll 出镜', count((r) => trackOf(r) === 'aroll')],
+      ['track:motion', 'B-roll 动效', count((r) => trackOf(r) === 'motion')],
+      ['track:shoot', 'B-roll 实拍', count((r) => trackOf(r) === 'shoot')],
+      ['track:footage', 'B-roll 素材', count((r) => trackOf(r) === 'footage')],
+      ['数据动效', '数据动效', count((r) => r.cat === '数据动效')],
+      ['文字动效', '文字动效', count((r) => r.cat === '文字动效')],
+      ['屏幕动效', '屏幕动效', count((r) => r.cat === '屏幕动效')],
+      ['note', '要确认', count((r) => r.note)],
+      ['adjusted', '调整过', count((r) => r.layers && Object.keys(r.layers).length)],
+    ].filter((o) => o[2] || o[0] === 'all');
     chapters.forEach((c) => opts.push([`ch:${c}`, c, count((r) => r.ch === c)]));
     $('filter').innerHTML = opts.map(([k, n, c]) => `<option value="${esc(k)}" ${S.filter === k ? 'selected' : ''}>${esc(n)} ${c}</option>`).join('');
   };
   const refilter = () => {
     renderTimeline();
+    renderBoard();
     renderTable();
     if (!matches(rows[S.sel])) {
       const first = rows.findIndex(matches);
@@ -455,6 +485,125 @@
     renderTable();
   };
 
+  // ---------- 分镜板（宫格故事板 + 导出单文件拍摄单 HTML） ----------
+  let boardWatch = null;
+  const paintBoardCard = (canvas, row) => {
+    const g = canvas.getContext('2d', {alpha: false});
+    g.fillStyle = '#101114';
+    g.fillRect(0, 0, canvas.width, canvas.height);
+    try {
+      const scene = D.createScene(rawOf(row), canvas.width);
+      const at = trackOf(row) !== 'motion' ? scene.duration * 0.55 : D.thumbTime(row.tpl, scene);
+      scene.draw(g, at);
+    } catch (e) {
+      /* 缺数据时留黑底 */
+    }
+  };
+  const renderBoard = () => {
+    const bar = $('boardBar');
+    const grid = $('boardGrid');
+    if (!bar || !grid) return;
+    const cnt = (t) => rows.filter((r) => trackOf(r) === t).length;
+    const chips = [
+      ['all', `全部 ${rows.length}`, ''],
+      ['track:aroll', `A-roll ${cnt('aroll')}`, '#E4F56B'],
+      ['track:motion', `动效 ${cnt('motion')}`, '#FF5C1E'],
+      ['track:shoot', `实拍 ${cnt('shoot')}`, '#FF9F38'],
+      ['track:footage', `素材 ${cnt('footage')}`, '#5AC8FA'],
+    ];
+    bar.innerHTML = chips.map(([f, label, dot]) => `<button class="chip ${S.filter === f ? 'on' : ''}" data-bf="${f}">${dot ? `<i style="background:${dot}"></i>` : ''}${esc(label)}</button>`).join('') +
+      `<button id="btnExportStoryboard" style="margin-left:auto" class="primary">导出分镜拍摄单 HTML</button>`;
+    bar.querySelectorAll('[data-bf]').forEach((b) => {
+      b.onclick = () => {
+        S.filter = S.filter === b.dataset.bf && b.dataset.bf !== 'all' ? 'all' : b.dataset.bf;
+        $('filter').value = S.filter;
+        refilter();
+      };
+    });
+    $('btnExportStoryboard').onclick = exportStoryboardHTML;
+
+    const visible = rows.map((r, i) => [r, i]).filter(([r]) => matches(r));
+    const chapters = [...new Set(visible.map(([r]) => r.ch))];
+    grid.innerHTML = chapters.map((ch) => {
+      const list = visible.filter(([r]) => r.ch === ch);
+      return `<div class="bch">${esc(ch)} <small>${list.length} 镜</small></div><div class="bgrid">${list.map(([r, i]) => {
+        const tr = trackOf(r);
+        const tLabel = (D.TRACKS && D.TRACKS[tr] && D.TRACKS[tr].short) || tr;
+        const spec = tr === 'motion' ? `动效：${nameOf(r)}` : [r.shotSize, r.cameraMove, r.subject].filter(Boolean).join(' · ') || r.visual || '';
+        const shoot = r.shootGuide || r.visual || '';
+        return `<div class="bcard ${i === S.sel ? 'sel' : ''}" data-i="${i}">
+          <div class="bthumb"><canvas width="384" height="216"></canvas>
+            <div class="bbadge"><span>${esc(r.no)}</span><span class="btag bt-${esc(tr)}">${esc(tLabel)}</span></div>
+            <div class="bdur">${secondsOf(r).toFixed(1)}s</div>
+          </div>
+          <div class="bspec"><span>${esc(spec)}</span>${r.note ? '<i class="dot" title="要确认" style="margin-left:auto"></i>' : ''}</div>
+          <div class="bline">${esc(r.line || '（无口播）')}</div>
+          ${shoot || r.postGuide ? `<div class="bguides">
+            ${shoot ? `<div><b>${tr === 'footage' ? '素材' : tr === 'motion' ? '画面' : '拍摄'}：</b>${esc(shoot)}</div>` : ''}
+            ${r.postGuide ? `<div><b>后期：</b>${esc(r.postGuide)}</div>` : ''}
+          </div>` : ''}
+        </div>`;
+      }).join('')}</div>`;
+    }).join('') || '<p style="color:var(--mute)">没有符合筛选条件的镜头。</p>';
+
+    if (boardWatch) boardWatch.disconnect();
+    boardWatch = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        boardWatch.unobserve(en.target);
+        const r = rows[+en.target.dataset.i];
+        if (r) paintBoardCard(en.target.querySelector('canvas'), r);
+      });
+    }, {root: grid, rootMargin: '180px'});
+    grid.querySelectorAll('.bcard').forEach((card) => {
+      boardWatch.observe(card);
+      card.onclick = () => select(+card.dataset.i);
+      card.ondblclick = () => {
+        select(+card.dataset.i);
+        setPage('stage');
+      };
+    });
+  };
+
+  const exportStoryboardHTML = () => {
+    const cvTmp = document.createElement('canvas');
+    cvTmp.width = 480;
+    cvTmp.height = 270;
+    let running = 0;
+    const items = rows.map((r) => {
+      paintBoardCard(cvTmp, r);
+      const sec = Math.round(secondsOf(r) * 10) / 10;
+      const tr = trackOf(r);
+      const item = {
+        id: r.id,
+        no: r.no,
+        ch: r.ch,
+        track: tr,
+        trackLabel: (D.TRACKS && D.TRACKS[tr] && D.TRACKS[tr].short) || tr,
+        shotSize: r.shotSize || '',
+        cameraMove: r.cameraMove || '',
+        subject: r.subject || '',
+        tplName: nameOf(r),
+        line: r.line || '',
+        shootGuide: r.shootGuide || r.visual || '',
+        postGuide: r.postGuide || '',
+        note: r.note || '',
+        sec,
+        startSec: Math.round(running * 10) / 10,
+        thumb: cvTmp.toDataURL('image/jpeg', 0.8),
+      };
+      running += sec;
+      return item;
+    });
+    const title = BOARD.title || '分镜与拍摄清单';
+    const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} · 分镜与拍摄清单</title>
+<style>:root{--bg:#F5F3EE;--card:#FFF;--ink:#18191C;--mute:#64625D;--line:rgba(24,25,28,.1)}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 -apple-system,"PingFang SC",sans-serif}header,main{max-width:1320px;margin:0 auto;padding:22px 24px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}.shot{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;break-inside:avoid}.shot img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#101114}.b{padding:12px;display:flex;flex-direction:column;gap:6px}.meta{font-size:12px;color:var(--mute)}.g{padding-top:6px;border-top:1px dashed var(--line);font-size:12px;color:var(--mute)}table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);margin-top:12px}th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13px}@media print{.noprint{display:none}body{background:#fff}}</style></head>
+<body><header><div style="display:flex;justify-content:space-between;align-items:center"><div><h1 style="margin:0">${esc(title)}</h1><div class="meta">共 ${items.length} 镜 · A-roll ${items.filter((x) => x.track === 'aroll').length} 镜 · 动效 ${items.filter((x) => x.track === 'motion').length} 镜 · 实拍 ${items.filter((x) => x.track === 'shoot').length} 镜 · 素材 ${items.filter((x) => x.track === 'footage').length} 镜</div></div><button class="noprint" onclick="window.print()" style="padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:#fff;cursor:pointer">打印 / 存 PDF</button></div></header>
+<main><h2>全片分镜板</h2><div class="grid">${items.map((r) => `<article class="shot"><img src="${r.thumb}" alt="镜 ${esc(r.no)}"><div class="b"><div class="meta"><b>${esc(r.no)} · ${esc(r.trackLabel)}</b> · ${esc(r.track === 'motion' ? r.tplName : [r.shotSize, r.cameraMove, r.subject].filter(Boolean).join(' · '))} · ${r.sec.toFixed(1)}s</div><div>${esc(r.line || '（无口播）')}</div><div class="g">${r.shootGuide ? `<div><b>拍摄/画面：</b>${esc(r.shootGuide)}</div>` : ''}${r.postGuide ? `<div><b>后期：</b>${esc(r.postGuide)}</div>` : ''}</div></div></article>`).join('')}</div>
+<h2 style="margin-top:32px">现场实拍与素材清单</h2><table><thead><tr><th>完成</th><th>镜号</th><th>类型</th><th>景别 / 运镜</th><th>主体</th><th>拍摄 / 素材要求</th><th>对应口播</th></tr></thead><tbody>${items.filter((r) => r.track !== 'motion').map((r) => `<tr><td>☐</td><td>${esc(r.no)}</td><td>${esc(r.trackLabel)}</td><td>${esc([r.shotSize, r.cameraMove].filter(Boolean).join(' · '))}</td><td>${esc(r.subject)}</td><td>${esc(r.shootGuide)}</td><td>${esc(r.line)}</td></tr>`).join('')}</tbody></table></main></body></html>`;
+    saveBlob(new Blob([html], {type: 'text/html;charset=utf-8'}), `${title}_分镜与拍摄清单.html`);
+  };
+
   // ---------- 分镜表 ----------
   const renderTable = () => {
     const box = $('table');
@@ -531,6 +680,7 @@
     placePlayhead();
     revealClip(i);
     document.querySelectorAll('.row').forEach((el) => el.classList.toggle('sel', +el.dataset.i === i));
+    document.querySelectorAll('.bcard').forEach((el) => el.classList.toggle('sel', +el.dataset.i === i));
     const el = document.querySelector(`.row[data-i="${i}"]`);
     if (el && S.page === 'table') {
       const box = $('table');
@@ -579,9 +729,10 @@
     },
     commit: (layers) => {
       const row = rows[S.sel];
+      const lkey = trackOf(row) !== 'motion' ? `sketch:${trackOf(row)}` : row.tpl;
       row.layers = row.layers || {};
-      if (Object.keys(layers).length) row.layers[row.tpl] = layers;
-      else delete row.layers[row.tpl];
+      if (Object.keys(layers).length) row.layers[lkey] = layers;
+      else delete row.layers[lkey];
       if (!Object.keys(row.layers).length) delete row.layers;
       saveRow(row);
     },
@@ -646,12 +797,31 @@
     const hasAdv = Object.keys(adv).length > 0;
     const tpl = D.TEMPLATES[row.tpl];
     const roles = D.colorRoles ? D.colorRoles(row) : [];
+    const tr = trackOf(row);
     $('shot').innerHTML = `
       <div class="block">
         <h3>镜 ${esc(row.no)} · ${esc(row.ch)} · ${esc(row.cat)}</h3>
         <p class="line">${esc(row.line)}</p>
         ${row.visual ? `<p class="visual">${esc(row.visual)}</p>` : ''}
         ${row.note ? `<p class="note">${esc(row.note)}</p>` : ''}
+      </div>
+      <div class="block">
+        <h3>编导与拍摄</h3>
+        <div class="two">
+          <div class="field"><label>轨道类型</label><select id="dTrack">
+            <option value="aroll" ${tr === 'aroll' ? 'selected' : ''}>A-roll 出镜</option>
+            <option value="motion" ${tr === 'motion' ? 'selected' : ''}>B-roll 动效</option>
+            <option value="shoot" ${tr === 'shoot' ? 'selected' : ''}>B-roll 实拍</option>
+            <option value="footage" ${tr === 'footage' ? 'selected' : ''}>B-roll 素材</option>
+          </select></div>
+          <div class="field"><label>景别</label><input id="dSize" type="text" value="${esc(row.shotSize || '')}" placeholder="中景 / 微距细节 / 桌面俯拍"></div>
+        </div>
+        <div class="two">
+          <div class="field"><label>运镜 / 景别变动</label><input id="dMove" type="text" value="${esc(row.cameraMove || '')}" placeholder="固定 / 跳切推近 / 横移滑轨"></div>
+          <div class="field"><label>拍摄主体</label><input id="dSubject" type="text" value="${esc(row.subject || '')}" placeholder="主讲人 / 产品部位 / 资料"></div>
+        </div>
+        <div class="field"><label>拍摄 / 素材指导</label><textarea id="dShoot" rows="2" placeholder="机位、光线、手部动作或资料出处">${esc(row.shootGuide || '')}</textarea></div>
+        <div class="field"><label>后期导演说明</label><textarea id="dPost" rows="2" placeholder="切入卡点、留白、J-cut、音效">${esc(row.postGuide || '')}</textarea></div>
       </div>
       ${row.groups && row.groups.length ? `<div class="block"><h3>数据</h3>${metricsHtml}<button id="addMetric">加一个数</button> <button id="addGroup">加一组</button></div>` : ''}
       ${hasLines ? `<div class="block"><h3>上屏文字（一行一条）</h3><textarea id="linesBox" rows="${Math.min(8, row.lines.length + 1)}">${esc(row.lines.join('\n'))}</textarea></div>` : ''}
@@ -691,8 +861,29 @@
     saveRow(row);
     buildScene(reset);
     refreshClip(S.sel);
+    renderBoard();
   };
   const bindShot = (row) => {
+    if ($('dTrack')) $('dTrack').onchange = (e) => {
+      const nextTrack = e.target.value;
+      row.track = nextTrack;
+      if (window.DMBoard && window.DMBoard.normalizeDirectorFields) window.DMBoard.normalizeDirectorFields(row);
+      $('motionName').textContent = nameOf(row);
+      renderFilter();
+      rebuild(row, true);
+      renderTable();
+      renderShot();
+    };
+    [['dSize', 'shotSize'], ['dMove', 'cameraMove'], ['dSubject', 'subject'], ['dShoot', 'shootGuide'], ['dPost', 'postGuide']].forEach(([id, key]) => {
+      if ($(id)) $(id).onchange = (e) => {
+        const v = e.target.value.trim();
+        if (v) row[key] = v;
+        else delete row[key];
+        $('motionName').textContent = nameOf(row);
+        rebuild(row, false);
+        renderTable();
+      };
+    });
     // 颜色：选好写进这一镜；右键恢复默认
     document.querySelectorAll('#shot [data-color]').forEach((el) => {
       el.onchange = () => {
@@ -805,7 +996,10 @@
   };
 
   // ---------- 输出 ----------
-  const fileName = (row, size, fps) => `镜${row.no}_${D.TEMPLATES[row.tpl].name}_${size}${fps}.mp4`;
+  const fileName = (row, size, fps) => {
+    const label = trackOf(row) === 'motion' && D.TEMPLATES[row.tpl] ? D.TEMPLATES[row.tpl].name : nameOf(row).replace(/[\\/:*?"<>|\s·]+/g, '-');
+    return `镜${row.no}_${label}_${size}${fps}.mp4`;
+  };
   // 发布成网页时，保存要走平台的下载接口；本地打开时 window.claude 不存在，直接下载
   const hostDownloads = window.claude ? window.claude.use('downloads') : Promise.resolve(null);
   const saveBlob = async (blob, name, dir) => {
@@ -894,7 +1088,8 @@
       <div id="bForm">
         <div class="field"><label>范围</label><select id="bScope">${options.map(([k, n]) => `<option value="${esc(k)}" ${k === preset ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></div>
         <div class="two"><div class="field"><label>尺寸</label><select id="bSize"><option value="4k">4K</option><option value="1080p">1080p</option></select></div><div class="field"><label>帧率</label><select id="bFps"><option value="60">60 帧</option><option value="30">30 帧</option></select></div></div>
-        <label style="display:flex;gap:8px;align-items:center;margin:2px 0 10px;color:var(--mute);font-size:13px"><input id="bSkip" type="checkbox" checked style="width:auto">文件夹里已有的不重复输出（中断后接着出）</label>
+        <label style="display:flex;gap:8px;align-items:center;margin:2px 0 6px;color:var(--mute);font-size:13px"><input id="bSkip" type="checkbox" checked style="width:auto">文件夹里已有的不重复输出（中断后接着出）</label>
+        <label style="display:flex;gap:8px;align-items:center;margin:2px 0 10px;color:var(--mute);font-size:13px"><input id="bSketch" type="checkbox" style="width:auto">连 A-roll / 实拍 / 素材构图示意一起输出动态预演 MP4</label>
         <p id="bPlan" style="color:var(--ink);font-size:13px;margin:0 0 6px"></p>
         <p style="color:var(--mute);font-size:13px;margin:0 0 12px">${canPickFolder ? '选一次文件夹，之后自动存，不用逐个确认。会同时写一份输出清单。输出时可以切到别的标签页，别关掉这一页。' : '这个环境不能选文件夹，每个文件要单独保存。请用 Chrome 或 Edge 打开服务器版。'}</p>
       </div>
@@ -908,11 +1103,12 @@
       if (scope === 'picked') pool = rows.filter((r) => S.picked.has(r.id));
       else if (scope === 'filter') pool = rows.filter(matches);
       else if (scope.startsWith('ch:')) pool = rows.filter((r) => r.ch === scope.slice(3));
-      const motion = pool.filter(outputable);
+      const inc = $('bSketch') && $('bSketch').checked;
+      const motion = pool.filter((r) => outputable(r, inc));
       const ok = [];
       const bad = [];
       motion.forEach((r) => {
-        const v = D.TEMPLATES[r.tpl].custom ? {errors: []} : D.validate(rawOf(r));
+        const v = trackOf(r) !== 'motion' || D.TEMPLATES[r.tpl].custom ? {errors: []} : D.validate(rawOf(r));
         (v.errors.length ? bad : ok).push(r);
       });
       return {ok, bad, skipped: pool.length - motion.length};
@@ -921,10 +1117,10 @@
       const {ok, bad, skipped} = listOf();
       const sec = ok.reduce((a, r) => a + secondsOf(r), 0);
       const speed = ($('bSize').value === '4k' ? 0.7 : 0.3) * (+$('bFps').value === 60 ? 1 : 0.55);
-      $('bPlan').textContent = `将输出 ${ok.length} 镜，成片约 ${fmt(sec)}，大约要 ${Math.max(1, Math.ceil((sec * speed) / 60))} 分钟。${skipped ? `样例数据 ${skipped} 镜不输出。` : ''}${bad.length ? `缺数据 ${bad.length} 镜跳过（${bad.map((r) => r.no).join('、')}）。` : ''}`;
+      $('bPlan').textContent = `将输出 ${ok.length} 镜，成片约 ${fmt(sec)}，大约要 ${Math.max(1, Math.ceil((sec * speed) / 60))} 分钟。${skipped ? `非动效或样例镜 ${skipped} 镜默认跳过。` : ''}${bad.length ? `缺数据 ${bad.length} 镜跳过（${bad.map((r) => r.no).join('、')}）。` : ''}`;
       $('bGo').disabled = !ok.length;
     };
-    ['bScope', 'bSize', 'bFps'].forEach((id) => ($(id).onchange = plan));
+    ['bScope', 'bSize', 'bFps', 'bSketch'].forEach((id) => { if ($(id)) $(id).onchange = plan; });
     plan();
     let last = [];
     const start = async (list) => {
@@ -998,7 +1194,7 @@
         $('bBar').firstElementChild.style.width = `${frac * 100}%`;
         const used = (performance.now() - t0) / 1000;
         const left = frac > 0.02 ? (used / frac) * (1 - frac) : 0;
-        $('bNow').textContent = `第 ${i + 1}/${list.length} 镜：镜${r.no} ${D.TEMPLATES[r.tpl].name}${left ? `，还要约 ${Math.ceil(left / 60)} 分钟` : ''}`;
+        $('bNow').textContent = `第 ${i + 1}/${list.length} 镜：镜${r.no} ${nameOf(r)}${left ? `，还要约 ${Math.ceil(left / 60)} 分钟` : ''}`;
       };
       tick(0);
       if (dir && skip) {
@@ -1036,7 +1232,7 @@
     }
     if (dir && results.length) {
       const q = (x) => `"${String(x == null ? '' : x).replace(/"/g, '""')}"`;
-      const csv = ['\ufeff镜号,章节,动效,文件,状态,大小MB,时长秒,核对,口播文案'].concat(results.map((x) => [x.row.no, x.row.ch, D.TEMPLATES[x.row.tpl].name, x.name, x.status, x.size ? (x.size / 1e6).toFixed(1) : '', x.duration ? x.duration.toFixed(1) : '', x.check || x.error || '', x.row.line].map(q).join(',')));
+      const csv = ['\ufeff镜号,章节,类型,动效或景别,文件,状态,大小MB,时长秒,核对,口播文案'].concat(results.map((x) => [x.row.no, x.row.ch, x.row.cat, nameOf(x.row), x.name, x.status, x.size ? (x.size / 1e6).toFixed(1) : '', x.duration ? x.duration.toFixed(1) : '', x.check || x.error || '', x.row.line].map(q).join(',')));
       try {
         await saveBlob(new Blob([csv.join('\n')], {type: 'text/csv'}), '输出清单.csv', dir);
       } catch (e) {
@@ -1423,13 +1619,47 @@
     renderPkGrid();
   };
 
-  // ---------- 贴文案 ----------
+  // ---------- 文稿（导入文案自动做整篇编导分镜 + 单段拆解匹配） ----------
+  const applyFullStoryboard = (text, titleHint) => {
+    if (!window.DMBoard || !text.trim()) return;
+    const res = window.DMBoard.generate(text, {title: titleHint || undefined});
+    if (!res.rows.length) return;
+    if (res.title) {
+      BOARD.title = res.title;
+      $('title').textContent = res.title;
+      document.title = res.title;
+    }
+    rows.length = 0;
+    res.rows.forEach((r) => {
+      rows.push(r);
+      remember(r);
+    });
+    S.sel = 0;
+    S.filter = 'all';
+    renderAll();
+    select(0);
+    setPage('board');
+  };
+  $('scriptFile').onchange = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    const text = await f.text();
+    if ($('pText')) $('pText').value = text;
+    applyFullStoryboard(text, f.name.replace(/\.[^.]+$/, ''));
+  };
   const renderPaste = () => {
     $('p-script').innerHTML = `
-      <div class="block"><textarea id="pText" rows="10" aria-label="文案" placeholder="贴一段口播文案"></textarea>
-        <div style="margin-top:8px;display:flex;justify-content:flex-end"><button id="pGo" class="primary">拆解并匹配</button></div>
+      <div class="block"><textarea id="pText" rows="10" aria-label="文案" placeholder="导入整篇文稿自动拆出 A-roll 景别、B-roll 动效、产品实拍与资料素材；也可贴单段文案加进当前分镜"></textarea>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+          <button id="pImportFile">导入文案文件（自动分镜）</button>
+          <button id="pFullBoard">整篇编导分镜</button>
+          <button id="pGo" class="primary">拆解并匹配</button>
+        </div>
       </div>
       <div id="pOut"></div>`;
+    $('pImportFile').onclick = () => $('scriptFile').click();
+    $('pFullBoard').onclick = () => applyFullStoryboard($('pText').value);
     $('pGo').onclick = () => {
       const text = $('pText').value.trim();
       if (!text) return;
@@ -1493,6 +1723,7 @@
   const renderAll = () => {
     renderFilter();
     renderTimeline();
+    renderBoard();
     renderTable();
     $('motionName').textContent = nameOf(rows[S.sel]);
   };
@@ -1570,7 +1801,8 @@
     if (e.metaKey || e.ctrlKey) {
       if (e.code === 'Digit1') setPage('script');
       else if (e.code === 'Digit2') setPage('stage');
-      else if (e.code === 'Digit3') setPage('table');
+      else if (e.code === 'Digit3') setPage('board');
+      else if (e.code === 'Digit4') setPage('table');
       else return;
       e.preventDefault();
       return;

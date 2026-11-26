@@ -115,6 +115,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
     private var secondsByContent: [String: Double] = [:]
     private var naturalByContent: [String: Double] = [:]
     private var frames: [String: [NSImage]] = [:]
+    private var shotImages: [String: NSImage] = [:]
 
     override init() {
         let config = WKWebViewConfiguration()
@@ -306,6 +307,25 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         return images
     }
 
+    // 分镜板宫格与导出分镜单用的单张画面
+    func shotFrame(_ shot: Shot) async -> NSImage? {
+        let key = shot.json
+        if let done = shotImages[key] { return done }
+        guard let url = try? await callString("return DMBridge.shotFrame(row, 480)", arguments: ["row": key]),
+              let comma = url.firstIndex(of: ","),
+              let data = Data(base64Encoded: String(url[url.index(after: comma)...])),
+              let image = NSImage(data: data) else { return nil }
+        if shotImages.count >= 260 { shotImages.removeAll() }
+        shotImages[key] = image
+        return image
+    }
+
+    func shotDataURL(_ shot: Shot, width: Int = 480) async -> String? {
+        guard let url = try? await callString("return DMBridge.shotFrame(row, w)", arguments: ["row": shot.json, "w": width]),
+              !url.isEmpty else { return nil }
+        return url
+    }
+
     // 每一镜的真实秒数。内容没变就不再算
     /// 不算手动时长时，每一镜动效本身有多长。速率 = 本身时长 ÷ 时长
     func naturals(_ rows: [Shot]) async -> [Shot.ID: Double] {
@@ -376,11 +396,12 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         var bare = shot
         bare.fields["layers"] = nil
         let body = bare.json
-        let layers = shot.layersJSON(for: shot.template)
-        if loadedID == shot.id, loadedBody == body, loadedTemplate == shot.template {
+        let lkey = shot.layerKey
+        let layers = shot.layersJSON(for: lkey)
+        if loadedID == shot.id, loadedBody == body, loadedTemplate == lkey {
             if loadedLayers != layers {
                 loadedLayers = layers
-                Task { _ = try? await call("DMBridge.setLayers(tpl, json)", arguments: ["tpl": shot.template, "json": layers]) }
+                Task { _ = try? await call("DMBridge.setLayers(tpl, json)", arguments: ["tpl": lkey, "json": layers]) }
             }
             return
         }
@@ -388,7 +409,7 @@ final class StageController: NSObject, ObservableObject, WKNavigationDelegate {
         loadedID = shot.id
         loadedBody = body
         loadedLayers = layers
-        loadedTemplate = shot.template
+        loadedTemplate = lkey
         if !keep {
             elements = []
             selection = []

@@ -30,13 +30,19 @@ final class Storyboarder: ObservableObject {
         return nil
     }
 
-    // 上次选了规则就还是规则。否则用最近选过的、填了 Key 的服务
+    // AI 编导优先，离线规则兜底：没手动锁定规则时，优先选填了 Key 的 AI 服务
     func pickEngine() {
-        if !settings.useRules, let active = settings.active, settings.key(for: active) != nil {
-            engine = .ai(active.id)
-        } else {
-            engine = .rules
+        if !settings.useRules {
+            if let active = settings.active, let k = settings.key(for: active), !k.isEmpty {
+                engine = .ai(active.id)
+                return
+            }
+            if let ready = settings.profiles.first(where: { (settings.key(for: $0) ?? "").isEmpty == false }) {
+                engine = .ai(ready.id)
+                return
+            }
         }
+        engine = .rules
     }
 
     func choose(_ next: Engine) {
@@ -154,37 +160,65 @@ final class Storyboarder: ObservableObject {
         let library = (try? await stage.callString("return DMBridge.libraryPrompt()")) ?? ""
         var all: [Shot] = []
         var warnings: [String] = []
-        var index = 0
-        while index < chunks.count {
-            let chunk = chunks[index]
-            let i = index
-            index += 1
+        let total = max(1, chunks.count)
+        var doneShots = 0
+
+        for (i, chunk) in chunks.enumerated() {
             try Task.checkCancellation()
-            progress = "第 \(i + 1)/\(chunks.count) 段（\(chunk.chapter)）：等待 \(profile.name)…"
-            fraction = Double(i) / Double(chunks.count)
+            let chapterName = chunk.chapter
+            let baseShots = doneShots
+            let maxTotalChars = max(24000, chunk.text.count * 14)
+            let prevSummary: String = {
+                guard !all.isEmpty else { return "" }
+                let recent = all.suffix(3).map { "\($0.trackLabel)(\($0.isMotion ? $0.template : $0.shotSize)):\($0.line.prefix(18))…" }.joined(separator: " → ")
+                let usedTpls = Array(Set(all.filter(\.isMotion).map(\.template))).sorted().joined(separator: "、")
+                return "前段收尾镜头：\(recent)" + (usedTpls.isEmpty ? "" : "；前文已用动效：\(usedTpls)")
+            }()
+            progress = total > 1 ? "第 \(i + 1)/\(total) 段（\(chapterName)）：等待 \(profile.name)…" : "等待 \(profile.name) 编导分镜…"
+            fraction = Double(i) / Double(total)
             do {
-                let chapterName = chunk.chapter
-                let total = chunks.count
-                let reply = try await client.generate(system: StoryboardPrompt.system + library, user: StoryboardPrompt.userMessage(chapter: chunk.chapter, text: chunk.text), schema: StoryboardPrompt.schema) { count in
+                let reply = try await client.generateStream(system: StoryboardPrompt.system + library, user: StoryboardPrompt.userMessage(chapter: chapterName, text: chunk.text, previousSummary: prevSummary), schema: StoryboardPrompt.schema) { partial in
+                    let st = StoryboardPrompt.streamStatus(partial: partial, source: chunk.text)
+                    // 连续超过 4500 字符没出新镜头，或总输出远超文稿正常比例：判定模型重复死循环，立即熔断
+                    if st.trailingChars > 4500 || partial.count > maxTotalChars {
+                        throw AIError.truncated
+                    }
                     Task { @MainActor in
-                        self.progress = "第 \(i + 1)/\(total) 段（\(chapterName)）：已收到 \(count) 字"
+                        let overall = (Double(i) + st.fraction) / Double(total)
+                        if overall > self.fraction { self.fraction = min(0.98, overall) }
+                        let countNow = baseShots + st.shots
+                        if countNow > 0 {
+                            self.progress = total > 1 ? "第 \(i + 1)/\(total) 段：已拆 \(countNow) 镜" : "正在分镜：已拆 \(countNow) 镜"
+                        } else {
+                            self.progress = total > 1 ? "第 \(i + 1)/\(total) 段（\(chapterName)）：思考中…" : "正在构思分镜…"
+                        }
                     }
                 }
-                all += try StoryboardPrompt.decodeRows(reply, chapter: chunk.chapter)
+                let decoded = try StoryboardPrompt.decodeRows(reply, chapter: chapterName)
+                doneShots += decoded.count
+                all += decoded
+                fraction = Double(i + 1) / Double(total) * 0.98
             } catch let e as AIError {
                 switch e {
                 case .unauthorized, .missingKey, .missingModel, .badURL:
                     throw e
                 default:
-                    // 这一段失败不丢文字，用规则版补上，并告诉用户
                     let fallback = try await runRules(source: "\(chunk.chapter)\n\(chunk.text)", stage: stage)
+                    doneShots += fallback.rows.count
                     all += fallback.rows
-                    warnings.append("第 \(i + 1) 段（\(chunk.chapter)）AI 没有完成，已用规则版：\(e.localizedDescription)")
+                    warnings.append("第 \(i + 1) 段（\(chunk.chapter)）AI 输出超长或未完成，已用规则版：\(e.localizedDescription)")
                 }
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                let fallback = try await runRules(source: "\(chunk.chapter)\n\(chunk.text)", stage: stage)
+                doneShots += fallback.rows.count
+                all += fallback.rows
+                warnings.append("第 \(i + 1) 段（\(chunk.chapter)）网络未连通，已用离线规则版：\(error.localizedDescription)")
             }
         }
         progress = "正在核对数字和原文…"
-        fraction = 1
+        fraction = 0.99
         let rowsData = try JSONEncoder().encode(all)
         let json = try await stage.callString("return DMBridge.reviewRows(rows, source)", arguments: ["rows": String(decoding: rowsData, as: UTF8.self), "source": source])
         struct Review: Decodable {
@@ -193,6 +227,7 @@ final class Storyboarder: ObservableObject {
             let flagged: Int
         }
         let review = try JSONDecoder().decode(Review.self, from: Data(json.utf8))
+        fraction = 1
         if review.flagged > 0 { warnings.append("\(review.flagged) 镜 AI 的结果用不了，已换成规则版，都标了「要确认」。") }
         if review.coverage < 0.97 { warnings.append("文稿里约 \(Int((1 - review.coverage) * 100))% 的文字没有进分镜，请对照检查。") }
         return Output(source: source, title: nil, rows: review.rows, warnings: warnings)

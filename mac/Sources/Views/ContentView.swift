@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 
 enum ShotFilter: Hashable {
     case all
+    case track(String)
     case needsReview
     case adjusted
     case chapter(String)
@@ -11,6 +12,7 @@ enum ShotFilter: Hashable {
     func includes(_ shot: Shot) -> Bool {
         switch self {
         case .all: true
+        case .track(let t): shot.track == t
         case .needsReview: !shot.note.isEmpty
         case .adjusted: shot.adjustedElementCount > 0
         case .chapter(let c): shot.chapter == c
@@ -44,6 +46,7 @@ struct ContentView: View {
     @State private var query = ""
     @State private var script: String
     @State private var exporting = false
+    @State private var exportFormat: ExportSheet.Format = .mp4
     @State private var replacingFonts = false
     @State private var importing = false
     @State private var importTypes = ScriptImporter.contentTypes
@@ -98,7 +101,7 @@ struct ContentView: View {
         .preferredColorScheme(.dark)
         .focusedSceneValue(\.documentActions, actions)
         .sheet(isPresented: $exporting) {
-            ExportSheet(board: board, current: currentShot, visible: visibleRows, picked: tableSelection, names: templateNames)
+            ExportSheet(board: board, current: currentShot, visible: visibleRows, picked: tableSelection, names: templateNames, stage: stage, initialFormat: exportFormat)
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: importTypes) { result in
             switch result {
@@ -225,6 +228,7 @@ struct ContentView: View {
             ToolbarItemGroup(placement: .primaryAction) {
                 FilterMenu(board: board, filter: $filter)
                 Button {
+                    exportFormat = mode == .board ? .storyboardHTML : .mp4
                     exporting = true
                 } label: {
                     Label("导出", systemImage: "square.and.arrow.up")
@@ -286,6 +290,23 @@ struct ContentView: View {
                 ScriptPage(text: $script, storyboarder: storyboarder, onImport: pickScript, onImportARoll: pickARoll, onGenerate: generate, onDropFile: readScript)
             case .stage:
                 EmptyView()
+            case .board:
+                StoryboardGridView(
+                    board: boardBinding,
+                    rows: visibleRows,
+                    selection: $selection,
+                    filter: $filter,
+                    stage: stage,
+                    names: templateNames,
+                    onExportSheet: {
+                        exportFormat = .storyboardHTML
+                        exporting = true
+                    },
+                    onOpenStage: { id in
+                        selection = id
+                        setMode(.stage)
+                    }
+                )
             case .table:
                 ShotTable(board: boardBinding, rows: visibleRows, selection: $tableSelection, stage: stage, names: templateNames) { id in
                     selection = id
@@ -306,7 +327,14 @@ struct ContentView: View {
             importARoll: pickARoll,
             loadSample: loadSample,
             generate: generate,
-            export: { exporting = true },
+            export: {
+                exportFormat = .mp4
+                exporting = true
+            },
+            exportStoryboard: {
+                exportFormat = .storyboardHTML
+                exporting = true
+            },
             previous: { move(-1) },
             next: { move(1) },
             playPause: { stage.playPause() },
@@ -491,6 +519,7 @@ struct ContentView: View {
         } else {
             tableSelection = ids
         }
+        exportFormat = .mp4
         exporting = true
     }
 
@@ -540,10 +569,16 @@ struct ContentView: View {
             setMode(.script)
             return
         }
-        storyboarder.start(source: script, stage: stage, onDone: apply)
+        startStoryboard(source: script, landing: .stage)
     }
 
-    private func apply(_ output: Storyboarder.Output) {
+    private func startStoryboard(source: String, landing: ViewMode) {
+        storyboarder.start(source: source, stage: stage) { output in
+            apply(output, landing: landing)
+        }
+    }
+
+    private func apply(_ output: Storyboarder.Output, landing: ViewMode = .stage) {
         var next = document.board
         next.rows = output.rows
         next.renumber()
@@ -553,8 +588,8 @@ struct ContentView: View {
         if script != output.source { script = output.source }
         selection = next.rows.first?.id
         showNotice("已生成 \(next.rows.count) 镜")
-        // 有要看的警告就留在文稿页，没有就直接去调画面
-        setMode(output.warnings.isEmpty ? .stage : .script)
+        // 有要看的警告就留在文稿页，否则进入目标视图（导入文案进分镜板，手动生成进画面）
+        setMode(output.warnings.isEmpty ? landing : .script)
     }
 
     private func pickScript() {
@@ -596,13 +631,22 @@ struct ContentView: View {
 
     private func readScript(_ url: URL) {
         if ARollImporter.handles(url) { return importARoll(url) }
-        // 扫描版要做文字识别，放后台，窗口不卡
+        // 导入文案后自动开始做分镜；扫描版先在后台识别文字
         Task {
             do {
                 let text = try await Task.detached { try ScriptImporter.read(url) }.value
+                let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                let fileTitle = url.deletingPathExtension().lastPathComponent
                 script = text
-                edit("导入文稿") { $0.script = text }
+                edit("导入文稿") {
+                    $0.script = text
+                    if $0.title == Board.empty.title, !fileTitle.isEmpty { $0.title = fileTitle }
+                }
                 setMode(.script)
+                if !trimmed.isEmpty {
+                    storyboarder.pickEngine()
+                    startStoryboard(source: text, landing: .board)
+                }
             } catch {
                 errorText = error.localizedDescription
             }
@@ -630,6 +674,18 @@ private struct FilterMenu: View {
         Menu {
             Picker("筛选", selection: $filter) {
                 Text("全部 \(count(.all))").tag(ShotFilter.all)
+                if count(.track("aroll")) > 0 {
+                    Text("A-roll 出镜 \(count(.track("aroll")))").tag(ShotFilter.track("aroll"))
+                }
+                if count(.track("motion")) > 0 {
+                    Text("B-roll 动效 \(count(.track("motion")))").tag(ShotFilter.track("motion"))
+                }
+                if count(.track("shoot")) > 0 {
+                    Text("B-roll 实拍 \(count(.track("shoot")))").tag(ShotFilter.track("shoot"))
+                }
+                if count(.track("footage")) > 0 {
+                    Text("B-roll 素材 \(count(.track("footage")))").tag(ShotFilter.track("footage"))
+                }
                 Text("要确认 \(count(.needsReview))").tag(ShotFilter.needsReview)
                 Text("调整过 \(count(.adjusted))").tag(ShotFilter.adjusted)
             }

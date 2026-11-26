@@ -613,17 +613,20 @@
       return false;
     }
   };
-  const OWN = new Set(['id', 'no', 'ch', 'kind', 'cat', 'line', 'visual', 'tpl', 'note', 'pending', 'sampleData', 'layers', 'speed', 'hold', 'dur', 'theme']);
+  const OWN = new Set(['id', 'no', 'ch', 'kind', 'cat', 'track', 'shotSize', 'cameraMove', 'subject', 'shootGuide', 'postGuide', 'sketchKind', 'line', 'visual', 'tpl', 'note', 'pending', 'sampleData', 'layers', 'speed', 'hold', 'dur', 'theme']);
   const firstSentence = (text) => {
     const s = String(text || '').split(/[。！？!?\n]/).map((x) => x.trim()).filter(Boolean)[0] || '';
     return [...s].length <= 40 ? s : '';
   };
-  // 给一镜换动效。数据够就直接换；不够就放样例，标要确认，改成真实数字之前不能导出
+  // 给一镜换动效。若原本是 A-roll / 实拍 / 素材镜，切为动效镜（保留原拍摄字段供切回）
   const SAMPLE_NOTE = '这是样例数据，改成真实的再导出';
   D.adopt = (row, id) => {
-    const next = Object.assign({}, row, {tpl: id});
+    const next = Object.assign({}, row, {tpl: id, track: 'motion', kind: 'B'});
     const tpl = D.TEMPLATES[id];
     if (!tpl) return next;
+    if (!next.cat || ['A-roll', '出镜', '实拍', '素材', '新闻素材'].includes(next.cat)) {
+      next.cat = tpl.cat === 'percent' || tpl.cat === 'chart' || tpl.cat === 'fine' ? '数据动效' : ['kxi', 'kxs', 'kxm', 'button', 'toggle', 'loader'].includes(tpl.cat) ? '屏幕动效' : '文字动效';
+    }
     delete next.template;
     // 上一个动效放的样例不留到下一个：样例字段、标记和那句说明都拿掉，原来的备注还在
     if (next.sampleData) {
@@ -658,15 +661,26 @@
       .sort((a, b) => order[a.category] - order[b.category]);
   };
 
-  // 给 AI 的动效清单：写进分镜提示词
+  // 给 AI 编导的高表现力动效子集：过滤掉后台仪表盘指标卡与网页装饰控件，只把有叙事张力的电影感模板交给 AI
+  const AI_LIBRARY_ALLOW = new Set([
+    // 电影感文字动作与重音标记
+    'mp005', 'mp006', 'mp007', 'mp080', 'mp086', 'mp094', 'mp129', 'mp130', 'mp146',
+    'arc_text_reveal',
+    // 具象隐喻文字特效（文案意象与字形动作一致时用）
+    'cot08', 'cot12', 'cot19', 'cot27', 'cot44', 'cot68', 'cot88', 'cot122',
+    // 质感重章（独立短句点题、揭露、盖章、聚光）
+    'kxm_emboss', 'kxm_spotlight', 'kxm_stamp', 'kxm_redact', 'kxm_xray',
+    // 叙事状态与交互隐喻（步骤拆解、倒计时、置信度、单选抉择、搜索提问）
+    'kxs_steps', 'kxs_countdown', 'kxs_confidence', 'kxs_ring',
+    'kxi_prompt', 'kxi_togglepills', 'arc_expanding_search', 'arc_chat_thread',
+  ]);
   D.libraryPrompt = () => {
     const by = {};
     Object.values(D.TEMPLATES).forEach((t) => {
-      // 加载、按钮、开关几十个样子只差细节，靠人手选，不进提示词
-      if (!t.library || ['loader', 'button', 'toggle'].includes(t.cat)) return;
-      (by[t.cat] = by[t.cat] || []).push(`${t.id} ${t.name}${t.takesText ? '*' : ''}`);
+      if (!t.library || !AI_LIBRARY_ALLOW.has(t.id)) return;
+      (by[t.cat] = by[t.cat] || []).push(`${t.id} ${t.name}${t.takesText ? '*' : ''}（${t.desc}）`);
     });
-    const list = CATEGORIES.filter((c) => by[c.id]).map((c) => `${c.name}：${by[c.id].join('，')}`).join('\n');
-    return `\n\n动效库（文案确实说到才用，tpl 写编号；带 * 的动效，data 里写 lines 就把文字放进动作，其余 lines 是字幕，可省略）：\n${list}`;
+    const list = CATEGORIES.filter((c) => by[c.id]).map((c) => `${c.name}：${by[c.id].join('；')}`).join('\n');
+    return `\n\n精选视觉隐喻与交互动效（仅当文案意象或动作与画面一致时选用，严禁拿 UI 卡片硬塞普通报数；带 * 的动效在 data 里填简洁 lines，不超 16 字）：\n${list}`;
   };
 })(window);

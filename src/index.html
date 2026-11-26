@@ -33,7 +33,7 @@ svg.solid{fill:currentColor;stroke:none}
 #sync.warn{color:var(--warn)}
 #sync.okText{color:var(--mute)}
 .seg{display:flex;gap:2px;padding:3px;border-radius:12px}
-.seg button{width:44px;height:30px;padding:0;display:grid;place-items:center;background:transparent;border-radius:9px;color:var(--mute)}
+.seg button{width:40px;height:30px;padding:0;display:grid;place-items:center;background:transparent;border-radius:9px;color:var(--mute)}
 .seg button:hover{color:var(--ink)}
 .seg button.on{background:rgba(255,255,255,.14);color:var(--ink)}
 .tools{display:flex;gap:2px;padding:3px;border-radius:12px}
@@ -98,6 +98,30 @@ svg.solid{fill:currentColor;stroke:none}
 /* 文稿页 */
 #p-script{overflow:auto;align-items:center;padding:12px 24px 24px}
 #p-script>*{width:min(720px,100%)}
+/* 分镜板 */
+#p-board{overflow:hidden}
+#boardBar{flex:none;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line)}
+#boardBar .chip{height:28px;padding:0 11px;border-radius:99px;font-size:12px;display:flex;align-items:center;gap:6px;color:var(--mute);background:var(--well)}
+#boardBar .chip.on{background:rgba(255,255,255,.2);color:var(--ink);font-weight:600}
+#boardBar .chip i{width:7px;height:7px;border-radius:50%;display:inline-block}
+#boardGrid{flex:1;min-height:0;overflow:auto;padding:16px}
+.bch{margin:18px 0 10px;font-size:15px;font-weight:600;display:flex;align-items:baseline;gap:8px}
+.bch:first-child{margin-top:0}
+.bch small{font-size:12px;font-weight:400;color:var(--mute)}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.bcard{background:var(--well);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);cursor:pointer}
+.bcard.sel{box-shadow:inset 0 0 0 2px var(--lime)}
+.bthumb{position:relative;aspect-ratio:16/9;background:#101114;border-radius:8px;overflow:hidden}
+.bthumb canvas{width:100%;height:100%;display:block}
+.bbadge{position:absolute;left:7px;top:7px;display:flex;gap:5px;align-items:center;background:rgba(0,0,0,.65);padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
+.btag{padding:1px 6px;border-radius:99px;font-size:10px;font-weight:600;color:#fff}
+.bt-aroll{background:#E4F56B;color:#111}.bt-motion{background:#FF5C1E}.bt-shoot{background:#FF9F38;color:#111}.bt-footage{background:#5AC8FA;color:#111}
+.bdur{position:absolute;right:7px;bottom:7px;background:rgba(0,0,0,.65);padding:2px 6px;border-radius:5px;font-size:11px;font-variant-numeric:tabular-nums}
+.bspec{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px;min-width:0}
+.bspec span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bline{font-size:13px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bguides{background:rgba(0,0,0,.22);border-radius:8px;padding:7px 9px;font-size:11px;color:var(--mute);display:flex;flex-direction:column;gap:3px}
+.bguides b{color:var(--ink);font-weight:500}
 /* 分镜表 */
 #table{flex:1;min-height:0;overflow:auto}
 .chapter{position:sticky;top:0;z-index:2;background:#3A3532;padding:6px 16px;font-size:13px;display:flex;justify-content:space-between}
@@ -180,6 +204,7 @@ svg.solid{fill:currentColor;stroke:none}
   <div class="seg glass" role="tablist" aria-label="页面">
     <button data-p="script" role="tab" aria-label="文稿" title="文稿"><svg viewBox="0 0 20 20"><path d="M5 2.5h7l3.5 3.5v11.5H5z"/><path d="M12 2.5V6h3.5M7.5 10h5M7.5 13h5"/></svg></button>
     <button data-p="stage" role="tab" aria-label="画面" title="画面"><svg viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="12" rx="2.5"/><path d="M8.5 7.5v5l4-2.500z" fill="currentColor"/></svg></button>
+    <button data-p="board" role="tab" aria-label="分镜板" title="分镜板"><svg viewBox="0 0 20 20"><rect x="3" y="3.5" width="6" height="5.5" rx="1.2"/><rect x="11" y="3.5" width="6" height="5.5" rx="1.2"/><rect x="3" y="11" width="6" height="5.5" rx="1.2"/><rect x="11" y="11" width="6" height="5.5" rx="1.2"/></svg></button>
     <button data-p="table" role="tab" aria-label="分镜表" title="分镜表"><svg viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="12" rx="2"/><path d="M2.500 8.500h15M2.500 12.500h15M8 8.500V16"/></svg></button>
   </div>
   <div class="r">
@@ -219,6 +244,7 @@ svg.solid{fill:currentColor;stroke:none}
     </div>
     <div id="timeline" class="glass"><div id="clips"></div></div>
   </section>
+  <section class="page" id="p-board"><div id="boardBar"></div><div id="boardGrid"></div></section>
   <section class="page" id="p-table"><div id="table"></div><div id="pickbar"></div></section>
   <aside id="inspector" hidden><div id="shot"></div></aside>
 </div>
@@ -237,6 +263,7 @@ svg.solid{fill:currentColor;stroke:none}
 <div id="overlay"><div class="box" id="obox"></div></div>
 <input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
 <input type="file" id="projFile" accept=".json" hidden>
+<input type="file" id="scriptFile" accept=".txt,.md,.srt,.vtt,.csv,.json" hidden>
 <!--SCRIPTS-->
 </body>
 </html>

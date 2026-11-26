@@ -54,6 +54,8 @@
     report();
   };
 
+  const layerKeyOf = (raw) => (raw && D.isSketchShot && D.isSketchShot(raw) ? `sketch:${D.shotTrack(raw)}` : (raw && raw.template) || '');
+
   const editor = new root.DMEditor({
     host: stageEl,
     dock: document.getElementById('dock'),
@@ -79,13 +81,14 @@
       S.dirty = true;
     },
     commit: (layers, label) => {
-      if (S.raw) {
+      const lkey = layerKeyOf(S.raw);
+      if (S.raw && lkey) {
         S.raw.layers = S.raw.layers || {};
-        if (Object.keys(layers).length) S.raw.layers[S.raw.template] = layers;
-        else delete S.raw.layers[S.raw.template];
+        if (Object.keys(layers).length) S.raw.layers[lkey] = layers;
+        else delete S.raw.layers[lkey];
       }
       report();
-      post({type: 'commit', template: S.raw && S.raw.template, layers: JSON.stringify(layers), label});
+      post({type: 'commit', template: lkey, layers: JSON.stringify(layers), label});
     },
     onSelect: (ids) => post({type: 'selection', ids}),
     onElements: (list) => post({type: 'elements', list: JSON.stringify(list.map((e) => ({id: e.id, label: e.label, parent: e.parent, kind: e.kind, group: e.group, first: e.first, last: e.last})))}),
@@ -265,6 +268,26 @@
     },
     catalog() {
       return JSON.stringify({categories: D.CATEGORIES, items: D.catalog()});
+    },
+    // 分镜板卡片与导出分镜单的高清帧：动效镜画关键帧，A-roll / 实拍 / 素材画构图线框示意图
+    shotFrame(rowJSON, width) {
+      const row = JSON.parse(rowJSON);
+      const w = width || 480;
+      const h = Math.round((w * 9) / 16);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const g = canvas.getContext('2d', {alpha: false});
+      g.fillStyle = '#101114';
+      g.fillRect(0, 0, w, h);
+      try {
+        const scene = D.createScene(Object.assign({}, row, {template: row.tpl || 'statement'}), w);
+        const at = D.isSketchShot && D.isSketchShot(row) ? scene.duration * 0.55 : D.thumbTime(row.tpl, scene);
+        scene.draw(g, at);
+      } catch (e) {
+        return '';
+      }
+      return canvas.toDataURL('image/jpeg', 0.84);
     },
     // 时间线上的胶片：这一镜从出来到结束的几个瞬间
     frames(rowJSON, count) {

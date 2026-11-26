@@ -453,14 +453,16 @@
           const w = D.wrapText(row.caption, 620, 46, 28, 3);
           D.revealLines(c, w, RX, 90, T.ink, t, 0.15);
         }
+        const unit = row.unit || '位';
         if (hl) {
-          t = c.el('hlNum', `${hl.n} 位`, TEXT);
+          t = c.el('hlNum', `${hl.n} ${unit}`, TEXT);
           const a = smooth(progress(t, hlAt - 0.2, hlAt));
           plainNum(c, String(hl.n), RX, 620, 300, css(RED, a));
+          const numW = Math.max(hl.n >= 100 ? 405 : hl.n >= 10 ? 270 : 150, c.measureText(String(hl.n)).width + 18);
           c.font = `64px ${D.FONT_CN}`;
           c.fillStyle = css(INK, a);
           c.textAlign = 'left';
-          c.fillText('位', RX + (hl.n >= 10 ? 270 : 150), 620);
+          c.fillText(unit, RX + numW, 620);
           if (hl.text) {
             t = c.el('hlText', hl.text, TEXT);
             const w = D.wrapText(hl.text, 620, 40, 26, 3);
@@ -477,11 +479,13 @@
           c.textAlign = 'left';
           c.fillText(s.label, RX, 400 + (1 - pIn) * 30);
           if (s.out) {
-            t = c.el(`out:${cur}`, `${s.out} 位退出`, TEXT);
+            const outLabel = row.outUnit || `${unit}退出`;
+            t = c.el(`out:${cur}`, `${s.out} ${outLabel}`, TEXT);
             plainNum(c, String(s.out), RX, 690, 300, T.ink);
+            const outW = Math.max(s.out >= 100 ? 405 : s.out >= 10 ? 270 : 150, c.measureText(String(s.out)).width + 18);
             c.font = `64px ${D.FONT_CN}`;
             c.fillStyle = T.ink;
-            c.fillText('位退出', RX + (s.out >= 10 ? 270 : 150), 690);
+            c.fillText(outLabel, RX + outW, 690);
           }
           if (s.stamp) {
             t = c.el(`stamp:${cur}`, s.stamp, TEXT);
@@ -621,7 +625,7 @@
   // ---------- 前后对比：滑杆把一边换成另一边（shotcraft before-after-slider-scrub） ----------
   D.register('split', {
     name: '左右对比', family: '文字', custom: true, desc: '两种东西的对比：滑杆扫过，一边换成另一边，再回拉一下。', source: 'shotcraft before-after-slider-scrub', colors: {},
-    accepts: (r) => r.left && r.right,
+    accepts: (r) => !!(r.left && r.right && (r.left.title || (r.left.lines && r.left.lines.length)) && (r.right.title || (r.right.lines && r.right.lines.length)) && ((r.left.lines && r.left.lines.length) || (r.right.lines && r.right.lines.length))),
     create(row, S) {
       const sp = D.speechOf(row);
       const dur = sp.dur + (row.hold != null ? +row.hold : 1.8);
@@ -633,9 +637,10 @@
         t = c.el(`${tag}Bg`, dark ? '右半屏底色' : '左半屏底色', {kind: 'fx', pick: false});
         c.fillStyle = dark ? '#0A0A0B' : '#F1EFE8';
         c.fillRect(0, 0, 1920, 1080);
-        const title = side.title;
+        const title = side.title || '';
         t = c.el(`${tag}Title`, title, TEXT);
-        c.font = `168px ${D.FONT_CN}`;
+        const titleSize = D.fitSize(title, 800, 168, 68);
+        c.font = `${titleSize}px ${D.FONT_CN}`;
         c.fillStyle = ink;
         c.textAlign = 'center';
         c.textBaseline = 'alphabetic';

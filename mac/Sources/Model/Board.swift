@@ -77,6 +77,86 @@ nonisolated struct Shot: Identifiable, Hashable, Sendable {
         get { fields["cat"]?.string ?? "" }
         set { fields["cat"] = .string(newValue) }
     }
+    // 编导轨道：aroll（出镜）/ motion（动效）/ shoot（实拍）/ footage（素材）
+    var track: String {
+        get {
+            if let t = fields["track"]?.string, ["aroll", "motion", "shoot", "footage"].contains(t) { return t }
+            if category == "实拍" { return "shoot" }
+            if category == "素材" || category == "新闻素材" { return "footage" }
+            if kind == "A" || category == "A-roll" || category == "出镜" { return "aroll" }
+            return "motion"
+        }
+        set {
+            fields["track"] = .string(newValue)
+            switch newValue {
+            case "aroll":
+                kind = "A"
+                category = "A-roll"
+                if shotSize.isEmpty || shotSize == "全屏动效" { shotSize = "中景" }
+                if cameraMove.isEmpty || cameraMove == "帧内动画" { cameraMove = "固定" }
+                if subject.isEmpty { subject = "主讲人出镜" }
+            case "shoot":
+                kind = "B"
+                category = "实拍"
+                if shotSize.isEmpty || shotSize == "全屏动效" || shotSize == "中景" { shotSize = "产品特写" }
+                if cameraMove.isEmpty || cameraMove == "帧内动画" { cameraMove = "缓慢推轨" }
+                if subject.isEmpty || subject == "主讲人出镜" { subject = "实拍画面" }
+            case "footage":
+                kind = "B"
+                category = "素材"
+                if shotSize.isEmpty || shotSize == "全屏动效" || shotSize == "中景" { shotSize = "全屏资料" }
+                if cameraMove.isEmpty || cameraMove == "帧内动画" { cameraMove = "局部放大" }
+                if subject.isEmpty || subject == "主讲人出镜" { subject = "资料画面" }
+            default:
+                fields["track"] = .string("motion")
+                kind = "B"
+                if ["A-roll", "出镜", "实拍", "素材", "新闻素材", ""].contains(category) {
+                    category = fields["groups"] != nil || fields["series"] != nil ? "数据动效" : "文字动效"
+                }
+            }
+        }
+    }
+    var isMotion: Bool { track == "motion" }
+    var trackLabel: String {
+        switch track {
+        case "aroll": "A-roll"
+        case "shoot": "实拍"
+        case "footage": "素材"
+        default: "动效"
+        }
+    }
+    var shotSize: String {
+        get { fields["shotSize"]?.string ?? "" }
+        set { fields["shotSize"] = newValue.isEmpty ? nil : .string(newValue) }
+    }
+    var cameraMove: String {
+        get { fields["cameraMove"]?.string ?? "" }
+        set { fields["cameraMove"] = newValue.isEmpty ? nil : .string(newValue) }
+    }
+    var subject: String {
+        get { fields["subject"]?.string ?? "" }
+        set { fields["subject"] = newValue.isEmpty ? nil : .string(newValue) }
+    }
+    var shootGuide: String {
+        get { fields["shootGuide"]?.string ?? "" }
+        set { fields["shootGuide"] = newValue.isEmpty ? nil : .string(newValue) }
+    }
+    var postGuide: String {
+        get { fields["postGuide"]?.string ?? "" }
+        set { fields["postGuide"] = newValue.isEmpty ? nil : .string(newValue) }
+    }
+    var sketchKind: String {
+        get { fields["sketchKind"]?.string ?? "" }
+        set { fields["sketchKind"] = newValue.isEmpty ? nil : .string(newValue) }
+    }
+    var layerKey: String {
+        isMotion ? template : "sketch:\(track)"
+    }
+    func timelineCaption(names: [String: String]) -> String {
+        if isMotion { return names[template] ?? "重音字幕" }
+        let s = shotSize.isEmpty ? trackLabel : "\(trackLabel) · \(shotSize)"
+        return s
+    }
     var line: String {
         get { fields["line"]?.string ?? "" }
         set { fields["line"] = .string(newValue) }
@@ -104,9 +184,9 @@ nonisolated struct Shot: Identifiable, Hashable, Sendable {
         set { fields["dur"] = newValue.map(JSONValue.number) }
     }
 
-    // 「出镜」不再是一种镜头。旧文件里的出镜镜头变成重音字幕，口播一个字不动
+    // 旧版无 track 字段且 tpl 为 "aroll" 的遗留文件转成重音字幕；新版编导分镜带 track，保留 A-roll
     var withoutARoll: Shot {
-        guard (fields["tpl"]?.string ?? "aroll") == "aroll" else { return self }
+        guard fields["track"] == nil, (fields["tpl"]?.string ?? "aroll") == "aroll" else { return self }
         var next = self
         next.template = "statement"
         next.kind = "B"
@@ -154,7 +234,7 @@ nonisolated struct Shot: Identifiable, Hashable, Sendable {
     }
 
     var adjustedElementCount: Int {
-        fields["layers"]?.object?[template]?.object?.count ?? 0
+        fields["layers"]?.object?[layerKey]?.object?.count ?? 0
     }
 
     // 给渲染页的 JSON
